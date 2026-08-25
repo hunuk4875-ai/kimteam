@@ -145,19 +145,6 @@
             border-bottom: 2px solid var(--text-gold);
         }
 
-        .tab-input {
-            background-color: #1e293b;
-            color: var(--text-gold);
-            border: 1px solid var(--text-gold);
-            padding: 9px 12px;
-            border-radius: 8px 8px 0 0;
-            font-size: 0.95rem;
-            font-weight: bold;
-            outline: none;
-            width: 120px;
-            text-align: center;
-        }
-
         .tab-del-btn {
             position: absolute;
             top: 4px;
@@ -253,7 +240,7 @@
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 76px;
+            height: 76px; /* 프로필 크기 확장에 맞춰 행 높이 상향 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -301,6 +288,7 @@
         .job-hunter .job-select { color: #34d399 !important; }
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
 
+        /* 프로필 사진 영역 큼지막하게 확장 */
         .profile-wrap {
             width: 64px;
             height: 64px;
@@ -324,6 +312,7 @@
         .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 4px 8px; }
         .btn-del { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 4px 8px; }
 
+        /* 맵 탭 및 공용 이미지 보드 스타일 */
         .section-box {
             background: var(--box-bg);
             border: 1px solid var(--box-border);
@@ -431,7 +420,20 @@
     </div>
 
     <!-- 탭 바 -->
-    <div id="tabBar" class="tab-bar"></div>
+    <div id="tabBar" class="tab-bar">
+        <div class="tab-btn-wrap">
+            <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 스펙 현황</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 아이템 현황</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabMap" class="tab-btn" onclick="switchTab('map')">🗺️ 맵 탭</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabHidden" class="tab-btn" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button>
+        </div>
+    </div>
 
     <div class="board-container" id="boardContainer"></div>
 
@@ -695,74 +697,25 @@
             }
         }
 
-        // ★ 탭 이름 변경 및 렌더링 로직 추가
         function renderTabBar() {
             const tabBar = document.getElementById('tabBar');
-            
-            // 기본 탭 빌더 헬퍼
-            const createDefaultTabHtml = (id, label) => `
-                <div class="tab-btn-wrap">
-                    <button class="tab-btn ${activeTab === id ? 'active' : ''}" onclick="switchTab('${id}')">${label}</button>
-                </div>
+            let html = `
+                <div class="tab-btn-wrap"><button id="tabSpec" class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabItem" class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabMap" class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵 탭</button></div>
+                <div class="tab-btn-wrap"><button id="tabHidden" class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button></div>
             `;
 
-            let html = createDefaultTabHtml('spec', '⚔️ 스펙 현황') +
-                       createDefaultTabHtml('item', '📦 아이템 현황') +
-                       createDefaultTabHtml('map', '🗺️ 맵 탭') +
-                       createDefaultTabHtml('hidden', '🕵️ 히든추리 탭');
-
-            // 커스텀 탭 렌더링 (수정 모드일 때 더블클릭으로 이름 변경 가능)
             customTabs.forEach(t => {
-                const isActive = activeTab === t.id;
                 html += `
                     <div class="tab-btn-wrap ${isEdit ? 'editable-tabs' : ''}">
-                        <button class="tab-btn ${isActive ? 'active' : ''}" 
-                                onclick="switchTab('${t.id}')" 
-                                ondblclick="${isEdit ? `enableTabRename('${t.id}')` : ''}" 
-                                title="${isEdit ? '더블클릭하여 탭 이름 변경' : ''}">${t.name}</button>
+                        <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
                         <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>
                     </div>
                 `;
             });
 
             tabBar.innerHTML = html;
-        }
-
-        // 탭 이름 변경 활성화 함수
-        function enableTabRename(tabId) {
-            if (!isEdit) return;
-            const found = customTabs.find(t => t.id === tabId);
-            if (!found) return;
-
-            const tabBar = document.getElementById('tabBar');
-            const wrappers = tabBar.querySelectorAll('.tab-btn-wrap');
-            
-            wrappers.forEach(wrap => {
-                const btn = wrap.querySelector('.tab-btn');
-                if (btn && btn.getAttribute('onclick')?.includes(tabId)) {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'tab-input';
-                    input.value = found.name;
-
-                    wrap.replaceChild(input, btn);
-                    input.focus();
-                    input.select();
-
-                    const saveName = () => {
-                        const newName = input.value.trim();
-                        if (newName) {
-                            found.name = newName;
-                        }
-                        renderTabBar();
-                    };
-
-                    input.onkeydown = (e) => {
-                        if (e.key === 'Enter') saveName();
-                    };
-                    input.onblur = saveName;
-                }
-            });
         }
 
         function deleteCustomTab(tabId) {
@@ -828,13 +781,18 @@
                             ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 스크린샷/사진 업로드' : '사진 없음'}</span>`}
                         </div>
                         <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
-                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="메모를 입력하세요">${item.memo}</textarea>
+                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보, 주요 드랍 및 메모">${item.memo}</textarea>
+                        ${isEdit ? `<button class="btn btn-del" style="padding:4px; font-size:0.8rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                     </div>
                 `;
             });
+
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:10px;">🗺️ 맵 및 지역 정보 현황</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 맵 및 사냥터 정보 관리</h3>
+                        ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.85rem;" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
+                    </div>
                     <div class="img-upload-grid">${cardsHtml}</div>
                 </div>
             `;
@@ -847,16 +805,18 @@
                     <div class="img-card">
                         <input type="text" id="hidden_name_${idx}" value="${job.name}" ${!isEdit ? 'readonly' : ''} placeholder="히든직업 이름">
                         <div class="img-card-preview" onclick="${isEdit ? `triggerHiddenFile(${idx})` : ''}">
-                            ${job.img ? `<img src="${job.img}">` : `<span>${isEdit ? '+ 단서 이미지 업로드' : '사진 없음'}</span>`}
+                            ${job.img ? `<img src="${job.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
                         </div>
                         <input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${idx})">
-                        <textarea id="hidden_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="전직 조건 및 단서 입력">${job.memo}</textarea>
+                        <textarea id="hidden_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="전직 조건, 추리 내용, 단서 기록">${job.memo}</textarea>
                     </div>
                 `;
             });
+
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:10px;">🕵️ 히든직업 추리 및 단서</h3>
+                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">🕵️ 5대 히든직업 추리 및 단서 노트</h3>
+                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:12px;">각 히든직업별로 전직 단서나 스크린샷 사진을 큼지막하게 등록하여 팀원들과 공유하세요.</p>
                     <div class="img-upload-grid">${cardsHtml}</div>
                 </div>
             `;
@@ -864,86 +824,116 @@
 
         function renderCustomTab(container) {
             const found = customTabs.find(t => t.id === activeTab);
-            const content = found ? found.content : "";
+            const contentVal = found ? found.content : "";
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:10px;">📄 ${found ? found.name : '커스텀 탭'}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:300px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); padding:12px; border-radius:6px; outline:none; resize:vertical;" ${!isEdit ? 'readonly' : ''}>${content}</textarea>
+                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">📌 ${found ? found.name : '사용자 탭'}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:15px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
                 </div>
             `;
         }
 
-        function renderHeader() {
-            const headerRow = document.getElementById('headerRow');
-            const cols = getCurrentColumns();
-            let html = `<th style="width: 70px;"><div class="th-box">프로필</div></th>`;
+        function triggerMapFile(idx) { document.getElementById(`map_file_${idx}`).click(); }
+        function uploadMapImg(e, idx) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                mapImages[idx].img = evt.target.result;
+                renderAll();
+            };
+            reader.readAsDataURL(file);
+        }
+        function addMapCard() {
+            syncInputsToData();
+            mapImages.push({ id: "m_" + Date.now(), title: "새로운 맵/지역", img: "", memo: "" });
+            renderAll();
+        }
+        function delMapCard(idx) {
+            syncInputsToData();
+            mapImages.splice(idx, 1);
+            renderAll();
+        }
 
-            cols.forEach((col, index) => {
-                html += `
-                    <th style="width: ${col.width};">
-                        <div class="th-box">
-                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isEdit ? 'readonly' : ''}>
-                            ${isEdit ? `
-                                <div class="col-btn-group">
-                                    <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
-                                    <button class="btn-col-del" onclick="deleteColumn('${col.id}')">✕</button>
-                                    <button class="btn-col-mv" onclick="moveColumn(${index}, 1)">▶</button>
-                                </div>
-                            ` : ''}
+        function triggerHiddenFile(idx) { document.getElementById(`hidden_file_${idx}`).click(); }
+        function uploadHiddenImg(e, idx) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                hiddenJobsData[idx].img = evt.target.result;
+                renderAll();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderHeader() {
+            const tr = document.getElementById('headerRow');
+            if (!tr) return;
+            tr.innerHTML = `<th style="width: 75px;"><div class="th-box">프로필</div></th>`;
+
+            const cols = getCurrentColumns();
+            cols.forEach((col, idx) => {
+                const th = document.createElement('th');
+                th.style.width = col.width || "90px";
+                th.innerHTML = `
+                    <div class="th-box">
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                        <div class="col-btn-group">
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
                         </div>
-                    </th>
+                    </div>
                 `;
+                tr.appendChild(th);
             });
 
             if (isEdit) {
-                html += `<th style="width: 80px;"><div class="th-box">관리</div></th>`;
+                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
             }
-
-            headerRow.innerHTML = html;
         }
 
         function renderBody() {
-            const tableBody = document.getElementById('tableBody');
+            const tbody = document.getElementById('tableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
             const cols = getCurrentColumns();
-            let html = '';
 
-            membersData.forEach((row, rIdx) => {
-                html += `<tr>`;
-                
-                // 프로필 사진 열
-                html += `
+            membersData.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                let html = `
                     <td>
-                        <div class="td-box" style="width: 70px;">
-                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${rIdx})` : ''}">
-                                ${row.img ? `<img src="${row.img}">` : `<span>사진</span>`}
+                        <div class="td-box">
+                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${idx})` : ''}">
+                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
                             </div>
-                            <input type="file" id="file_${rIdx}" class="file-input" accept="image/*" onchange="uploadProfile(event, ${rIdx})">
+                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
                         </div>
                     </td>
                 `;
 
-                // 데이터 열
                 cols.forEach(col => {
-                    let val = row[col.id] !== undefined ? row[col.id] : "";
+                    const val = m[col.id] || "";
+                    const isName = (col.id === 'c1');
+                    const isJob = (col.id === 'c2');
                     
-                    if (col.id === 'c2') {
-                        // 직업 선택 드롭다운 처리
-                        let jobClass = "job-default";
-                        if (val === "나이트") jobClass = "job-knight";
-                        else if (val === "위자드") jobClass = "job-wizard";
-                        else if (val === "워리어") jobClass = "job-warrior";
-                        else if (val === "어쌔신") jobClass = "job-assassin";
-                        else if (val === "헌터") jobClass = "job-hunter";
-
+                    if (isJob) {
                         let optionsHtml = '';
+                        let hasMatched = false;
                         JOB_LIST.forEach(j => {
-                            optionsHtml += `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`;
+                            const selected = (val === j) ? 'selected' : '';
+                            if (selected) hasMatched = true;
+                            optionsHtml += `<option value="${j}" ${selected}>${j}</option>`;
                         });
+                        if (!hasMatched && val) {
+                            optionsHtml = `<option value="${val}" selected>${val}</option>` + optionsHtml;
+                        }
 
                         html += `
                             <td>
-                                <div class="td-box job-tag ${jobClass}" style="width: ${col.width};">
-                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="onJobChange(this, ${rIdx})">
+                                <div class="td-box job-tag ${getJobClass(val)}">
+                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
                                         ${optionsHtml}
                                     </select>
                                 </div>
@@ -952,183 +942,169 @@
                     } else {
                         html += `
                             <td>
-                                <div class="td-box" style="width: ${col.width};">
-                                    <input type="text" value="${val}" data-colid="${col.id}" ${!isEdit ? 'readonly' : ''}>
+                                <div class="td-box">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
                                 </div>
                             </td>
                         `;
                     }
                 });
 
-                // 관리(행 이동/삭제) 열
                 if (isEdit) {
                     html += `
                         <td>
-                            <div class="td-box" style="width: 80px;">
+                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
                                 <div class="btn-action-group">
-                                    <button class="btn-move" onclick="moveRow(${rIdx}, -1)">▲</button>
-                                    <button class="btn-del" onclick="deleteRow(${rIdx})">✕</button>
-                                    <button class="btn-move" onclick="moveRow(${rIdx}, 1)">▼</button>
+                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
+                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
+                                    <button class="btn-del" onclick="delRow(${idx})">삭제</button>
                                 </div>
                             </div>
                         </td>
                     `;
                 }
 
-                html += `</tr>`;
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
             });
-
-            tableBody.innerHTML = html;
         }
 
-        function onJobChange(selectEl, rIdx) {
-            const val = selectEl.value;
-            membersData[rIdx]['c2'] = val;
-            renderBody();
-        }
-
-        function triggerFile(rIdx) {
-            document.getElementById(`file_${rIdx}`).click();
-        }
-
-        function uploadProfile(e, rIdx) {
+        function triggerFile(idx) { document.getElementById(`f-${idx}`).click(); }
+        function uploadImg(e, idx) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
-                membersData[rIdx].img = event.target.result;
+            reader.onload = function(evt) {
+                membersData[idx].img = evt.target.result;
                 renderBody();
             };
             reader.readAsDataURL(file);
-        }
-
-        function triggerMapFile(idx) {
-            document.getElementById(`map_file_${idx}`).click();
-        }
-
-        function uploadMapImg(e, idx) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                mapImages[idx].img = event.target.result;
-                renderAll();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function triggerHiddenFile(idx) {
-            document.getElementById(`hidden_file_${idx}`).click();
-        }
-
-        function uploadHiddenImg(e, idx) {
-            const file = fileInputCheck(e);
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                hiddenJobsData[idx].img = event.target.result;
-                renderAll();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function fileInputCheck(e) {
-            return e.target.files[0];
         }
 
         function addRow() {
+            if (!isEdit) return;
             syncInputsToData();
-            const newRow = { img: "", c1: "신규팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" };
-            membersData.push(newRow);
+            let newObj = { img: "", c1: "새팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" };
+            membersData.push(newObj);
             renderBody();
         }
 
-        function deleteRow(rIdx) {
-            syncInputsToData();
-            if (confirm("정말 이 팀원을 삭제하시겠습니까?")) {
-                membersData.splice(rIdx, 1);
+        function delRow(idx) {
+            if (!isEdit) return;
+            if (confirm("해당 팀원을 삭제하시겠습니까?")) {
+                syncInputsToData();
+                membersData.splice(idx, 1);
                 renderBody();
             }
         }
 
-        function moveRow(rIdx, direction) {
-            syncInputsToData();
-            const targetIdx = rIdx + direction;
-            if (targetIdx < 0 || targetIdx >= membersData.length) return;
-            const temp = membersData[rIdx];
-            membersData[rIdx] = membersData[targetIdx];
-            membersData[targetIdx] = temp;
-            renderBody();
-        }
-
         function addColumn() {
+            if (!isEdit || (activeTab !== 'spec' && activeTab !== 'item')) return;
             syncInputsToData();
+            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
+            if (!title) return;
+
             const cols = getCurrentColumns();
-            const newId = (activeTab === 'spec' ? 'col_' : 'item_') + Date.now();
-            cols.push({ id: newId, title: "새 항목", width: "90px" });
-            membersData.forEach(m => m[newId] = "0");
+            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
+            cols.push({ id: newId, title: title.trim(), width: "90px" });
+
+            membersData.forEach(m => {
+                if (m[newId] === undefined) m[newId] = "";
+            });
+
             renderAll();
         }
 
-        function deleteColumn(colId) {
-            syncInputsToData();
-            const cols = getCurrentColumns();
-            if (cols.length <= 1) {
-                alert("최소 1개 이상의 열이 있어야 합니다.");
-                return;
-            }
-            if (confirm("이 열을 삭제하시겠습니까?")) {
-                const idx = cols.findIndex(c => c.id === colId);
-                if (idx !== -1) cols.splice(idx, 1);
+        function delColumn(colId) {
+            if (!isEdit) return;
+            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
+                syncInputsToData();
+                if (activeTab === 'spec') {
+                    specColumns = specColumns.filter(c => c.id !== colId);
+                } else {
+                    itemColumns = itemColumns.filter(c => c.id !== colId);
+                }
                 renderAll();
             }
         }
 
-        function moveColumn(colIndex, direction) {
+        function moveColumn(colIdx, dir) {
+            if (!isEdit) return;
             syncInputsToData();
             const cols = getCurrentColumns();
-            const targetIdx = colIndex + direction;
+            const targetIdx = colIdx + dir;
             if (targetIdx < 0 || targetIdx >= cols.length) return;
-            const temp = cols[colIndex];
-            cols[colIndex] = cols[targetIdx];
+            const temp = cols[colIdx];
+            cols[colIdx] = cols[targetIdx];
             cols[targetIdx] = temp;
             renderAll();
         }
 
+        function moveRow(idx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
+            renderBody();
+        }
+
+        function getJobClass(jobText) {
+            if (!jobText) return 'job-default';
+            const val = jobText.trim();
+            if (val.includes('나이트')) return 'job-knight';
+            if (val.includes('위자드')) return 'job-wizard';
+            if (val.includes('워리어')) return 'job-warrior';
+            if (val.includes('어쌔신')) return 'job-assassin';
+            if (val.includes('헌터')) return 'job-hunter';
+            return 'job-default';
+        }
+
+        function handleJobChange(selectElem) {
+            const tdBox = selectElem.closest('.td-box');
+            if (tdBox) {
+                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
+            }
+        }
+
         function saveData() {
             syncInputsToData();
-            const payload = {
-                specColumns,
-                itemColumns,
-                membersData,
-                mapImages,
-                hiddenJobsData,
-                customTabs
+            const dataToSave = {
+                specColumns: specColumns,
+                itemColumns: itemColumns,
+                membersData: membersData,
+                mapImages: mapImages,
+                hiddenJobsData: hiddenJobsData,
+                customTabs: customTabs
             };
 
-            window.dbSet(window.dbRef(window.db, 'kimteam_board_data'), payload)
+            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
+            window.dbSet(dbRefInstance, dataToSave)
                 .then(() => {
-                    alert("성공적으로 Firebase에 저장되었습니다!");
+                    alert("성공적으로 저장(실시간 동기화)되었습니다!");
                 })
                 .catch((error) => {
                     alert("저장 실패: " + error.message);
                 });
         }
 
-        // 실시간 연동 리스너
         window.addEventListener('DOMContentLoaded', () => {
-            window.dbOnValue(window.dbRef(window.db, 'kimteam_board_data'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    if (data.specColumns) specColumns = data.specColumns;
-                    if (data.itemColumns) itemColumns = data.itemColumns;
-                    if (data.membersData) membersData = data.membersData;
-                    if (data.mapImages) mapImages = data.mapImages;
-                    if (data.hiddenJobsData) hiddenJobsData = data.hiddenJobsData;
-                    if (data.customTabs) customTabs = data.customTabs;
+            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
+            window.dbOnValue(dbRefInstance, (snapshot) => {
+                const serverData = snapshot.val();
+                if (serverData) {
+                    if (serverData.specColumns) specColumns = serverData.specColumns;
+                    if (serverData.itemColumns) itemColumns = serverData.itemColumns;
+                    if (serverData.membersData) membersData = serverData.membersData;
+                    if (serverData.mapImages) mapImages = serverData.mapImages;
+                    if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
+                    if (serverData.customTabs) customTabs = serverData.customTabs;
                     renderAll();
                 }
             });
+            renderAll();
         });
     </script>
 </body>
