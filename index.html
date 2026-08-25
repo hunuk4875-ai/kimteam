@@ -131,18 +131,19 @@
             font-size: 0.9rem;
             color: var(--text-gold);
             padding: 0;
-            min-width: 75px;
+            min-width: 90px;
         }
 
         th .th-box {
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 44px;
+            height: 48px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
+            padding: 2px 4px;
             position: relative;
         }
 
@@ -154,26 +155,38 @@
             background: transparent;
             border: none;
             outline: none;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
 
+        .col-btn-group {
+            display: none;
+            gap: 2px;
+            margin-top: 2px;
+        }
+
+        .editable .col-btn-group { display: flex; }
+
+        .btn-col-mv {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+
+        .btn-col-mv:hover { background: #475569; }
+
         .btn-col-del {
-            position: absolute;
-            right: 2px;
-            top: 2px;
             background: var(--danger);
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            font-size: 10px;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
             cursor: pointer;
-            display: none;
-            line-height: 16px;
         }
-
-        .editable .btn-col-del { display: block; }
 
         td {
             padding: 0;
@@ -229,20 +242,35 @@
 
         .file-input { display: none; }
 
+        .btn-action-group {
+            display: flex;
+            gap: 2px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn-move {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0 6px;
+        }
+
+        .btn-move:hover { background: #475569; }
+
         .btn-del {
             background: var(--danger);
             color: white;
             border: none;
-            width: 100%;
-            height: 100%;
-            border-radius: 6px;
+            flex: 1;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 0.8rem;
             font-weight: bold;
-            display: none;
         }
-
-        .editable .btn-del { display: block; }
     </style>
 </head>
 <body>
@@ -365,8 +393,28 @@
             renderAll();
         }
 
+        function syncInputsToData() {
+            // 현재 입력 중인 항목(열) 제목 동기화
+            document.querySelectorAll('#headerRow input').forEach(inp => {
+                const colId = inp.dataset.colid;
+                const colObj = columns.find(c => c.id === colId);
+                if (colObj) colObj.title = inp.value;
+            });
+
+            // 현재 입력 중인 팀원 데이터 동기화
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach((r, idx) => {
+                if (!membersData[idx]) return;
+                r.querySelectorAll('input[type="text"]').forEach(inp => {
+                    const colId = inp.dataset.colid;
+                    if (colId) membersData[idx][colId] = inp.value;
+                });
+            });
+        }
+
         function addColumn() {
             if (!isEdit) return;
+            syncInputsToData();
             const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
             if (!title) return;
 
@@ -383,9 +431,38 @@
         function delColumn(colId) {
             if (!isEdit) return;
             if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
+                syncInputsToData();
                 columns = columns.filter(c => c.id !== colId);
                 renderAll();
             }
+        }
+
+        function moveColumn(colIdx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+
+            const targetIdx = colIdx + dir;
+            if (targetIdx < 0 || targetIdx >= columns.length) return;
+
+            const temp = columns[colIdx];
+            columns[colIdx] = columns[targetIdx];
+            columns[targetIdx] = temp;
+
+            renderAll();
+        }
+
+        function moveRow(idx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
+
+            renderBody();
         }
 
         function renderAll() {
@@ -397,20 +474,24 @@
             const tr = document.getElementById('headerRow');
             tr.innerHTML = `<th style="width: 55px;"><div class="th-box">프로필</div></th>`;
 
-            columns.forEach(col => {
+            columns.forEach((col, idx) => {
                 const th = document.createElement('th');
                 th.style.width = col.width || "90px";
                 th.innerHTML = `
                     <div class="th-box">
                         <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
-                        ${isEdit ? `<button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>` : ''}
+                        <div class="col-btn-group">
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
+                        </div>
                     </div>
                 `;
                 tr.appendChild(th);
             });
 
             if (isEdit) {
-                tr.innerHTML += `<th style="width: 60px;"><div class="th-box" style="color:var(--danger);">삭제</div></th>`;
+                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
             }
         }
 
@@ -444,7 +525,17 @@
                 });
 
                 if (isEdit) {
-                    html += `<td><div class="td-box" style="padding:0; border:none; background:transparent;"><button class="btn-del" onclick="delRow(this)">삭제</button></div></td>`;
+                    html += `
+                        <td>
+                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
+                                <div class="btn-action-group">
+                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
+                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
+                                    <button class="btn-del" onclick="delRow(this)">삭제</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
                 }
 
                 tr.innerHTML = html;
@@ -481,6 +572,7 @@
 
         function addRow() {
             if (!isEdit) return;
+            syncInputsToData();
             const newMember = { img: "" };
             columns.forEach(c => newMember[c.id] = (c.id === 'c1' ? '새 팀원' : '0'));
             membersData.push(newMember);
@@ -489,6 +581,7 @@
 
         function delRow(btn) {
             if (confirm("삭제하시겠습니까?")) {
+                syncInputsToData();
                 const tr = btn.closest('tr');
                 const idx = Array.from(tr.parentNode.children).indexOf(tr);
                 membersData.splice(idx, 1);
@@ -498,26 +591,7 @@
 
         function saveData() {
             if (!isEdit) return;
-
-            document.querySelectorAll('#headerRow input').forEach(inp => {
-                const colId = inp.dataset.colid;
-                const colObj = columns.find(c => c.id === colId);
-                if (colObj) colObj.title = inp.value;
-            });
-
-            const rows = document.querySelectorAll('#tableBody tr');
-            const newMembers = [];
-
-            rows.forEach((r, idx) => {
-                const memberObj = { img: membersData[idx]?.img || "" };
-                r.querySelectorAll('input[type="text"]').forEach(inp => {
-                    const colId = inp.dataset.colid;
-                    if (colId) memberObj[colId] = inp.value;
-                });
-                newMembers.push(memberObj);
-            });
-
-            membersData = newMembers;
+            syncInputsToData();
 
             if (window.dbSet && window.dbRef) {
                 window.dbSet(window.dbRef(window.db, 'dashboard_v2'), {
