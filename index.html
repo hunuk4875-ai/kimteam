@@ -202,6 +202,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 6px;
+            transition: all 0.2s ease;
         }
 
         td input[type="text"] {
@@ -213,6 +214,29 @@
             font-size: 0.92rem;
             outline: none;
         }
+
+        /* 직업별 배지 스타일 */
+        .job-tag {
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
+        .job-knight input { color: #60a5fa !important; font-weight: bold; }
+
+        .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
+        .job-wizard input { color: #c084fc !important; font-weight: bold; }
+
+        .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
+        .job-warrior input { color: #f87171 !important; font-weight: bold; }
+
+        .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
+        .job-assassin input { color: #fb923c !important; font-weight: bold; }
+
+        .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
+        .job-hunter input { color: #34d399 !important; font-weight: bold; }
+
+        .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
+        .job-default input { color: #cbd5e1 !important; }
 
         .profile-wrap {
             width: 42px;
@@ -393,15 +417,31 @@
             renderAll();
         }
 
+        function getJobClass(jobText) {
+            if (!jobText) return 'job-default';
+            const val = jobText.trim();
+            if (val.includes('나이트')) return 'job-knight';
+            if (val.includes('위자드')) return 'job-wizard';
+            if (val.includes('워리어')) return 'job-warrior';
+            if (val.includes('어쌔신')) return 'job-assassin';
+            if (val.includes('헌터')) return 'job-hunter';
+            return 'job-default';
+        }
+
+        function handleJobInput(inp) {
+            const tdBox = inp.closest('.td-box');
+            if (tdBox) {
+                tdBox.className = 'td-box job-tag ' + getJobClass(inp.value);
+            }
+        }
+
         function syncInputsToData() {
-            // 현재 입력 중인 항목(열) 제목 동기화
             document.querySelectorAll('#headerRow input').forEach(inp => {
                 const colId = inp.dataset.colid;
                 const colObj = columns.find(c => c.id === colId);
                 if (colObj) colObj.title = inp.value;
             });
 
-            // 현재 입력 중인 팀원 데이터 동기화
             const rows = document.querySelectorAll('#tableBody tr');
             rows.forEach((r, idx) => {
                 if (!membersData[idx]) return;
@@ -515,10 +555,17 @@
                 columns.forEach(col => {
                     const val = m[col.id] || "";
                     const isName = (col.id === 'c1');
+                    const isJob = (col.id === 'c2');
+                    
+                    let extraClass = "";
+                    if (isJob) {
+                        extraClass = `job-tag ${getJobClass(val)}`;
+                    }
+
                     html += `
                         <td>
-                            <div class="td-box">
-                                <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                            <div class="td-box ${extraClass}">
+                                <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}" ${isJob ? 'oninput="handleJobInput(this)"' : ''}>
                             </div>
                         </td>
                     `;
