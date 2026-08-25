@@ -1,920 +1,865 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ 킴성태팀 종합 현황판 (실시간 연동)</title>
-    <!-- Firebase SDK (v9) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ 킴성태팀 종합 현황판 (실시간 연동)</title>
+    <!-- Firebase SDK (v9) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJVUFi2vg_zh2EkN5YnCNqwVbwiocVY14",
-            authDomain: "kimteam-db.firebaseapp.com",
-            databaseURL: "https://kimteam-db-default-rtdb.firebaseio.com",
-            projectId: "kimteam-db",
-            storageBucket: "kimteam-db.firebasestorage.app",
-            messagingSenderId: "1073341919570",
-            appId: "1:1073341919570:web:57632de373dbe61ef44a8b",
-            measurementId: "G-Q5EZ3MJHBX"
-        };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJVUFi2vg_zh2EkN5YnCNqwVbwiocVY14",
+            authDomain: "kimteam-db.firebaseapp.com",
+            databaseURL: "https://kimteam-db-default-rtdb.firebaseio.com",
+            projectId: "kimteam-db",
+            storageBucket: "kimteam-db.firebasestorage.app",
+            messagingSenderId: "1073341919570",
+            appId: "1:1073341919570:web:57632de373dbe61ef44a8b",
+            measurementId: "G-Q5EZ3MJHBX"
+        };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        window.db = db;
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbOnValue = onValue;
-    </script>
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-            --box-bg: #0f172a;
-            --box-border: #475569;
-            --text-gold: #fbbf24;
-            --text-light: #f8fafc;
-            --primary: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+    </script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --box-bg: #0f172a;
+            --box-border: #475569;
+            --text-gold: #fbbf24;
+            --text-light: #f8fafc;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        .header-bar {
-            width: 100%;
-            max-width: 1600px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--panel-bg);
-            padding: 16px 24px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border: 1px solid var(--box-border);
-        }
+        .header-bar {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--panel-bg);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--box-border);
+        }
 
-        .title-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
 
-        .badge {
-            font-size: 0.8rem;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: normal;
-        }
+        .badge {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: normal;
+        }
 
-        .badge-view { background: #334155; color: #94a3b8; }
-        .badge-edit { background: #065f46; color: #34d399; }
+        .badge-view { background: #334155; color: #94a3b8; }
+        .badge-edit { background: #065f46; color: #34d399; }
 
-        .btn-group {
-            display: flex;
-            gap: 8px;
-        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
 
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-        .btn-lock { background-color: #475569; }
-        .btn-add { background-color: var(--success); }
-        .btn-col { background-color: #8b5cf6; }
-        .btn-pw { background-color: #6366f1; }
+        .btn-lock { background-color: #475569; }
+        .btn-add { background-color: var(--success); }
+        .btn-col { background-color: #8b5cf6; }
+        .btn-pw { background-color: #6366f1; }
 
-        /* 탭 스타일 */
-        .tab-bar {
-            width: 100%;
-            max-width: 1600px;
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
+        /* 탭 스타일 */
+        .tab-bar {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
 
-        .tab-btn {
-            background-color: #334155;
-            color: #94a3b8;
-            border: 1px solid var(--box-border);
-            padding: 10px 20px;
-            border-radius: 8px 8px 0 0;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .tab-btn {
+            background-color: #334155;
+            color: #94a3b8;
+            border: 1px solid var(--box-border);
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-        .tab-btn.active {
-            background-color: var(--panel-bg);
-            color: var(--text-gold);
-            border-bottom: 2px solid var(--text-gold);
-        }
+        .tab-btn.active {
+            background-color: var(--panel-bg);
+            color: var(--text-gold);
+            border-bottom: 2px solid var(--text-gold);
+        }
 
-        .board-container {
-            width: 100%;
-            max-width: 1600px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 0 8px 8px 8px;
-            padding: 20px;
-            overflow-x: auto;
-        }
+        .board-container {
+            width: 100%;
+            max-width: 1600px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 0 8px 8px 8px;
+            padding: 20px;
+            overflow-x: auto;
+        }
 
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 6px 10px;
-            text-align: center;
-        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px 10px;
+            text-align: center;
+        }
 
-        th {
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: var(--text-gold);
-            padding: 0;
-            min-width: 90px;
-        }
+        th {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--text-gold);
+            padding: 0;
+            min-width: 90px;
+        }
 
-        th .th-box {
-            background-color: var(--box-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 6px;
-            height: 56px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2px 4px;
-            position: relative;
-        }
+        th .th-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 6px;
+            height: 56px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 4px;
+            position: relative;
+        }
 
-        th input {
-            color: var(--text-gold);
-            font-weight: bold;
-            text-align: center;
-            width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            font-size: 0.88rem;
-        }
+        th input {
+            color: var(--text-gold);
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.88rem;
+        }
 
-        .col-btn-group {
-            display: none;
-            gap: 2px;
-            margin-top: 2px;
-        }
+        .col-btn-group {
+            display: none;
+            gap: 2px;
+            margin-top: 2px;
+        }
 
-        .editable .col-btn-group { display: flex; }
+        .editable .col-btn-group { display: flex; }
 
-        .btn-col-mv {
-            background: #334155;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 0 4px;
-            font-size: 0.65rem;
-            cursor: pointer;
-        }
+        .btn-col-mv {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
 
-        .btn-col-mv:hover { background: #475569; }
+        .btn-col-mv:hover { background: #475569; }
 
-        .btn-col-del {
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 0 4px;
-            font-size: 0.65rem;
-            cursor: pointer;
-        }
+        .btn-col-del {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
 
-        td {
-            padding: 0;
-            vertical-align: middle;
-        }
+        td {
+            padding: 0;
+            vertical-align: middle;
+        }
 
-        .td-box {
-            background-color: var(--box-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 6px;
-            height: 62px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 6px;
-            transition: all 0.2s ease;
-        }
+        .td-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 6px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            transition: all 0.2s ease;
+        }
 
-        td input[type="text"] {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            text-align: center;
-            font-size: 0.92rem;
-            outline: none;
-        }
+        td input[type="text"] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            text-align: center;
+            font-size: 0.92rem;
+            outline: none;
+        }
 
-        /* 직업 입력/선택 필드 스타일 (직접 타이핑 가능하도록 개선) */
-        .job-input {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.92rem;
-            color: inherit;
-        }
+        /* 직업 입력/선택 필드 스타일 (직접 타이핑 가능하도록 개선) */
+        .job-input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.92rem;
+            color: inherit;
+        }
 
-        /* 일반 직업 색상 */
-        .job-tag { border-radius: 4px; font-weight: bold; }
-        .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
-        .job-knight .job-input { color: #60a5fa !important; }
+        /* 일반 직업 색상 */
+        .job-tag { border-radius: 4px; font-weight: bold; }
+        .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
+        .job-knight .job-input { color: #60a5fa !important; }
 
-        .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
-        .job-wizard .job-input { color: #c084fc !important; }
+        .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
+        .job-wizard .job-input { color: #c084fc !important; }
 
-        .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
-        .job-warrior .job-input { color: #f87171 !important; }
+        .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
+        .job-warrior .job-input { color: #f87171 !important; }
 
-        .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
-        .job-assassin .job-input { color: #fb923c !important; }
+        .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
+        .job-assassin .job-input { color: #fb923c !important; }
 
-        .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
-        .job-hunter .job-input { color: #34d399 !important; }
+        .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
+        .job-hunter .job-input { color: #34d399 !important; }
 
-        /* 🔥 [초간지] 화려한 히든직업 1~5 전용 네온/그라데이션 효과 (직접 타이핑해도 적용됨) */
-        @keyframes neonPulse {
-            0% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
-            50% { box-shadow: 0 0 14px currentColor; }
-            100% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
-        }
+        /* 🔥 [초간지] 화려한 히든직업 1~5 전용 네온/그라데이션 효과 (직접 타이핑해도 적용됨) */
+        @keyframes neonPulse {
+            0% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+            50% { box-shadow: 0 0 14px currentColor; }
+            100% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
+        }
 
-        .job-hidden1 { 
-            background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(139, 92, 246, 0.4)) !important; 
-            border: 1.5px solid #c084fc !important; 
-            animation: neonPulse 3s infinite;
-        }
-        .job-hidden1 .job-input { color: #f0abfc !important; text-shadow: 0 0 8px rgba(216, 180, 254, 0.6); }
+        .job-hidden1 { 
+            background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(139, 92, 246, 0.4)) !important; 
+            border: 1.5px solid #c084fc !important; 
+            animation: neonPulse 3s infinite;
+        }
+        .job-hidden1 .job-input { color: #f0abfc !important; text-shadow: 0 0 8px rgba(216, 180, 254, 0.6); }
 
-        .job-hidden2 { 
-            background: linear-gradient(135deg, rgba(131, 24, 67, 0.4), rgba(236, 72, 153, 0.4)) !important; 
-            border: 1.5px solid #f472b6 !important; 
-            animation: neonPulse 3s infinite;
-        }
-        .job-hidden2 .job-input { color: #f9a8d4 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.6); }
+        .job-hidden2 { 
+            background: linear-gradient(135deg, rgba(131, 24, 67, 0.4), rgba(236, 72, 153, 0.4)) !important; 
+            border: 1.5px solid #f472b6 !important; 
+            animation: neonPulse 3s infinite;
+        }
+        .job-hidden2 .job-input { color: #f9a8d4 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.6); }
 
-        .job-hidden3 { 
-            background: linear-gradient(135deg, rgba(19, 78, 94, 0.4), rgba(20, 184, 166, 0.4)) !important; 
-            border: 1.5px solid #2dd4bf !important; 
-            animation: neonPulse 3s infinite;
-        }
-        .job-hidden3 .job-input { color: #5eead4 !important; text-shadow: 0 0 8px rgba(45, 212, 191, 0.6); }
+        .job-hidden3 { 
+            background: linear-gradient(135deg, rgba(19, 78, 94, 0.4), rgba(20, 184, 166, 0.4)) !important; 
+            border: 1.5px solid #2dd4bf !important; 
+            animation: neonPulse 3s infinite;
+        }
+        .job-hidden3 .job-input { color: #5eead4 !important; text-shadow: 0 0 8px rgba(45, 212, 191, 0.6); }
 
-        .job-hidden4 { 
-            background: linear-gradient(135deg, rgba(113, 63, 18, 0.4), rgba(234, 179, 8, 0.4)) !important; 
-            border: 1.5px solid #facc15 !important; 
-            animation: neonPulse 3s infinite;
-        }
-        .job-hidden4 .job-input { color: #fde047 !important; text-shadow: 0 0 8px rgba(250, 204, 21, 0.6); }
+        .job-hidden4 { 
+            background: linear-gradient(135deg, rgba(113, 63, 18, 0.4), rgba(234, 179, 8, 0.4)) !important; 
+            border: 1.5px solid #facc15 !important; 
+            animation: neonPulse 3s infinite;
+        }
+        .job-hidden4 .job-input { color: #fde047 !important; text-shadow: 0 0 8px rgba(250, 204, 21, 0.6); }
 
-        .job-hidden5 { 
-            background: linear-gradient(135deg, rgba(22, 78, 99, 0.4), rgba(6, 182, 212, 0.4)) !important; 
-            border: 1.5px solid #22d3ee !important; 
-            animation: neonPulse 3s infinite;
-        }
-        .job-hidden5 .job-input { color: #67e8f9 !important; text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); }
+        .job-hidden5 { 
+            background: linear-gradient(135deg, rgba(22, 78, 99, 0.4), rgba(6, 182, 212, 0.4)) !important; 
+            border: 1.5px solid #22d3ee !important; 
+            animation: neonPulse 3s infinite;
+        }
+        .job-hidden5 .job-input { color: #67e8f9 !important; text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); }
 
-        .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
-        .job-default .job-input { color: #cbd5e1 !important; }
+        .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
+        .job-default .job-input { color: #cbd5e1 !important; }
 
-        .profile-wrap {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #1e293b;
-            border: 1px dashed var(--box-border);
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            cursor: pointer;
-        }
+        .profile-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 1px dashed var(--box-border);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
 
-        .profile-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .profile-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-        .profile-wrap span {
-            font-size: 0.65rem;
-            color: #64748b;
-            text-align: center;
-        }
+        .profile-wrap span {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-align: center;
+        }
 
-        .file-input { display: none; }
+        .file-input { display: none; }
 
-        .btn-action-group {
-            display: flex;
-            gap: 2px;
-            width: 100%;
-            height: 100%;
-        }
+        .btn-action-group {
+            display: flex;
+            gap: 2px;
+            width: 100%;
+            height: 100%;
+        }
 
-        .btn-move {
-            background: #334155;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            padding: 0 6px;
-        }
+        .btn-move {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0 6px;
+        }
 
-        .btn-move:hover { background: #475569; }
+        .btn-move:hover { background: #475569; }
 
-        .btn-del {
-            background: var(--danger);
-            color: white;
-            border: none;
-            flex: 1;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
+        .btn-del {
+            background: var(--danger);
+            color: white;
+            border: none;
+            flex: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
 
-        /* 비밀번호 입력 모달 팝업 스타일 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        /* 비밀번호 입력 모달 팝업 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-        .modal-content {
-            background: var(--panel-bg);
-            border: 1px solid var(--box-border);
-            padding: 24px;
-            border-radius: 12px;
-            width: 320px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
 
-        .modal-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--text-gold);
-            margin-bottom: 16px;
-        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-gold);
+            margin-bottom: 16px;
+        }
 
-        .modal-input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--box-border);
-            background: var(--box-bg);
-            color: white;
-            text-align: center;
-            font-size: 1.1rem;
-            margin-bottom: 16px;
-            outline: none;
-        }
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--box-border);
+            background: var(--box-bg);
+            color: white;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
 
-        .modal-btn-group {
-            display: flex;
-            gap: 8px;
-        }
+        .modal-btn-group {
+            display: flex;
+            gap: 8px;
+        }
 
-        .modal-btn {
-            flex: 1;
-            padding: 8px 0;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .modal-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-        .modal-btn-submit { background: var(--primary); color: white; }
-        .modal-btn-cancel { background: #475569; color: white; }
-    </style>
+        .modal-btn-submit { background: var(--primary); color: white; }
+        .modal-btn-cancel { background: #475569; color: white; }
+    </style>
 </head>
 <body>
 
-    <div class="header-bar">
-        <div class="title-area">
-            🛡️ 킴성태팀 종합 현황판
-            <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
-        </div>
-        <div class="btn-group">
-            <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한 얻기</button>
-            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 항목(열) 추가</button>
-            <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
-            <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
-            <button class="btn btn-pw" onclick="openPwChangeModal()">🔑 비번 변경</button>
-        </div>
-    </div>
+    <div class="header-bar">
+        <div class="title-area">
+            🛡️ 킴성태팀 종합 현황판
+            <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
+        </div>
+        <div class="btn-group">
+            <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한 얻기</button>
+            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 항목(열) 추가</button>
+            <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
+            <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
+            <button class="btn btn-pw" onclick="openPwChangeModal()">🔑 비번 변경</button>
+        </div>
+    </div>
 
-    <!-- 탭 메뉴 -->
-    <div class="tab-bar">
-        <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 1. 스펙 및 장비강화 현황</button>
-        <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 2. 아이템 보유 현황</button>
-    </div>
+    <!-- 탭 메뉴 -->
+    <div class="tab-bar">
+        <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 1. 스펙 및 장비강화 현황</button>
+        <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 2. 아이템 보유 현황</button>
+    </div>
 
-    <div class="board-container">
-        <table id="mainTable">
-            <thead>
-                <tr id="headerRow"></tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+    <div class="board-container">
+        <table id="mainTable">
+            <thead>
+                <tr id="headerRow"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 
-    <!-- 비밀번호 입력 모달 -->
-    <div id="pwModal" class="modal-overlay">
-        <div class="modal-content">
-            <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
-            <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
-            <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
-            <div class="modal-btn-group">
-                <button class="modal-btn modal-btn-submit" onclick="submitPwModal()">확인</button>
-                <button class="modal-btn modal-btn-cancel" onclick="closePwModal()">취소</button>
-            </div>
-        </div>
-    </div>
+    <!-- 비밀번호 입력 모달 -->
+    <div id="pwModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
+            <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
+            <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-submit" onclick="submitPwModal()">확인</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closePwModal()">취소</button>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        let isEdit = false;
-        let activeTab = 'spec';
-        let modalMode = 'login';
-        const DEFAULT_PW = "1234";
+    <script>
+        let isEdit = false;
+        let activeTab = 'spec';
+        let modalMode = 'login';
+        const DEFAULT_PW = "1234";
 
-        let specColumns = [
-            { id: "c1", title: "팀원명", width: "100px" },
-            { id: "c2", title: "직업", width: "100px" },
-            { id: "c3", title: "무기강화", width: "75px" },
-            { id: "c4", title: "방어구강화", width: "75px" },
-            { id: "c5", title: "체력", width: "70px" },
-            { id: "c6", title: "내공", width: "70px" },
-            { id: "c7", title: "회피", width: "70px" },
-            { id: "c8", title: "운", width: "70px" },
-            { id: "c9", title: "비고", width: "180px" }
-        ];
+        let specColumns = [
+            { id: "c1", title: "팀원명", width: "100px" },
+            { id: "c2", title: "직업", width: "100px" },
+            { id: "c3", title: "무기강화", width: "75px" },
+            { id: "c4", title: "방어구강화", width: "75px" },
+            { id: "c5", title: "체력", width: "70px" },
+            { id: "c6", title: "내공", width: "70px" },
+            { id: "c7", title: "회피", width: "70px" },
+            { id: "c8", title: "운", width: "70px" },
+            { id: "c9", title: "비고", width: "180px" }
+        ];
 
-        let itemColumns = [
-            { id: "c1", title: "팀원명", width: "100px" },
-            { id: "i1", title: "무기 주문서", width: "90px" },
-            { id: "i2", title: "방어구 주문서", width: "90px" },
-            { id: "i3", title: "장신구 주문서", width: "90px" },
-            { id: "i4", title: "고급 물약", width: "80px" },
-            { id: "i5", title: "핵심 결정/재료", width: "120px" },
-            { id: "i6", title: "특수 아이템", width: "120px" },
-            { id: "i7", title: "아이템 비고", width: "180px" }
-        ];
+        let itemColumns = [
+            { id: "c1", title: "팀원명", width: "100px" },
+            { id: "i1", title: "무기 주문서", width: "90px" },
+            { id: "i2", title: "방어구 주문서", width: "90px" },
+            { id: "i3", title: "장신구 주문서", width: "90px" },
+            { id: "i4", title: "고급 물약", width: "80px" },
+            { id: "i5", title: "핵심 결정/재료", width: "120px" },
+            { id: "i6", title: "특수 아이템", width: "120px" },
+            { id: "i7", title: "아이템 비고", width: "180px" }
+        ];
 
-        const defaultMembers = [
-            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" }
-        ];
+        const defaultMembers = [
+            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" }
+        ];
 
-        let membersData = [...defaultMembers];
+        let membersData = [...defaultMembers];
 
-        function getCurrentColumns() {
-            return activeTab === 'spec' ? specColumns : itemColumns;
-        }
+        function getCurrentColumns() {
+            return activeTab === 'spec' ? specColumns : itemColumns;
+        }
 
-        function switchTab(tab) {
-            syncInputsToData();
-            activeTab = tab;
-            document.getElementById('tabSpec').className = 'tab-btn ' + (tab === 'spec' ? 'active' : '');
-            document.getElementById('tabItem').className = 'tab-btn ' + (tab === 'item' ? 'active' : '');
-            renderAll();
-        }
+        function switchTab(tab) {
+            syncInputsToData();
+            activeTab = tab;
+            document.getElementById('tabSpec').className = 'tab-btn ' + (tab === 'spec' ? 'active' : '');
+            document.getElementById('tabItem').className = 'tab-btn ' + (tab === 'item' ? 'active' : '');
+            renderAll();
+        }
 
-        function getPw() {
-            return localStorage.getItem('board_pw') || DEFAULT_PW;
-        }
+        function getPw() {
+            return localStorage.getItem('board_pw') || DEFAULT_PW;
+        }
 
-        function openLoginModal() {
-            modalMode = 'login';
-            document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
-            document.getElementById('pwInput').value = "";
-            document.getElementById('pwInput').placeholder = "비밀번호 입력 (기본: 1234)";
-            document.getElementById('pwNewInput').style.display = "none";
-            document.getElementById('pwModal').style.display = "flex";
-            document.getElementById('pwInput').focus();
-        }
+        function openLoginModal() {
+            modalMode = 'login';
+            document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "비밀번호 입력 (기본: 1234)";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
 
-        function openPwChangeModal() {
-            modalMode = 'change';
-            document.getElementById('modalTitle').innerText = "🔑 비밀번호 변경";
-            document.getElementById('pwInput').value = "";
-            document.getElementById('pwInput').placeholder = "현재 비밀번호";
-            document.getElementById('pwNewInput').value = "";
-            document.getElementById('pwNewInput').style.display = "block";
-            document.getElementById('pwModal').style.display = "flex";
-            document.getElementById('pwInput').focus();
-        }
+        function openPwChangeModal() {
+            modalMode = 'change';
+            document.getElementById('modalTitle').innerText = "🔑 비밀번호 변경";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "현재 비밀번호";
+            document.getElementById('pwNewInput').value = "";
+            document.getElementById('pwNewInput').style.display = "block";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
 
-        function closePwModal() {
-            document.getElementById('pwModal').style.display = "none";
-        }
+        function closePwModal() {
+            document.getElementById('pwModal').style.display = "none";
+        }
 
-        function handleModalKey(e) {
-            if (e.key === 'Enter') submitPwModal();
-            if (e.key === 'Escape') closePwModal();
-        }
+        function handleModalKey(e) {
+            if (e.key === 'Enter') submitPwModal();
+            if (e.key === 'Escape') closePwModal();
+        }
 
-        function submitPwModal() {
-            const inputPw = document.getElementById('pwInput').value;
+        function submitPwModal() {
+            const inputPw = document.getElementById('pwInput').value;
 
-            if (modalMode === 'login') {
-                if (inputPw === getPw()) {
-                    isEdit = true;
-                    closePwModal();
-                    updateUI();
-                } else {
-                    alert("비밀번호가 틀렸습니다.");
-                }
-            } else if (modalMode === 'change') {
-                const newPw = document.getElementById('pwNewInput').value;
-                if (inputPw === getPw()) {
-                    if (newPw && newPw.trim()) {
-                        localStorage.setItem('board_pw', newPw.trim());
-                        alert("비밀번호가 성공적으로 변경되었습니다!");
-                        closePwModal();
-                    } else {
-                        alert("새 비밀번호를 입력해주세요.");
-                    }
-                } else {
-                    alert("현재 비밀번호가 틀렸습니다.");
-                }
-            }
-        }
+            if (modalMode === 'login') {
+                if (inputPw === getPw()) {
+                    isEdit = true;
+                    closePwModal();
+                    updateUI();
+                } else {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else if (modalMode === 'change') {
+                const newPw = document.getElementById('pwNewInput').value;
+                if (inputPw === getPw()) {
+                    if (newPw && newPw.trim()) {
+                        localStorage.setItem('board_pw', newPw.trim());
+                        alert("비밀번호가 성공적으로 변경되었습니다!");
+                        closePwModal();
+                    } else {
+                        alert("새 비밀번호를 입력해주세요.");
+                    }
+                } else {
+                    alert("현재 비밀번호가 틀렸습니다.");
+                }
+            }
+        }
 
-        function toggleAuth() {
-            if (isEdit) {
-                isEdit = false;
-                updateUI();
-            } else {
-                openLoginModal();
-            }
-        }
+        function toggleAuth() {
+            if (isEdit) {
+                isEdit = false;
+                updateUI();
+            } else {
+                openLoginModal();
+            }
+        }
 
-        function updateUI() {
-            const badge = document.getElementById('modeBadge');
-            const authBtn = document.getElementById('authBtn');
-            const addBtn = document.getElementById('addBtn');
-            const addColBtn = document.getElementById('addColBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const table = document.getElementById('mainTable');
+        function updateUI() {
+            const badge = document.getElementById('modeBadge');
+            const authBtn = document.getElementById('authBtn');
+            const addBtn = document.getElementById('addBtn');
+            const addColBtn = document.getElementById('addColBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const table = document.getElementById('mainTable');
 
-            if (isEdit) {
-                badge.innerText = "✏️ 수정 모드";
-                badge.className = "badge badge-edit";
-                authBtn.innerText = "🔒 수정 잠그기";
-                addBtn.style.display = "inline-block";
-                addColBtn.style.display = "inline-block";
-                saveBtn.style.display = "inline-block";
-                table.classList.add('editable');
-            } else {
-                badge.innerText = "🔒 읽기 전용";
-                badge.className = "badge badge-view";
-                authBtn.innerText = "🔓 수정 권한 얻기";
-                addBtn.style.display = "none";
-                addColBtn.style.display = "none";
-                saveBtn.style.display = "none";
-                table.classList.remove('editable');
-            }
+            if (isEdit) {
+                badge.innerText = "✏️ 수정 모드";
+                badge.className = "badge badge-edit";
+                authBtn.innerText = "🔒 수정 잠그기";
+                addBtn.style.display = "inline-block";
+                addColBtn.style.display = "inline-block";
+                saveBtn.style.display = "inline-block";
+                table.classList.add('editable');
+            } else {
+                badge.innerText = "🔒 읽기 전용";
+                badge.className = "badge badge-view";
+                authBtn.innerText = "🔓 수정 권한 얻기";
+                addBtn.style.display = "none";
+                addColBtn.style.display = "none";
+                saveBtn.style.display = "none";
+                table.classList.remove('editable');
+            }
 
-            renderAll();
-        }
+            renderAll();
+        }
 
-        // 🛡️ 입력된 글자에 따라 직업 전용 색상(네온 효과 포함) 판별
-        function getJobClass(jobText) {
-            if (!jobText) return 'job-default';
-            const val = jobText.trim();
-            if (val.includes('나이트')) return 'job-knight';
-            if (val.includes('위자드')) return 'job-wizard';
-            if (val.includes('워리어')) return 'job-warrior';
-            if (val.includes('어쌔신')) return 'job-assassin';
-            if (val.includes('헌터')) return 'job-hunter';
-            
-            // 타이핑으로 이름을 바꾸거나 기존 '히든직업 1~5' 키워드가 들어가면 무조건 화려한 히든 색상 유지!
-            if (val.includes('히든직업 1') || val.includes('히든 1')) return 'job-hidden1';
-            if (val.includes('히든직업 2') || val.includes('히든 2')) return 'job-hidden2';
-            if (val.includes('히든직업 3') || val.includes('히든 3')) return 'job-hidden3';
-            if (val.includes('히든직업 4') || val.includes('히든 4')) return 'job-hidden4';
-            if (val.includes('히든직업 5') || val.includes('히든 5')) return 'job-hidden5';
-            
-            return 'job-default';
-        }
+        // 🛡️ 입력된 글자에 따라 직업 전용 색상(네온 효과 포함) 판별
+        function getJobClass(jobText) {
+            if (!jobText) return 'job-default';
+            const val = jobText.trim();
+            if (val.includes('나이트')) return 'job-knight';
+            if (val.includes('위자드')) return 'job-wizard';
+            if (val.includes('워리어')) return 'job-warrior';
+            if (val.includes('어쌔신')) return 'job-assassin';
+            if (val.includes('헌터')) return 'job-hunter';
+            
+            // 타이핑으로 이름을 바꾸거나 기존 '히든직업 1~5' 키워드가 들어가면 무조건 화려한 히든 색상 유지!
+            if (val.includes('히든직업 1') || val.includes('히든 1')) return 'job-hidden1';
+            if (val.includes('히든직업 2') || val.includes('히든 2')) return 'job-hidden2';
+            if (val.includes('히든직업 3') || val.includes('히든 3')) return 'job-hidden3';
+            if (val.includes('히든직업 4') || val.includes('히든 4')) return 'job-hidden4';
+            if (val.includes('히든직업 5') || val.includes('히든 5')) return 'job-hidden5';
+            
+            return 'job-default';
+        }
 
-        // 타이핑할 때마다 실시간으로 박스 색상이 변하도록 처리
-        function handleJobInput(inputElem) {
-            const tdBox = inputElem.closest('.td-box');
-            if (tdBox) {
-                tdBox.className = 'td-box job-tag ' + getJobClass(inputElem.value);
-            }
-        }
+        // 타이핑할 때마다 실시간으로 박스 색상이 변하도록 처리
+        function handleJobInput(inputElem) {
+            const tdBox = inputElem.closest('.td-box');
+            if (tdBox) {
+                tdBox.className = 'td-box job-tag ' + getJobClass(inputElem.value);
+            }
+        }
 
-        function syncInputsToData() {
-            const cols = getCurrentColumns();
-            document.querySelectorAll('#headerRow input').forEach(inp => {
-                const colId = inp.dataset.colid;
-                const colObj = cols.find(c => c.id === colId);
-                if (colObj) colObj.title = inp.value;
-            });
+        function syncInputsToData() {
+            const cols = getCurrentColumns();
+            document.querySelectorAll('#headerRow input').forEach(inp => {
+                const colId = inp.dataset.colid;
+                const colObj = cols.find(c => c.id === colId);
+                if (colObj) colObj.title = inp.value;
+            });
 
-            const rows = document.querySelectorAll('#tableBody tr');
-            rows.forEach((r, idx) => {
-                if (!membersData[idx]) return;
-                r.querySelectorAll('input[type="text"]').forEach(inp => {
-                    const colId = inp.dataset.colid;
-                    if (colId) membersData[idx][colId] = inp.value;
-                });
-            });
-        }
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach((r, idx) => {
+                if (!membersData[idx]) return;
+                r.querySelectorAll('input[type="text"]').forEach(inp => {
+                    const colId = inp.dataset.colid;
+                    if (colId) membersData[idx][colId] = inp.value;
+                });
+            });
+        }
 
-        function addColumn() {
-            if (!isEdit) return;
-            syncInputsToData();
-            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
-            if (!title) return;
+        function addColumn() {
+            if (!isEdit) return;
+            syncInputsToData();
+            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
+            if (!title) return;
 
-            const cols = getCurrentColumns();
-            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
-            cols.push({ id: newId, title: title.trim(), width: "90px" });
+            const cols = getCurrentColumns();
+            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
+            cols.push({ id: newId, title: title.trim(), width: "90px" });
 
-            membersData.forEach(m => {
-                if (m[newId] === undefined) m[newId] = "";
-            });
+            membersData.forEach(m => {
+                if (m[newId] === undefined) m[newId] = "";
+            });
 
-            renderAll();
-        }
+            renderAll();
+        }
 
-        function delColumn(colId) {
-            if (!isEdit) return;
-            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
-                syncInputsToData();
-                if (activeTab === 'spec') {
-                    specColumns = specColumns.filter(c => c.id !== colId);
-                } else {
-                    itemColumns = itemColumns.filter(c => c.id !== colId);
-                }
-                renderAll();
-            }
-        }
+        function delColumn(colId) {
+            if (!isEdit) return;
+            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
+                syncInputsToData();
+                if (activeTab === 'spec') {
+                    specColumns = specColumns.filter(c => c.id !== colId);
+                } else {
+                    itemColumns = itemColumns.filter(c => c.id !== colId);
+                }
+                renderAll();
+            }
+        }
 
-        function moveColumn(colIdx, dir) {
-            if (!isEdit) return;
-            syncInputsToData();
+        function moveColumn(colIdx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
 
-            const cols = getCurrentColumns();
-            const targetIdx = colIdx + dir;
-            if (targetIdx < 0 || targetIdx >= cols.length) return;
+            const cols = getCurrentColumns();
+            const targetIdx = colIdx + dir;
+            if (targetIdx < 0 || targetIdx >= cols.length) return;
 
-            const temp = cols[colIdx];
-            cols[colIdx] = cols[targetIdx];
-            cols[targetIdx] = temp;
+            const temp = cols[colIdx];
+            cols[colIdx] = cols[targetIdx];
+            cols[targetIdx] = temp;
 
-            renderAll();
-        }
+            renderAll();
+        }
 
-        function moveRow(idx, dir) {
-            if (!isEdit) return;
-            syncInputsToData();
+        function moveRow(idx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
 
-            const targetIdx = idx + dir;
-            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
 
-            const temp = membersData[idx];
-            membersData[idx] = membersData[targetIdx];
-            membersData[targetIdx] = temp;
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
 
-            renderBody();
-        }
+            renderBody();
+        }
 
-        function renderAll() {
-            renderHeader();
-            renderBody();
-        }
+        function renderAll() {
+            renderHeader();
+            renderBody();
+        }
 
-        function renderHeader() {
-            const tr = document.getElementById('headerRow');
-            tr.innerHTML = `<th style="width: 55px;"><div class="th-box">프로필</div></th>`;
+        function renderHeader() {
+            const tr = document.getElementById('headerRow');
+            tr.innerHTML = `<th style="width: 55px;"><div class="th-box">프로필</div></th>`;
 
-            const cols = getCurrentColumns();
-            cols.forEach((col, idx) => {
-                const th = document.createElement('th');
-                th.style.width = col.width || "90px";
-                th.innerHTML = `
-                    <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
-                        <div class="col-btn-group">
-                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
-                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
-                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
-                        </div>
-                    </div>
-                `;
-                tr.appendChild(th);
-            });
+            const cols = getCurrentColumns();
+            cols.forEach((col, idx) => {
+                const th = document.createElement('th');
+                th.style.width = col.width || "90px";
+                th.innerHTML = `
+                    <div class="th-box">
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                        <div class="col-btn-group">
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+                tr.appendChild(th);
+            });
 
-            if (isEdit) {
-                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
-            }
-        }
+            if (isEdit) {
+                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
+            }
+        }
 
-        function renderBody() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        function renderBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
 
-            const cols = getCurrentColumns();
+            const cols = getCurrentColumns();
 
-            membersData.forEach((m, idx) => {
-                const tr = document.createElement('tr');
-                let html = `
-                    <td>
-                        <div class="td-box">
-                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${idx})` : ''}">
-                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
-                            </div>
-                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
-                        </div>
-                    </td>
-                `;
+            membersData.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                let html = `
+                    <td>
+                        <div class="td-box">
+                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${idx})` : ''}">
+                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
+                            </div>
+                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
+                        </div>
+                    </td>
+                `;
 
-                cols.forEach(col => {
-                    const val = m[col.id] || "";
-                    const isName = (col.id === 'c1');
-                    const isJob = (col.id === 'c2');
-                    
-                    if (isJob) {
-                        html += `
-                            <td>
-                                <div class="td-box job-tag ${getJobClass(val)}">
-                                    <input type="text" class="job-input" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} oninput="handleJobInput(this)">
-                                </div>
-                            </td>
-                        `;
-                    } else {
-                        html += `
-                            <td>
-                                <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
-                                </div>
-                            </td>
-                        `;
-                    }
-                });
+                cols.forEach(col => {
+                    const val = m[col.id] || "";
+                    const isName = (col.id === 'c1');
+                    const isJob = (col.id === 'c2');
+                    
+                    if (isJob) {
+                        html += `
+                            <td>
+                                <div class="td-box job-tag ${getJobClass(val)}">
+                                    <input type="text" class="job-input" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} oninput="handleJobInput(this)">
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `
+                            <td>
+                                <div class="td-box">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                </div>
+                            </td>
+                        `;
+                    }
+                });
 
-                if (isEdit) {
-                    html += `
-                        <td>
-                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
-                                <div class="btn-action-group">
-                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
-                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
-                                    <button class="btn-del" onclick="delRow(this)">삭제</button>
-                                </div>
-                            </div>
-                        </td>
-                    `;
-                }
+                if (isEdit) {
+                    html += `
+                        <td>
+                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
+                                <div class="btn-action-group">
+                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
+                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
+                                    <button class="btn-del" onclick="delRow(this)">삭제</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                }
 
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
-            });
-        }
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+        }
 
-        function triggerFile(idx) {
-            if (isEdit) document.getElementById(`f-${idx}`).click();
-        }
+        function triggerFile(idx) {
+            if (isEdit) document.getElementById(`f-${idx}`).click();
+        }
 
-        function uploadImg(e, idx) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const img = new Image();
-                    img.src = evt.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = 100;
-                        canvas.height = 100;
-                        ctx.drawImage(img, 0, 0, 100, 100);
-                        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        
-                        membersData[idx].img = resizedDataUrl;
-                        renderBody();
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+        function uploadImg(e, idx) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.src = evt.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 100;
+                        canvas.height = 100;
+                        ctx.drawImage(img, 0, 0, 100, 100);
+                        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        membersData[idx].img = resizedDataUrl;
+                        renderBody();
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
 
-        function addRow() {
-            if (!isEdit) return;
-            syncInputsToData();
-            const newMember = { img: "", c1: "새 팀원", c2: "나이트" };
-            specColumns.forEach(c => { if(!newMember[c.id]) newMember[c.id] = "0"; });
-            itemColumns.forEach(c => { if(!newMember[c.id]) newMember[c.id] = "0"; });
-            membersData.push(newMember);
-            renderBody();
-        }
-
-        function delRow(btn) {
-            if (confirm("삭제하시겠습니까?")) {
-                syncInputsToData();
-                const tr = btn.closest('tr');
-                const idx = Array.from(tr.parentNode.children).indexOf(tr);
-                membersData.splice(idx, 1);
-                renderBody();
-            }
-        }
-
-        function saveData() {
-            if (!isEdit) return;
-            syncInputsToData();
-
-            if (window.dbSet && window.dbRef) {
-                window.dbSet(window.dbRef(window.db, 'dashboard_v3'), {
-                    specColumns: specColumns,
-                    itemColumns: itemColumns,
-                    members: membersData
-                }).then(() => {
-                    alert("두 페이지의 모든 수정 내용이 성공적으로 저장되었습니다!");
-                }).catch((err) => {
-                    alert("저장 실패: " + err.message);
-                });
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            updateUI();
-
-            const timer = setInterval(() => {
-                if (window.dbOnValue && window.dbRef && window.db) {
-                    clearInterval(timer);
-                    window.dbOnValue(window.dbRef(window.db, 'dashboard_v3'), (snapshot) => {
-                        const val = snapshot.val();
-                        if (val) {
-                            if (val.specColumns) specColumns = val.specColumns;
-                            if (val.itemColumns) itemColumns = val.itemColumns;
-                            if (val.members) membersData = val.members;
-                            renderAll();
-                        }
-                    });
-                }
-            }, 100);
-        });
-    </script>
-</body>
-</html>
+        function addRow() {
+            if (!isEdit) return;
+            syncInput
