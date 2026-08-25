@@ -215,28 +215,47 @@
             outline: none;
         }
 
-        /* 직업별 배지 스타일 */
+        /* 직업 선택 드롭다운 스타일 */
+        .job-select {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+            text-align-last: center;
+            font-weight: bold;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+
+        .job-select option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        /* 직업별 색상 스타일 */
         .job-tag {
             border-radius: 4px;
             font-weight: bold;
         }
         .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
-        .job-knight input { color: #60a5fa !important; font-weight: bold; }
+        .job-knight .job-select { color: #60a5fa !important; }
 
         .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
-        .job-wizard input { color: #c084fc !important; font-weight: bold; }
+        .job-wizard .job-select { color: #c084fc !important; }
 
         .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
-        .job-warrior input { color: #f87171 !important; font-weight: bold; }
+        .job-warrior .job-select { color: #f87171 !important; }
 
         .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
-        .job-assassin input { color: #fb923c !important; font-weight: bold; }
+        .job-assassin .job-select { color: #fb923c !important; }
 
         .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
-        .job-hunter input { color: #34d399 !important; font-weight: bold; }
+        .job-hunter .job-select { color: #34d399 !important; }
 
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
-        .job-default input { color: #cbd5e1 !important; }
+        .job-default .job-select { color: #cbd5e1 !important; }
 
         .profile-wrap {
             width: 42px;
@@ -326,9 +345,11 @@
         let isEdit = false;
         const DEFAULT_PW = "1234";
 
+        const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "미정"];
+
         let columns = [
             { id: "c1", title: "팀원명", width: "100px" },
-            { id: "c2", title: "직업", width: "90px" },
+            { id: "c2", title: "직업", width: "100px" },
             { id: "c3", title: "무기강화", width: "75px" },
             { id: "c4", title: "방어구강화", width: "75px" },
             { id: "c5", title: "체력", width: "70px" },
@@ -428,10 +449,10 @@
             return 'job-default';
         }
 
-        function handleJobInput(inp) {
-            const tdBox = inp.closest('.td-box');
+        function handleJobChange(selectElem) {
+            const tdBox = selectElem.closest('.td-box');
             if (tdBox) {
-                tdBox.className = 'td-box job-tag ' + getJobClass(inp.value);
+                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
             }
         }
 
@@ -445,7 +466,7 @@
             const rows = document.querySelectorAll('#tableBody tr');
             rows.forEach((r, idx) => {
                 if (!membersData[idx]) return;
-                r.querySelectorAll('input[type="text"]').forEach(inp => {
+                r.querySelectorAll('input[type="text"], select').forEach(inp => {
                     const colId = inp.dataset.colid;
                     if (colId) membersData[idx][colId] = inp.value;
                 });
@@ -557,18 +578,36 @@
                     const isName = (col.id === 'c1');
                     const isJob = (col.id === 'c2');
                     
-                    let extraClass = "";
                     if (isJob) {
-                        extraClass = `job-tag ${getJobClass(val)}`;
-                    }
+                        let optionsHtml = '';
+                        let hasMatched = false;
+                        JOB_LIST.forEach(j => {
+                            const selected = (val === j) ? 'selected' : '';
+                            if (selected) hasMatched = true;
+                            optionsHtml += `<option value="${j}" ${selected}>${j}</option>`;
+                        });
+                        if (!hasMatched && val) {
+                            optionsHtml = `<option value="${val}" selected>${val}</option>` + optionsHtml;
+                        }
 
-                    html += `
-                        <td>
-                            <div class="td-box ${extraClass}">
-                                <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}" ${isJob ? 'oninput="handleJobInput(this)"' : ''}>
-                            </div>
-                        </td>
-                    `;
+                        html += `
+                            <td>
+                                <div class="td-box job-tag ${getJobClass(val)}">
+                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
+                                        ${optionsHtml}
+                                    </select>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `
+                            <td>
+                                <div class="td-box">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                </div>
+                            </td>
+                        `;
+                    }
                 });
 
                 if (isEdit) {
@@ -621,7 +660,7 @@
             if (!isEdit) return;
             syncInputsToData();
             const newMember = { img: "" };
-            columns.forEach(c => newMember[c.id] = (c.id === 'c1' ? '새 팀원' : '0'));
+            columns.forEach(c => newMember[c.id] = (c.id === 'c1' ? '새 팀원' : (c.id === 'c2' ? '나이트' : '0')));
             membersData.push(newMember);
             renderBody();
         }
