@@ -91,6 +91,7 @@
         .btn-group {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -108,6 +109,7 @@
         .btn-add { background-color: var(--success); }
         .btn-col { background-color: #8b5cf6; }
         .btn-pw { background-color: #6366f1; }
+        .btn-tab { background-color: #0ea5e9; }
 
         .tab-bar {
             width: 100%;
@@ -116,6 +118,13 @@
             gap: 8px;
             margin-bottom: 16px;
             flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .tab-btn-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
         }
 
         .tab-btn {
@@ -135,6 +144,24 @@
             color: var(--text-gold);
             border-bottom: 2px solid var(--text-gold);
         }
+
+        .tab-del-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .editable-tabs .tab-del-btn { display: flex; }
 
         .board-container {
             width: 100%;
@@ -213,7 +240,7 @@
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 62px;
+            height: 76px; /* 프로필 크기 확장에 맞춰 행 높이 상향 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -261,42 +288,88 @@
         .job-hunter .job-select { color: #34d399 !important; }
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
 
+        /* 프로필 사진 영역 큼지막하게 확장 */
         .profile-wrap {
-            width: 48px;
-            height: 48px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             background: #1e293b;
-            border: 1px dashed var(--box-border);
+            border: 2px dashed var(--box-border);
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .profile-wrap:hover { border-color: var(--text-gold); }
         .profile-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-wrap span { font-size: 0.65rem; color: #64748b; }
+        .profile-wrap span { font-size: 0.75rem; color: #94a3b8; font-weight: bold; }
         .file-input { display: none; }
 
-        .btn-action-group { display: flex; gap: 2px; width: 100%; height: 100%; }
-        .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 0 6px; }
-        .btn-del { background: var(--danger); color: white; border: none; flex: 1; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .btn-action-group { display: flex; gap: 2px; width: 100%; height: 100%; align-items: center; justify-content: center; }
+        .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 4px 8px; }
+        .btn-del { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 4px 8px; }
 
-        .custom-tab-content {
-            padding: 10px;
-            text-align: left;
-        }
-        .custom-textarea {
-            width: 100%;
-            height: 450px;
+        /* 맵 탭 및 공용 이미지 보드 스타일 */
+        .section-box {
             background: var(--box-bg);
-            color: var(--text-light);
             border: 1px solid var(--box-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .img-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .img-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .img-card-preview {
+            width: 100%;
+            height: 200px;
+            background: #0f172a;
+            border: 1px dashed var(--box-border);
             border-radius: 6px;
-            padding: 15px;
-            font-size: 1rem;
-            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+        .img-card-preview img { width: 100%; height: 100%; object-fit: contain; }
+        .img-card-preview span { color: #94a3b8; font-size: 0.9rem; font-weight: bold; }
+        .img-card input[type="text"] {
+            width: 100%;
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            color: var(--text-light);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .img-card textarea {
+            width: 100%;
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            color: var(--text-light);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
             resize: vertical;
+            height: 70px;
             outline: none;
         }
 
@@ -338,33 +411,42 @@
         </div>
         <div class="btn-group">
             <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한 얻기</button>
-            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 항목(열) 추가</button>
+            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열 추가</button>
             <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
+            <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭 추가</button>
             <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
             <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번 변경</button>
         </div>
     </div>
 
-    <div class="tab-bar">
-        <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 1. 스펙 및 장비강화 현황</button>
-        <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 2. 아이템 보유 현황</button>
-        <button id="tabMap" class="tab-btn" onclick="switchTab('map')">🗺️ 3. 맵 탭</button>
-        <button id="tabHidden" class="tab-btn" onclick="switchTab('hidden')">🕵️ 4. 히든추리 탭</button>
+    <!-- 탭 바 -->
+    <div id="tabBar" class="tab-bar">
+        <div class="tab-btn-wrap">
+            <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 스펙 현황</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 아이템 현황</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabMap" class="tab-btn" onclick="switchTab('map')">🗺️ 맵 탭</button>
+        </div>
+        <div class="tab-btn-wrap">
+            <button id="tabHidden" class="tab-btn" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button>
+        </div>
     </div>
 
-    <div class="board-container" id="boardContainer">
-        <!-- 동적 렌더링 영역 (테이블 또는 메모장 영역) -->
-    </div>
+    <div class="board-container" id="boardContainer"></div>
 
-    <!-- 비밀번호 입력 모달 -->
+    <!-- 모달: 비밀번호 및 탭 추가 -->
     <div id="pwModal" class="modal-overlay">
         <div class="modal-content">
             <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
             <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
             <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
+            <input type="text" id="customTabInput" class="modal-input" placeholder="추가할 탭 이름" style="display:none;" onkeyup="handleModalKey(event)">
             <div class="modal-btn-group">
-                <button class="modal-btn modal-btn-submit" onclick="submitPwModal()">확인</button>
-                <button class="modal-btn modal-btn-cancel" onclick="closePwModal()">취소</button>
+                <button class="modal-btn modal-btn-submit" onclick="submitModal()">확인</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
             </div>
         </div>
     </div>
@@ -415,34 +497,43 @@
             { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" }
         ];
 
-        // 추가 탭 데이터 (맵 및 히든추리 텍스트 메모/정보)
-        let mapContent = "여기에 맵 관련 정보, 위치, 사냥터 정보 등을 입력하세요.";
-        let hiddenContent = "여기에 히든직업 추리 내용, 단서, 조건 등을 입력하세요.";
+        let mapImages = [
+            { id: "m1", title: "메인 사냥터 1", img: "", memo: "위치 및 주요 드랍 아이템 메모" },
+            { id: "m2", title: "보스 레이드 지역", img: "", memo: "출현 시간 및 패턴 정리" }
+        ];
+
+        let hiddenJobsData = [
+            { id: "h1", name: "히든직업 1", img: "", memo: "전직 조건 및 단서 1" },
+            { id: "h2", name: "히든직업 2", img: "", memo: "전직 조건 및 단서 2" },
+            { id: "h3", name: "히든직업 3", img: "", memo: "전직 조건 및 단서 3" },
+            { id: "h4", name: "히든직업 4", img: "", memo: "전직 조건 및 단서 4" },
+            { id: "h5", name: "히든직업 5", img: "", memo: "전직 조건 및 단서 5" }
+        ];
+
+        let customTabs = [];
 
         function getCurrentColumns() {
             return activeTab === 'spec' ? specColumns : itemColumns;
-        }
-
-        function switchTab(tab) {
-            syncInputsToData();
-            activeTab = tab;
-            document.getElementById('tabSpec').className = 'tab-btn ' + (tab === 'spec' ? 'active' : '');
-            document.getElementById('tabItem').className = 'tab-btn ' + (tab === 'item' ? 'active' : '');
-            document.getElementById('tabMap').className = 'tab-btn ' + (tab === 'map' ? 'active' : '');
-            document.getElementById('tabHidden').className = 'tab-btn ' + (tab === 'hidden' ? 'active' : '');
-            renderAll();
         }
 
         function getPw() {
             return localStorage.getItem('board_pw') || DEFAULT_PW;
         }
 
+        function switchTab(tab) {
+            syncInputsToData();
+            activeTab = tab;
+            renderAll();
+        }
+
         function openLoginModal() {
             modalMode = 'login';
             document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
+            document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
             document.getElementById('pwInput').placeholder = "비밀번호 입력";
             document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('customTabInput').style.display = "none";
             document.getElementById('pwModal').style.display = "flex";
             document.getElementById('pwInput').focus();
         }
@@ -450,46 +541,70 @@
         function openPwChangeModal() {
             modalMode = 'change';
             document.getElementById('modalTitle').innerText = "🔑 마스터 비밀번호 변경";
+            document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
             document.getElementById('pwInput').placeholder = "현재 비밀번호";
-            document.getElementById('pwNewInput').value = "";
             document.getElementById('pwNewInput').style.display = "block";
+            document.getElementById('pwNewInput').value = "";
+            document.getElementById('customTabInput').style.display = "none";
             document.getElementById('pwModal').style.display = "flex";
             document.getElementById('pwInput').focus();
         }
 
-        function closePwModal() {
+        function openAddTabModal() {
+            modalMode = 'addTab';
+            document.getElementById('modalTitle').innerText = "➕ 새 탭 추가";
+            document.getElementById('pwInput').style.display = "none";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('customTabInput').style.display = "block";
+            document.getElementById('customTabInput').value = "";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('customTabInput').focus();
+        }
+
+        function closeModal() {
             document.getElementById('pwModal').style.display = "none";
         }
 
         function handleModalKey(e) {
-            if (e.key === 'Enter') submitPwModal();
-            if (e.key === 'Escape') closePwModal();
+            if (e.key === 'Enter') submitModal();
+            if (e.key === 'Escape') closeModal();
         }
 
-        function submitPwModal() {
-            const inputPw = document.getElementById('pwInput').value;
-
+        function submitModal() {
             if (modalMode === 'login') {
+                const inputPw = document.getElementById('pwInput').value;
                 if (inputPw === getPw()) {
                     isEdit = true;
-                    closePwModal();
+                    closeModal();
                     updateUI();
                 } else {
                     alert("비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'change') {
+                const inputPw = document.getElementById('pwInput').value;
                 const newPw = document.getElementById('pwNewInput').value;
                 if (inputPw === getPw()) {
                     if (newPw && newPw.trim()) {
                         localStorage.setItem('board_pw', newPw.trim());
                         alert("비밀번호가 성공적으로 변경되었습니다!");
-                        closePwModal();
+                        closeModal();
                     } else {
                         alert("새 비밀번호를 입력해주세요.");
                     }
                 } else {
                     alert("현재 비밀번호가 틀렸습니다.");
+                }
+            } else if (modalMode === 'addTab') {
+                const tabName = document.getElementById('customTabInput').value;
+                if (tabName && tabName.trim()) {
+                    const newId = 'custom_' + Date.now();
+                    customTabs.push({ id: newId, name: tabName.trim(), content: "새로 만든 탭의 내용을 입력하세요." });
+                    activeTab = newId;
+                    closeModal();
+                    renderAll();
+                } else {
+                    alert("탭 이름을 입력해주세요.");
                 }
             }
         }
@@ -508,6 +623,7 @@
             const authBtn = document.getElementById('authBtn');
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
+            const addTabBtn = document.getElementById('addTabBtn');
             const saveBtn = document.getElementById('saveBtn');
             const pwChangeBtn = document.getElementById('pwChangeBtn');
 
@@ -517,6 +633,7 @@
                 authBtn.innerText = "🔒 수정 잠그기";
                 saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "inline-block";
+                addTabBtn.style.display = "inline-block";
                 if (activeTab === 'spec' || activeTab === 'item') {
                     addBtn.style.display = "inline-block";
                     addColBtn.style.display = "inline-block";
@@ -530,29 +647,13 @@
                 authBtn.innerText = "🔓 수정 권한 얻기";
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
+                addTabBtn.style.display = "none";
                 saveBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
             }
 
+            renderTabBar();
             renderAll();
-        }
-
-        function getJobClass(jobText) {
-            if (!jobText) return 'job-default';
-            const val = jobText.trim();
-            if (val.includes('나이트')) return 'job-knight';
-            if (val.includes('위자드')) return 'job-wizard';
-            if (val.includes('워리어')) return 'job-warrior';
-            if (val.includes('어쌔신')) return 'job-assassin';
-            if (val.includes('헌터')) return 'job-hunter';
-            return 'job-default';
-        }
-
-        function handleJobChange(selectElem) {
-            const tdBox = selectElem.closest('.td-box');
-            if (tdBox) {
-                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
-            }
         }
 
         function syncInputsToData() {
@@ -574,68 +675,61 @@
                     });
                 });
             } else if (activeTab === 'map') {
-                const txtArea = document.getElementById('mapTextArea');
-                if (txtArea) mapContent = txtArea.value;
+                mapImages.forEach((item, idx) => {
+                    const titleElem = document.getElementById(`map_title_${idx}`);
+                    const memoElem = document.getElementById(`map_memo_${idx}`);
+                    if (titleElem) item.title = titleElem.value;
+                    if (memoElem) item.memo = memoElem.value;
+                });
             } else if (activeTab === 'hidden') {
-                const txtArea = document.getElementById('hiddenTextArea');
-                if (txtArea) hiddenContent = txtArea.value;
+                hiddenJobsData.forEach((job, idx) => {
+                    const nameElem = document.getElementById(`hidden_name_${idx}`);
+                    const memoElem = document.getElementById(`hidden_memo_${idx}`);
+                    if (nameElem) job.name = nameElem.value;
+                    if (memoElem) job.memo = memoElem.value;
+                });
+            } else {
+                const txtArea = document.getElementById('customTextArea');
+                if (txtArea) {
+                    const found = customTabs.find(t => t.id === activeTab);
+                    if (found) found.content = txtArea.value;
+                }
             }
         }
 
-        function addColumn() {
-            if (!isEdit || (activeTab !== 'spec' && activeTab !== 'item')) return;
-            syncInputsToData();
-            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
-            if (!title) return;
+        function renderTabBar() {
+            const tabBar = document.getElementById('tabBar');
+            let html = `
+                <div class="tab-btn-wrap"><button id="tabSpec" class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabItem" class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabMap" class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵 탭</button></div>
+                <div class="tab-btn-wrap"><button id="tabHidden" class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button></div>
+            `;
 
-            const cols = getCurrentColumns();
-            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
-            cols.push({ id: newId, title: title.trim(), width: "90px" });
-
-            membersData.forEach(m => {
-                if (m[newId] === undefined) m[newId] = "";
+            customTabs.forEach(t => {
+                html += `
+                    <div class="tab-btn-wrap ${isEdit ? 'editable-tabs' : ''}">
+                        <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
+                        <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>
+                    </div>
+                `;
             });
 
-            renderAll();
+            tabBar.innerHTML = html;
         }
 
-        function delColumn(colId) {
+        function deleteCustomTab(tabId) {
             if (!isEdit) return;
-            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
-                syncInputsToData();
-                if (activeTab === 'spec') {
-                    specColumns = specColumns.filter(c => c.id !== colId);
-                } else {
-                    itemColumns = itemColumns.filter(c => c.id !== colId);
-                }
+            if (confirm("이 탭을 삭제하시겠습니까?")) {
+                customTabs = customTabs.filter(t => t.id !== tabId);
+                if (activeTab === tabId) activeTab = 'spec';
+                renderTabBar();
                 renderAll();
             }
         }
 
-        function moveColumn(colIdx, dir) {
-            if (!isEdit) return;
-            syncInputsToData();
-            const cols = getCurrentColumns();
-            const targetIdx = colIdx + dir;
-            if (targetIdx < 0 || targetIdx >= cols.length) return;
-            const temp = cols[colIdx];
-            cols[colIdx] = cols[targetIdx];
-            cols[targetIdx] = temp;
-            renderAll();
-        }
-
-        function moveRow(idx, dir) {
-            if (!isEdit) return;
-            syncInputsToData();
-            const targetIdx = idx + dir;
-            if (targetIdx < 0 || targetIdx >= membersData.length) return;
-            const temp = membersData[idx];
-            membersData[idx] = membersData[targetIdx];
-            membersData[targetIdx] = temp;
-            renderBody();
-        }
-
         function renderAll() {
+            renderTabBar();
             const container = document.getElementById('boardContainer');
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
@@ -653,36 +747,130 @@
 
                 container.innerHTML = `
                     <table id="mainTable">
-                        <thead>
-                            <tr id="headerRow"></tr>
-                        </thead>
+                        <thead><tr id="headerRow"></tr></thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 `;
                 renderHeader();
                 renderBody();
+            } else if (activeTab === 'map') {
+                addBtn.style.display = "none";
+                addColBtn.style.display = "none";
+                container.classList.remove('editable');
+                renderMapTab(container);
+            } else if (activeTab === 'hidden') {
+                addBtn.style.display = "none";
+                addColBtn.style.display = "none";
+                container.classList.remove('editable');
+                renderHiddenTab(container);
             } else {
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
                 container.classList.remove('editable');
+                renderCustomTab(container);
+            }
+        }
 
-                let contentVal = (activeTab === 'map') ? mapContent : hiddenContent;
-                let areaId = (activeTab === 'map') ? 'mapTextArea' : 'hiddenTextArea';
-                let titleText = (activeTab === 'map') ? '🗺️ 맵 정보 및 위치 메모' : '🕵️ 히든직업 추리 및 단서 노트';
-
-                container.innerHTML = `
-                    <div class="custom-tab-content">
-                        <h3 style="color:var(--text-gold); margin-bottom: 12px;">${titleText}</h3>
-                        <textarea id="${areaId}" class="custom-textarea" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
+        function renderMapTab(container) {
+            let cardsHtml = '';
+            mapImages.forEach((item, idx) => {
+                cardsHtml += `
+                    <div class="img-card">
+                        <input type="text" id="map_title_${idx}" value="${item.title}" ${!isEdit ? 'readonly' : ''} placeholder="맵/지역 이름">
+                        <div class="img-card-preview" onclick="${isEdit ? `triggerMapFile(${idx})` : ''}">
+                            ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 스크린샷/사진 업로드' : '사진 없음'}</span>`}
+                        </div>
+                        <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
+                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보, 주요 드랍 및 메모">${item.memo}</textarea>
+                        ${isEdit ? `<button class="btn btn-del" style="padding:4px; font-size:0.8rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                     </div>
                 `;
-            }
+            });
+
+            container.innerHTML = `
+                <div class="section-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 맵 및 사냥터 정보 관리</h3>
+                        ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.85rem;" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
+                    </div>
+                    <div class="img-upload-grid">${cardsHtml}</div>
+                </div>
+            `;
+        }
+
+        function renderHiddenTab(container) {
+            let cardsHtml = '';
+            hiddenJobsData.forEach((job, idx) => {
+                cardsHtml += `
+                    <div class="img-card">
+                        <input type="text" id="hidden_name_${idx}" value="${job.name}" ${!isEdit ? 'readonly' : ''} placeholder="히든직업 이름">
+                        <div class="img-card-preview" onclick="${isEdit ? `triggerHiddenFile(${idx})` : ''}">
+                            ${job.img ? `<img src="${job.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+                        </div>
+                        <input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${idx})">
+                        <textarea id="hidden_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="전직 조건, 추리 내용, 단서 기록">${job.memo}</textarea>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="section-box">
+                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">🕵️ 5대 히든직업 추리 및 단서 노트</h3>
+                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:12px;">각 히든직업별로 전직 단서나 스크린샷 사진을 큼지막하게 등록하여 팀원들과 공유하세요.</p>
+                    <div class="img-upload-grid">${cardsHtml}</div>
+                </div>
+            `;
+        }
+
+        function renderCustomTab(container) {
+            const found = customTabs.find(t => t.id === activeTab);
+            const contentVal = found ? found.content : "";
+            container.innerHTML = `
+                <div class="section-box">
+                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">📌 ${found ? found.name : '사용자 탭'}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:15px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
+                </div>
+            `;
+        }
+
+        function triggerMapFile(idx) { document.getElementById(`map_file_${idx}`).click(); }
+        function uploadMapImg(e, idx) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                mapImages[idx].img = evt.target.result;
+                renderAll();
+            };
+            reader.readAsDataURL(file);
+        }
+        function addMapCard() {
+            syncInputsToData();
+            mapImages.push({ id: "m_" + Date.now(), title: "새로운 맵/지역", img: "", memo: "" });
+            renderAll();
+        }
+        function delMapCard(idx) {
+            syncInputsToData();
+            mapImages.splice(idx, 1);
+            renderAll();
+        }
+
+        function triggerHiddenFile(idx) { document.getElementById(`hidden_file_${idx}`).click(); }
+        function uploadHiddenImg(e, idx) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                hiddenJobsData[idx].img = evt.target.result;
+                renderAll();
+            };
+            reader.readAsDataURL(file);
         }
 
         function renderHeader() {
             const tr = document.getElementById('headerRow');
             if (!tr) return;
-            tr.innerHTML = `<th style="width: 55px;"><div class="th-box">프로필</div></th>`;
+            tr.innerHTML = `<th style="width: 75px;"><div class="th-box">프로필</div></th>`;
 
             const cols = getCurrentColumns();
             cols.forEach((col, idx) => {
@@ -781,10 +969,7 @@
             });
         }
 
-        function triggerFile(idx) {
-            document.getElementById(`f-${idx}`).click();
-        }
-
+        function triggerFile(idx) { document.getElementById(`f-${idx}`).click(); }
         function uploadImg(e, idx) {
             const file = e.target.files[0];
             if (!file) return;
@@ -813,15 +998,86 @@
             }
         }
 
-        // 실시간 Firebase 연동 저장
+        function addColumn() {
+            if (!isEdit || (activeTab !== 'spec' && activeTab !== 'item')) return;
+            syncInputsToData();
+            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
+            if (!title) return;
+
+            const cols = getCurrentColumns();
+            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
+            cols.push({ id: newId, title: title.trim(), width: "90px" });
+
+            membersData.forEach(m => {
+                if (m[newId] === undefined) m[newId] = "";
+            });
+
+            renderAll();
+        }
+
+        function delColumn(colId) {
+            if (!isEdit) return;
+            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
+                syncInputsToData();
+                if (activeTab === 'spec') {
+                    specColumns = specColumns.filter(c => c.id !== colId);
+                } else {
+                    itemColumns = itemColumns.filter(c => c.id !== colId);
+                }
+                renderAll();
+            }
+        }
+
+        function moveColumn(colIdx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+            const cols = getCurrentColumns();
+            const targetIdx = colIdx + dir;
+            if (targetIdx < 0 || targetIdx >= cols.length) return;
+            const temp = cols[colIdx];
+            cols[colIdx] = cols[targetIdx];
+            cols[targetIdx] = temp;
+            renderAll();
+        }
+
+        function moveRow(idx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
+            renderBody();
+        }
+
+        function getJobClass(jobText) {
+            if (!jobText) return 'job-default';
+            const val = jobText.trim();
+            if (val.includes('나이트')) return 'job-knight';
+            if (val.includes('위자드')) return 'job-wizard';
+            if (val.includes('워리어')) return 'job-warrior';
+            if (val.includes('어쌔신')) return 'job-assassin';
+            if (val.includes('헌터')) return 'job-hunter';
+            return 'job-default';
+        }
+
+        function handleJobChange(selectElem) {
+            const tdBox = selectElem.closest('.td-box');
+            if (tdBox) {
+                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
+            }
+        }
+
         function saveData() {
             syncInputsToData();
             const dataToSave = {
                 specColumns: specColumns,
                 itemColumns: itemColumns,
                 membersData: membersData,
-                mapContent: mapContent,
-                hiddenContent: hiddenContent
+                mapImages: mapImages,
+                hiddenJobsData: hiddenJobsData,
+                customTabs: customTabs
             };
 
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
@@ -834,7 +1090,6 @@
                 });
         }
 
-        // Firebase 실시간 데이터 수신 리스너
         window.addEventListener('DOMContentLoaded', () => {
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
             window.dbOnValue(dbRefInstance, (snapshot) => {
@@ -843,8 +1098,9 @@
                     if (serverData.specColumns) specColumns = serverData.specColumns;
                     if (serverData.itemColumns) itemColumns = serverData.itemColumns;
                     if (serverData.membersData) membersData = serverData.membersData;
-                    if (serverData.mapContent !== undefined) mapContent = serverData.mapContent;
-                    if (serverData.hiddenContent !== undefined) hiddenContent = serverData.hiddenContent;
+                    if (serverData.mapImages) mapImages = serverData.mapImages;
+                    if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
+                    if (serverData.customTabs) customTabs = serverData.customTabs;
                     renderAll();
                 }
             });
