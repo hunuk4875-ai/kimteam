@@ -398,6 +398,34 @@
         .modal-btn { flex: 1; padding: 8px 0; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .modal-btn-submit { background: var(--primary); color: white; }
         .modal-btn-cancel { background: #475569; color: white; }
+
+        /* 이미지 확대 팝업 스타일 */
+        .image-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            cursor: pointer;
+        }
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        .image-modal-content img {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 8px;
+            border: 2px solid var(--box-border);
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -433,6 +461,13 @@
                 <button class="modal-btn modal-btn-submit" onclick="submitModal()">확인</button>
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 이미지 확대 보기 팝업 -->
+    <div id="imageModal" class="image-modal-overlay" onclick="closeImageModal()">
+        <div class="image-modal-content">
+            <img id="modalZoomedImg" src="" alt="확대된 이미지">
         </div>
     </div>
 
@@ -497,7 +532,6 @@
 
         let customTabs = [];
 
-        // Firebase 실시간 데이터 연동
         window.addEventListener('DOMContentLoaded', () => {
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
             window.dbOnValue(dbRefInstance, (snapshot) => {
@@ -569,9 +603,23 @@
             document.getElementById('pwModal').style.display = "none";
         }
 
+        // 이미지 확대 팝업 제어 함수
+        function openImageModal(imgSrc) {
+            if (!imgSrc) return;
+            document.getElementById('modalZoomedImg').src = imgSrc;
+            document.getElementById('imageModal').style.display = "flex";
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
         function handleModalKey(e) {
             if (e.key === 'Enter') submitModal();
-            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape') {
+                closeModal();
+                closeImageModal();
+            }
         }
 
         function submitModal() {
@@ -785,10 +833,11 @@
                 cardsHtml += `
                     <div class="img-card">
                         <input type="text" id="map_title_${idx}" value="${item.title}" ${!isEdit ? 'readonly' : ''} placeholder="맵/지역 이름">
-                        <div class="img-card-preview" onclick="${isEdit ? `triggerMapFile(${idx})` : ''}">
-                            ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 스크린샷/사진 업로드' : '사진 없음'}</span>`}
+                        <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerMapFile(${idx})` : '')}">
+                            ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 스크린샷/사진 업로드' : '사진 없음'}</span>`}
                         </div>
                         <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
+                        ${isEdit ? `<button class="btn btn-col" style="padding:4px; font-size:0.75rem; margin-top:2px;" onclick="triggerMapFile(${idx})">사진 변경/업로드</button>` : ''}
                         <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보, 주요 드랍 및 메모">${item.memo}</textarea>
                         ${isEdit ? `<button class="btn btn-del" style="padding:4px; font-size:0.8rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                     </div>
@@ -824,10 +873,11 @@
                     job.items.forEach((item, itemIndex) => {
                         html += `
                                 <div class="img-card">
-                                    <div class="img-card-preview" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">
-                                        ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+                                    <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerHiddenFile(${jobIndex}, ${itemIndex})` : '')}">
+                                        ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
                                     </div>
                                     <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
+                                    ${isEdit ? `<button class="btn btn-col" style="padding:4px; font-size:0.75rem; margin-top:2px;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">사진 변경/업로드</button>` : ''}
                                     <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 추리 내용, 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
                                     ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.85rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
                                 </div>
@@ -950,8 +1000,8 @@
                 let html = `
                     <td>
                         <div class="td-box">
-                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${idx})` : ''}">
-                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
+                            <div class="profile-wrap" onclick="${m.img ? `openImageModal('${m.img}')` : (isEdit ? `triggerFile(${idx})` : '')}">
+                                ${m.img ? `<img src="${m.img}" title="클릭하여 확대 보기">` : `<span>사진</span>`}
                             </div>
                             <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
                         </div>
