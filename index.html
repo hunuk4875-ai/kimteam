@@ -240,7 +240,7 @@
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 76px; /* 프로필 크기 확장에 맞춰 행 높이 상향 */
+            height: 76px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -288,7 +288,6 @@
         .job-hunter .job-select { color: #34d399 !important; }
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
 
-        /* 프로필 사진 영역 큼지막하게 확장 */
         .profile-wrap {
             width: 64px;
             height: 64px;
@@ -312,7 +311,6 @@
         .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 4px 8px; }
         .btn-del { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 4px 8px; }
 
-        /* 맵 탭 및 공용 이미지 보드 스타일 */
         .section-box {
             background: var(--box-bg);
             border: 1px solid var(--box-border);
@@ -337,7 +335,7 @@
         }
         .img-card-preview {
             width: 100%;
-            height: 200px;
+            height: 180px;
             background: #0f172a;
             border: 1px dashed var(--box-border);
             border-radius: 6px;
@@ -348,7 +346,7 @@
             cursor: pointer;
             position: relative;
         }
-        .img-card-preview img { width: 100%; height: 100%; object-fit: contain; }
+        .img-card-preview img { width: 100%; height: 100%; object-fit: cover; }
         .img-card-preview span { color: #94a3b8; font-size: 0.9rem; font-weight: bold; }
         .img-card input[type="text"] {
             width: 100%;
@@ -420,20 +418,7 @@
     </div>
 
     <!-- 탭 바 -->
-    <div id="tabBar" class="tab-bar">
-        <div class="tab-btn-wrap">
-            <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 스펙 현황</button>
-        </div>
-        <div class="tab-btn-wrap">
-            <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 아이템 현황</button>
-        </div>
-        <div class="tab-btn-wrap">
-            <button id="tabMap" class="tab-btn" onclick="switchTab('map')">🗺️ 맵 탭</button>
-        </div>
-        <div class="tab-btn-wrap">
-            <button id="tabHidden" class="tab-btn" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button>
-        </div>
-    </div>
+    <div id="tabBar" class="tab-bar"></div>
 
     <div class="board-container" id="boardContainer"></div>
 
@@ -502,15 +487,34 @@
             { id: "m2", title: "보스 레이드 지역", img: "", memo: "출현 시간 및 패턴 정리" }
         ];
 
+        // 🕵️ 히든직업별 무한 확장 단서 카드 구조 적용
         let hiddenJobsData = [
-            { id: "h1", name: "히든직업 1", img: "", memo: "전직 조건 및 단서 1" },
-            { id: "h2", name: "히든직업 2", img: "", memo: "전직 조건 및 단서 2" },
-            { id: "h3", name: "히든직업 3", img: "", memo: "전직 조건 및 단서 3" },
-            { id: "h4", name: "히든직업 4", img: "", memo: "전직 조건 및 단서 4" },
-            { id: "h5", name: "히든직업 5", img: "", memo: "전직 조건 및 단서 5" }
+            { id: "h1", name: "히든직업 1", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h2", name: "히든직업 2", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h3", name: "히든직업 3", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h4", name: "히든직업 4", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h5", name: "히든직업 5", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] }
         ];
 
         let customTabs = [];
+
+        // Firebase 실시간 데이터 연동
+        window.addEventListener('DOMContentLoaded', () => {
+            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
+            window.dbOnValue(dbRefInstance, (snapshot) => {
+                const serverData = snapshot.val();
+                if (serverData) {
+                    if (serverData.specColumns) specColumns = serverData.specColumns;
+                    if (serverData.itemColumns) itemColumns = serverData.itemColumns;
+                    if (serverData.membersData) membersData = serverData.membersData;
+                    if (serverData.mapImages) mapImages = serverData.mapImages;
+                    if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
+                    if (serverData.customTabs) customTabs = serverData.customTabs;
+                    renderAll();
+                }
+            });
+            renderAll();
+        });
 
         function getCurrentColumns() {
             return activeTab === 'spec' ? specColumns : itemColumns;
@@ -682,11 +686,14 @@
                     if (memoElem) item.memo = memoElem.value;
                 });
             } else if (activeTab === 'hidden') {
-                hiddenJobsData.forEach((job, idx) => {
-                    const nameElem = document.getElementById(`hidden_name_${idx}`);
-                    const memoElem = document.getElementById(`hidden_memo_${idx}`);
+                hiddenJobsData.forEach((job, jobIndex) => {
+                    const nameElem = document.getElementById(`hidden_name_${jobIndex}`);
                     if (nameElem) job.name = nameElem.value;
-                    if (memoElem) job.memo = memoElem.value;
+                    
+                    job.items.forEach((item, itemIndex) => {
+                        const memoElem = document.getElementById(`hidden_memo_${jobIndex}_${itemIndex}`);
+                        if (memoElem) item.memo = memoElem.value;
+                    });
                 });
             } else {
                 const txtArea = document.getElementById('customTextArea');
@@ -798,28 +805,40 @@
             `;
         }
 
+        // 🕵️ 히든추리 탭 렌더링 함수 (무한 카드 추가/삭제 기능 완벽 이식)
         function renderHiddenTab(container) {
-            let cardsHtml = '';
-            hiddenJobsData.forEach((job, idx) => {
-                cardsHtml += `
-                    <div class="img-card">
-                        <input type="text" id="hidden_name_${idx}" value="${job.name}" ${!isEdit ? 'readonly' : ''} placeholder="히든직업 이름">
-                        <div class="img-card-preview" onclick="${isEdit ? `triggerHiddenFile(${idx})` : ''}">
-                            ${job.img ? `<img src="${job.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+            let html = '';
+            hiddenJobsData.forEach((job, jobIndex) => {
+                html += `
+                    <div class="section-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" 
+                                style="background:transparent; border:none; color:var(--text-gold); font-size:1.2rem; font-weight:bold; outline:none; width: 250px;" 
+                                ${!isEdit ? 'readonly' : ''}>
+                            ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 단서 카드 추가</button>` : ''}
                         </div>
-                        <input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${idx})">
-                        <textarea id="hidden_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="전직 조건, 추리 내용, 단서 기록">${job.memo}</textarea>
+                        <div class="img-upload-grid">
+                `;
+
+                job.items.forEach((item, itemIndex) => {
+                    html += `
+                            <div class="img-card">
+                                <div class="img-card-preview" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">
+                                    ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+                                </div>
+                                <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
+                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 추리 내용, 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
+                                ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.85rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
+                            </div>
+                    `;
+                });
+
+                html += `
+                        </div>
                     </div>
                 `;
             });
-
-            container.innerHTML = `
-                <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">🕵️ 5대 히든직업 추리 및 단서 노트</h3>
-                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:12px;">각 히든직업별로 전직 단서나 스크린샷 사진을 큼지막하게 등록하여 팀원들과 공유하세요.</p>
-                    <div class="img-upload-grid">${cardsHtml}</div>
-                </div>
-            `;
+            container.innerHTML = html;
         }
 
         function renderCustomTab(container) {
@@ -855,13 +874,37 @@
             renderAll();
         }
 
-        function triggerHiddenFile(idx) { document.getElementById(`hidden_file_${idx}`).click(); }
-        function uploadHiddenImg(e, idx) {
+        // 히든 직업 단서 관련 핸들러 함수들
+        function addHiddenItem(jobIndex) {
+            if (!isEdit) return;
+            syncInputsToData();
+            hiddenJobsData[jobIndex].items.push({ img: "", memo: "" });
+            renderAll();
+        }
+
+        function delHiddenItem(jobIndex, itemIndex) {
+            if (!isEdit) return;
+            syncInputsToData();
+            if (confirm("이 단서 카드를 삭제하시겠습니까?")) {
+                hiddenJobsData[jobIndex].items.splice(itemIndex, 1);
+                renderAll();
+            }
+        }
+
+        function triggerHiddenFile(jobIndex, itemIndex) {
+            if (!isEdit) return;
+            syncInputsToData();
+            const fileInput = document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`);
+            if (fileInput) fileInput.click();
+        }
+
+        function uploadHiddenImg(e, jobIndex, itemIndex) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                hiddenJobsData[idx].img = evt.target.result;
+                syncInputsToData();
+                hiddenJobsData[jobIndex].items[itemIndex].img = evt.target.result;
                 renderAll();
             };
             reader.readAsDataURL(file);
@@ -1089,23 +1132,6 @@
                     alert("저장 실패: " + error.message);
                 });
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
-            window.dbOnValue(dbRefInstance, (snapshot) => {
-                const serverData = snapshot.val();
-                if (serverData) {
-                    if (serverData.specColumns) specColumns = serverData.specColumns;
-                    if (serverData.itemColumns) itemColumns = serverData.itemColumns;
-                    if (serverData.membersData) membersData = serverData.membersData;
-                    if (serverData.mapImages) mapImages = serverData.mapImages;
-                    if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
-                    if (serverData.customTabs) customTabs = serverData.customTabs;
-                    renderAll();
-                }
-            });
-            renderAll();
-        });
     </script>
 </body>
 </html>
