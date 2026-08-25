@@ -242,92 +242,80 @@
             outline: none;
         }
 
-        /* 직업 선택 드롭다운 스타일 */
-        .job-select {
+        /* 직업 입력/선택 필드 스타일 (직접 타이핑 가능하도록 개선) */
+        .job-input {
             width: 100%;
             height: 100%;
             background: transparent;
             border: none;
             outline: none;
             text-align: center;
-            text-align-last: center;
             font-weight: bold;
             font-size: 0.92rem;
-            cursor: pointer;
-        }
-
-        .job-select option {
-            background-color: #1e293b;
-            color: #f8fafc;
+            color: inherit;
         }
 
         /* 일반 직업 색상 */
         .job-tag { border-radius: 4px; font-weight: bold; }
         .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
-        .job-knight .job-select { color: #60a5fa !important; }
+        .job-knight .job-input { color: #60a5fa !important; }
 
         .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
-        .job-wizard .job-select { color: #c084fc !important; }
+        .job-wizard .job-input { color: #c084fc !important; }
 
         .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
-        .job-warrior .job-select { color: #f87171 !important; }
+        .job-warrior .job-input { color: #f87171 !important; }
 
         .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
-        .job-assassin .job-select { color: #fb923c !important; }
+        .job-assassin .job-input { color: #fb923c !important; }
 
         .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
-        .job-hunter .job-select { color: #34d399 !important; }
+        .job-hunter .job-input { color: #34d399 !important; }
 
-        /* 🔥 [초간지] 화려한 히든직업 1~5 전용 네온/그라데이션/광채 효과 */
+        /* 🔥 [초간지] 화려한 히든직업 1~5 전용 네온/그라데이션 효과 (직접 타이핑해도 적용됨) */
         @keyframes neonPulse {
             0% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
             50% { box-shadow: 0 0 14px currentColor; }
             100% { box-shadow: 0 0 5px rgba(255,255,255,0.1); }
         }
 
-        /* 히든 1: 네온 퍼플 (신비로운 보라광채) */
         .job-hidden1 { 
             background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(139, 92, 246, 0.4)) !important; 
             border: 1.5px solid #c084fc !important; 
-            color: #e879f9;
             animation: neonPulse 3s infinite;
         }
-        .job-hidden1 .job-select { color: #f0abfc !important; text-shadow: 0 0 8px rgba(216, 180, 254, 0.6); }
+        .job-hidden1 .job-input { color: #f0abfc !important; text-shadow: 0 0 8px rgba(216, 180, 254, 0.6); }
 
-        /* 히든 2: 핫 핑크 (치명적인 핑크오라) */
         .job-hidden2 { 
             background: linear-gradient(135deg, rgba(131, 24, 67, 0.4), rgba(236, 72, 153, 0.4)) !important; 
             border: 1.5px solid #f472b6 !important; 
             animation: neonPulse 3s infinite;
         }
-        .job-hidden2 .job-select { color: #f9a8d4 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.6); }
+        .job-hidden2 .job-input { color: #f9a8d4 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.6); }
 
-        /* 히든 3: 사이버 틸 (영롱한 청록빛 일렉트릭) */
         .job-hidden3 { 
             background: linear-gradient(135deg, rgba(19, 78, 94, 0.4), rgba(20, 184, 166, 0.4)) !important; 
             border: 1.5px solid #2dd4bf !important; 
             animation: neonPulse 3s infinite;
         }
-        .job-hidden3 .job-select { color: #5eead4 !important; text-shadow: 0 0 8px rgba(45, 212, 191, 0.6); }
+        .job-hidden3 .job-input { color: #5eead4 !important; text-shadow: 0 0 8px rgba(45, 212, 191, 0.6); }
 
-        /* 히든 4: 찬란한 골드 (빛나는 황금빛 금장) */
         .job-hidden4 { 
             background: linear-gradient(135deg, rgba(113, 63, 18, 0.4), rgba(234, 179, 8, 0.4)) !important; 
             border: 1.5px solid #facc15 !important; 
             animation: neonPulse 3s infinite;
         }
-        .job-hidden4 .job-select { color: #fde047 !important; text-shadow: 0 0 8px rgba(250, 204, 21, 0.6); }
+        .job-hidden4 .job-input { color: #fde047 !important; text-shadow: 0 0 8px rgba(250, 204, 21, 0.6); }
 
-        /* 히든 5: 네온 블루 (차갑고 짜릿한 네온 파랑) */
         .job-hidden5 { 
             background: linear-gradient(135deg, rgba(22, 78, 99, 0.4), rgba(6, 182, 212, 0.4)) !important; 
             border: 1.5px solid #22d3ee !important; 
             animation: neonPulse 3s infinite;
         }
-        .job-hidden5 .job-select { color: #67e8f9 !important; text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); }
+        .job-hidden5 .job-input { color: #67e8f9 !important; text-shadow: 0 0 8px rgba(34, 211, 238, 0.6); }
 
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
-        .job-default .job-select { color: #cbd5e1 !important; }
+        .job-default .job-input { color: #cbd5e1 !important; }
 
         .profile-wrap {
             width: 48px;
@@ -496,8 +484,6 @@
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
 
-        const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
-
         let specColumns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "c2", title: "직업", width: "100px" },
@@ -649,7 +635,7 @@
             renderAll();
         }
 
-        // 🛡️ [핵심 보완] 직업 이름이 바뀌거나 직접 타이핑 되어도 '히든직업 1~5' 칸에서 파생된 것이면 무조건 간지나는 고유 색상 유지!
+        // 🛡️ 입력된 글자에 따라 직업 전용 색상(네온 효과 포함) 판별
         function getJobClass(jobText) {
             if (!jobText) return 'job-default';
             const val = jobText.trim();
@@ -659,20 +645,21 @@
             if (val.includes('어쌔신')) return 'job-assassin';
             if (val.includes('헌터')) return 'job-hunter';
             
-            // 히든직업 1~5 (이름이 바뀌거나 수정 모드에서 타이핑되어도 키워드 감지 혹은 지정 매칭)
-            if (val.includes('히든직업 1') || val.includes('히든 1') || val === JOB_LIST[5]) return 'job-hidden1';
-            if (val.includes('히든직업 2') || val.includes('히든 2') || val === JOB_LIST[6]) return 'job-hidden2';
-            if (val.includes('히든직업 3') || val.includes('히든 3') || val === JOB_LIST[7]) return 'job-hidden3';
-            if (val.includes('히든직업 4') || val.includes('히든 4') || val === JOB_LIST[8]) return 'job-hidden4';
-            if (val.includes('히든직업 5') || val.includes('히든 5') || val === JOB_LIST[9]) return 'job-hidden5';
+            // 타이핑으로 이름을 바꾸거나 기존 '히든직업 1~5' 키워드가 들어가면 무조건 화려한 히든 색상 유지!
+            if (val.includes('히든직업 1') || val.includes('히든 1')) return 'job-hidden1';
+            if (val.includes('히든직업 2') || val.includes('히든 2')) return 'job-hidden2';
+            if (val.includes('히든직업 3') || val.includes('히든 3')) return 'job-hidden3';
+            if (val.includes('히든직업 4') || val.includes('히든 4')) return 'job-hidden4';
+            if (val.includes('히든직업 5') || val.includes('히든 5')) return 'job-hidden5';
             
             return 'job-default';
         }
 
-        function handleJobChange(selectElem) {
-            const tdBox = selectElem.closest('.td-box');
+        // 타이핑할 때마다 실시간으로 박스 색상이 변하도록 처리
+        function handleJobInput(inputElem) {
+            const tdBox = inputElem.closest('.td-box');
             if (tdBox) {
-                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
+                tdBox.className = 'td-box job-tag ' + getJobClass(inputElem.value);
             }
         }
 
@@ -687,7 +674,7 @@
             const rows = document.querySelectorAll('#tableBody tr');
             rows.forEach((r, idx) => {
                 if (!membersData[idx]) return;
-                r.querySelectorAll('input[type="text"], select').forEach(inp => {
+                r.querySelectorAll('input[type="text"]').forEach(inp => {
                     const colId = inp.dataset.colid;
                     if (colId) membersData[idx][colId] = inp.value;
                 });
@@ -809,23 +796,10 @@
                     const isJob = (col.id === 'c2');
                     
                     if (isJob) {
-                        let optionsHtml = '';
-                        let hasMatched = false;
-                        JOB_LIST.forEach(j => {
-                            const selected = (val === j) ? 'selected' : '';
-                            if (selected) hasMatched = true;
-                            optionsHtml += `<option value="${j}" ${selected}>${j}</option>`;
-                        });
-                        if (!hasMatched && val) {
-                            optionsHtml = `<option value="${val}" selected>${val}</option>` + optionsHtml;
-                        }
-
                         html += `
                             <td>
                                 <div class="td-box job-tag ${getJobClass(val)}">
-                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
-                                        ${optionsHtml}
-                                    </select>
+                                    <input type="text" class="job-input" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} oninput="handleJobInput(this)">
                                 </div>
                             </td>
                         `;
@@ -918,7 +892,7 @@
                 }).then(() => {
                     alert("두 페이지의 모든 수정 내용이 성공적으로 저장되었습니다!");
                 }).catch((err) => {
-                    alert("저장실패: " + err.message);
+                    alert("저장 실패: " + err.message);
                 });
             }
         }
