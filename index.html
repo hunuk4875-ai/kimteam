@@ -341,6 +341,64 @@
             font-size: 0.8rem;
             font-weight: bold;
         }
+
+        /* 비밀번호 입력 모달 팝업 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-gold);
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--box-border);
+            background: var(--box-bg);
+            color: white;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-btn-submit { background: var(--primary); color: white; }
+        .modal-btn-cancel { background: #475569; color: white; }
     </style>
 </head>
 <body>
@@ -355,7 +413,7 @@
             <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 항목(열) 추가</button>
             <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
             <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
-            <button class="btn btn-pw" onclick="changePw()">🔑 비번 변경</button>
+            <button class="btn btn-pw" onclick="openPwChangeModal()">🔑 비번 변경</button>
         </div>
     </div>
 
@@ -374,14 +432,27 @@
         </table>
     </div>
 
+    <!-- 비밀번호 입력 모달 -->
+    <div id="pwModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
+            <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
+            <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-submit" onclick="submitPwModal()">확인</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closePwModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let isEdit = false;
-        let activeTab = 'spec'; // 'spec' 또는 'item'
+        let activeTab = 'spec';
+        let modalMode = 'login'; // 'login' 또는 'change'
         const DEFAULT_PW = "1234";
 
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "미정"];
 
-        // 스펙/내실 항목
         let specColumns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "c2", title: "직업", width: "100px" },
@@ -394,7 +465,6 @@
             { id: "c9", title: "비고", width: "180px" }
         ];
 
-        // 아이템 보유 항목
         let itemColumns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "i1", title: "무기 주문서", width: "90px" },
@@ -439,32 +509,70 @@
             return localStorage.getItem('board_pw') || DEFAULT_PW;
         }
 
+        /* 비밀번호 모달 제어 함수 */
+        function openLoginModal() {
+            modalMode = 'login';
+            document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "비밀번호 입력 (기본: 1234)";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
+
+        function openPwChangeModal() {
+            modalMode = 'change';
+            document.getElementById('modalTitle').innerText = "🔑 비밀번호 변경";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "현재 비밀번호";
+            document.getElementById('pwNewInput').value = "";
+            document.getElementById('pwNewInput').style.display = "block";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
+
+        function closePwModal() {
+            document.getElementById('pwModal').style.display = "none";
+        }
+
+        function handleModalKey(e) {
+            if (e.key === 'Enter') submitPwModal();
+            if (e.key === 'Escape') closePwModal();
+        }
+
+        function submitPwModal() {
+            const inputPw = document.getElementById('pwInput').value;
+
+            if (modalMode === 'login') {
+                if (inputPw === getPw()) {
+                    isEdit = true;
+                    closePwModal();
+                    updateUI();
+                } else {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else if (modalMode === 'change') {
+                const newPw = document.getElementById('pwNewInput').value;
+                if (inputPw === getPw()) {
+                    if (newPw && newPw.trim()) {
+                        localStorage.setItem('board_pw', newPw.trim());
+                        alert("비밀번호가 성공적으로 변경되었습니다!");
+                        closePwModal();
+                    } else {
+                        alert("새 비밀번호를 입력해주세요.");
+                    }
+                } else {
+                    alert("현재 비밀번호가 틀렸습니다.");
+                }
+            }
+        }
+
         function toggleAuth() {
             if (isEdit) {
                 isEdit = false;
                 updateUI();
             } else {
-                const pw = prompt("비밀번호를 입력하세요 (기본: 1234):");
-                if (pw === getPw()) {
-                    isEdit = true;
-                    alert("수정 권한이 활성화되었습니다.");
-                    updateUI();
-                } else if (pw !== null) {
-                    alert("비밀번호가 틀렸습니다.");
-                }
-            }
-        }
-
-        function changePw() {
-            const current = prompt("현재 비밀번호:");
-            if (current === getPw()) {
-                const next = prompt("새 비밀번호:");
-                if (next && next.trim()) {
-                    localStorage.setItem('board_pw', next.trim());
-                    alert("비밀번호 변경 완료!");
-                }
-            } else if (current !== null) {
-                alert("현재 비밀번호 오류.");
+                openLoginModal();
             }
         }
 
