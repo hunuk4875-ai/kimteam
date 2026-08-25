@@ -274,7 +274,6 @@
         let isEdit = false;
         const DEFAULT_PW = "1234";
 
-        // 기본 열(컬럼) 목록
         let columns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "c2", title: "직업", width: "90px" },
@@ -287,7 +286,6 @@
             { id: "c9", title: "비고", width: "180px" }
         ];
 
-        // 기본 데이터
         const defaultMembers = [
             { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커" },
             { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러" },
@@ -367,7 +365,6 @@
             renderAll();
         }
 
-        // 새 항목(열) 추가
         function addColumn() {
             if (!isEdit) return;
             const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
@@ -376,7 +373,6 @@
             const newId = "col_" + Date.now();
             columns.push({ id: newId, title: title.trim(), width: "90px" });
 
-            // 기존 데이터에 기본값 빈문자열 추가
             membersData.forEach(m => {
                 if (m[newId] === undefined) m[newId] = "";
             });
@@ -384,7 +380,6 @@
             renderAll();
         }
 
-        // 항목(열) 삭제
         function delColumn(colId) {
             if (!isEdit) return;
             if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
@@ -504,14 +499,12 @@
         function saveData() {
             if (!isEdit) return;
 
-            // 현재 헤더 제목 반영
             document.querySelectorAll('#headerRow input').forEach(inp => {
                 const colId = inp.dataset.colid;
                 const colObj = columns.find(c => c.id === colId);
                 if (colObj) colObj.title = inp.value;
             });
 
-            // 현재 테이블 행의 데이터 읽기
             const rows = document.querySelectorAll('#tableBody tr');
             const newMembers = [];
 
@@ -526,7 +519,6 @@
 
             membersData = newMembers;
 
-            // Firebase 서버에 구조와 데이터 통째로 저장
             if (window.dbSet && window.dbRef) {
                 window.dbSet(window.dbRef(window.db, 'dashboard_v2'), {
                     columns: columns,
