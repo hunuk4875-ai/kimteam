@@ -1,246 +1,895 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>킴성태팀 장비 강화 현황판</title>
-  <style>
-    :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --accent-color: #ff9800;
-      --text-color: #ffffff;
-      --border-color: #333333;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ 킴성태팀 종합 현황판 (실시간 연동)</title>
+    <!-- Firebase SDK (v9) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-    }
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJVUFi2vg_zh2EkN5YnCNqwVbwiocVY14",
+            authDomain: "kimteam-db.firebaseapp.com",
+            databaseURL: "https://kimteam-db-default-rtdb.firebaseio.com",
+            projectId: "kimteam-db",
+            storageBucket: "kimteam-db.firebasestorage.app",
+            messagingSenderId: "1073341919570",
+            appId: "1:1073341919570:web:57632de373dbe61ef44a8b",
+            measurementId: "G-Q5EZ3MJHBX"
+        };
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1000px;
-      margin: 0 auto 20px auto;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 10px;
-    }
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    .btn-group {
-      display: flex;
-      gap: 10px;
-    }
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+    </script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --box-bg: #0f172a;
+            --box-border: #475569;
+            --text-gold: #fbbf24;
+            --text-light: #f8fafc;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
 
-    button {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
 
-    button:hover {
-      background-color: var(--accent-color);
-      color: #000;
-    }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 15px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+        .header-bar {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--panel-bg);
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--box-border);
+        }
 
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 15px;
-      position: relative;
-    }
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
 
-    .card.editing {
-      border: 2px dashed var(--accent-color);
-    }
+        .badge {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: normal;
+        }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.1em;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: var(--accent-color);
-    }
+        .badge-view { background: #334155; color: #94a3b8; }
+        .badge-edit { background: #065f46; color: #34d399; }
 
-    .item-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #2a2a2a;
-    }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
 
-    .item-name { color: #bbb; }
-    .item-value { font-weight: bold; }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-    /* 수정 모드 컨트롤 */
-    .edit-controls {
-      display: none;
-      margin-top: 10px;
-      gap: 5px;
-    }
+        .btn-lock { background-color: #475569; }
+        .btn-add { background-color: var(--success); }
+        .btn-col { background-color: #8b5cf6; }
+        .btn-pw { background-color: #6366f1; }
 
-    .editing .edit-controls {
-      display: flex;
-    }
+        /* 탭 스타일 */
+        .tab-bar {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
 
-    .editable-text {
-      outline: none;
-      border-radius: 3px;
-      padding: 2px 4px;
-    }
+        .tab-btn {
+            background-color: #334155;
+            color: #94a3b8;
+            border: 1px solid var(--box-border);
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-    .editing .editable-text {
-      background-color: #2a2a2a;
-    }
+        .tab-btn.active {
+            background-color: var(--panel-bg);
+            color: var(--text-gold);
+            border-bottom: 2px solid var(--text-gold);
+        }
 
-    .status-badge {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.85em;
-      color: #888;
-    }
-  </style>
+        .board-container {
+            width: 100%;
+            max-width: 1600px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 0 8px 8px 8px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px 10px;
+            text-align: center;
+        }
+
+        th {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--text-gold);
+            padding: 0;
+            min-width: 90px;
+        }
+
+        th .th-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 6px;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 4px;
+            position: relative;
+        }
+
+        th input {
+            color: var(--text-gold);
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.88rem;
+        }
+
+        .col-btn-group {
+            display: none;
+            gap: 2px;
+            margin-top: 2px;
+        }
+
+        .editable .col-btn-group { display: flex; }
+
+        .btn-col-mv {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+
+        .btn-col-mv:hover { background: #475569; }
+
+        .btn-col-del {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+
+        td {
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .td-box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 6px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            transition: all 0.2s ease;
+        }
+
+        td input[type="text"] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            text-align: center;
+            font-size: 0.92rem;
+            outline: none;
+        }
+
+        /* 직업 선택 드롭다운 스타일 */
+        .job-select {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+            text-align-last: center;
+            font-weight: bold;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+
+        .job-select option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        /* 직업별 색상 스타일 */
+        .job-tag {
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .job-knight { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; }
+        .job-knight .job-select { color: #60a5fa !important; }
+
+        .job-wizard { background-color: rgba(168, 85, 247, 0.25) !important; border-color: #a855f7 !important; }
+        .job-wizard .job-select { color: #c084fc !important; }
+
+        .job-warrior { background-color: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; }
+        .job-warrior .job-select { color: #f87171 !important; }
+
+        .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
+        .job-assassin .job-select { color: #fb923c !important; }
+
+        .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
+        .job-hunter .job-select { color: #34d399 !important; }
+
+        .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
+        .job-default .job-select { color: #cbd5e1 !important; }
+
+        .profile-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 1px dashed var(--box-border);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .profile-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-wrap span {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .file-input { display: none; }
+
+        .btn-action-group {
+            display: flex;
+            gap: 2px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn-move {
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0 6px;
+        }
+
+        .btn-move:hover { background: #475569; }
+
+        .btn-del {
+            background: var(--danger);
+            color: white;
+            border: none;
+            flex: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* 비밀번호 입력 모달 팝업 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-gold);
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--box-border);
+            background: var(--box-bg);
+            color: white;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-btn-submit { background: var(--primary); color: white; }
+        .modal-btn-cancel { background: #475569; color: white; }
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>⚔️ 킴성태팀 장비 강화 현황판</h1>
-    <div class="btn-group">
-      <button id="editBtn" onclick="toggleEditMode()">✍️ 수정 모드</button>
-      <button id="saveBtn" onclick="saveData()" style="display:none; background-color: #4caf50; color: white;">💾 저장하기</button>
+    <div class="header-bar">
+        <div class="title-area">
+            🛡️ 킴성태팀 종합 현황판
+            <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
+        </div>
+        <div class="btn-group">
+            <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한 얻기</button>
+            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 항목(열) 추가</button>
+            <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
+            <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
+            <button class="btn btn-pw" onclick="openPwChangeModal()">🔑 비번 변경</button>
+        </div>
     </div>
-  </div>
 
-  <div class="grid-container" id="gridContainer"></div>
-  <div class="status-badge" id="statusBadge"></div>
+    <!-- 탭 메뉴 -->
+    <div class="tab-bar">
+        <button id="tabSpec" class="tab-btn active" onclick="switchTab('spec')">⚔️ 1. 스펙 및 장비강화 현황</button>
+        <button id="tabItem" class="tab-btn" onclick="switchTab('item')">📦 2. 아이템 보유 현황</button>
+    </div>
 
-  <script>
-    // ==========================================
-    // 🔒 비밀번호 설정 (오직 나만 코드에서 변경 가능)
-    // ==========================================
-    const MASTER_PASSWORD = "1234"; // ← 원하는 마스터 비밀번호로 변경하세요!
+    <div class="board-container">
+        <table id="mainTable">
+            <thead>
+                <tr id="headerRow"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 
-    // 기본 데이터 구조
-    const defaultData = [
-      { id: 1, name: "킴성태", weapon: "+12 전설 검", armor: "+10 대장군 갑옷", ring: "+8 반지" },
-      { id: 2, name: "팀원 1", weapon: "+10 영웅 검", armor: "+8 사슬 갑옷", ring: "+5 반지" },
-      { id: 3, name: "팀원 2", weapon: "+9 희귀 검", armor: "+7 가죽 갑옷", ring: "+4 반지" }
-    ];
+    <!-- 비밀번호 입력 모달 -->
+    <div id="pwModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
+            <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
+            <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-submit" onclick="submitPwModal()">확인</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closePwModal()">취소</button>
+            </div>
+        </div>
+    </div>
 
-    let currentData = [];
-    let isEditMode = false;
+    <script>
+        let isEdit = false;
+        let activeTab = 'spec';
+        let modalMode = 'login'; // 'login' 또는 'change'
+        const DEFAULT_PW = "1234";
 
-    // 페이지 로드 시 데이터 불러오기
-    window.onload = () => {
-      const saved = localStorage.getItem('kimteam_gear_data');
-      currentData = saved ? JSON.parse(saved) : defaultData;
-      render();
-    };
+        const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "미정"];
 
-    // 화면 렌더링
-    function render() {
-      const container = document.getElementById('gridContainer');
-      container.innerHTML = '';
+        let specColumns = [
+            { id: "c1", title: "팀원명", width: "100px" },
+            { id: "c2", title: "직업", width: "100px" },
+            { id: "c3", title: "무기강화", width: "75px" },
+            { id: "c4", title: "방어구강화", width: "75px" },
+            { id: "c5", title: "체력", width: "70px" },
+            { id: "c6", title: "내공", width: "70px" },
+            { id: "c7", title: "회피", width: "70px" },
+            { id: "c8", title: "운", width: "70px" },
+            { id: "c9", title: "비고", width: "180px" }
+        ];
 
-      currentData.forEach((member, index) => {
-        const card = document.createElement('div');
-        card.className = `card ${isEditMode ? 'editing' : ''}`;
-        
-        card.innerHTML = `
-          <div class="card-header">
-            <span class="editable-text" contenteditable="${isEditMode}" data-key="name" data-index="${index}">${member.name}</span>
-          </div>
-          <div class="item-row">
-            <span class="item-name">무기</span>
-            <span class="editable-text item-value" contenteditable="${isEditMode}" data-key="weapon" data-index="${index}">${member.weapon}</span>
-          </div>
-          <div class="item-row">
-            <span class="item-name">방어구</span>
-            <span class="editable-text item-value" contenteditable="${isEditMode}" data-key="armor" data-index="${index}">${member.armor}</span>
-          </div>
-          <div class="item-row">
-            <span class="item-name">장신구</span>
-            <span class="editable-text item-value" contenteditable="${isEditMode}" data-key="ring" data-index="${index}">${member.ring}</span>
-          </div>
-          <div class="edit-controls">
-            <button onclick="moveCard(${index}, -1)">◀ 왼쪽</button>
-            <button onclick="moveCard(${index}, 1)">오른쪽 ▶</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        let itemColumns = [
+            { id: "c1", title: "팀원명", width: "100px" },
+            { id: "i1", title: "무기 주문서", width: "90px" },
+            { id: "i2", title: "방어구 주문서", width: "90px" },
+            { id: "i3", title: "장신구 주문서", width: "90px" },
+            { id: "i4", title: "고급 물약", width: "80px" },
+            { id: "i5", title: "핵심 결정/재료", width: "120px" },
+            { id: "i6", title: "특수 아이템", width: "120px" },
+            { id: "i7", title: "아이템 비고", width: "180px" }
+        ];
 
-    // 수정 모드 토글 (비밀번호 검증)
-    function toggleEditMode() {
-      if (!isEditMode) {
-        const inputPw = prompt("매니저 비밀번호를 입력하세요:");
-        if (inputPw !== MASTER_PASSWORD) {
-          alert("비밀번호가 올바르지 않습니다.");
-          return;
+        const defaultMembers = [
+            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
+            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" }
+        ];
+
+        let membersData = [...defaultMembers];
+
+        function getCurrentColumns() {
+            return activeTab === 'spec' ? specColumns : itemColumns;
         }
-        isEditMode = true;
-        document.getElementById('editBtn').innerText = "❌ 수정 취소";
-        document.getElementById('saveBtn').style.display = "inline-block";
-      } else {
-        isEditMode = false;
-        document.getElementById('editBtn').innerText = "✍️ 수정 모드";
-        document.getElementById('saveBtn').style.display = "none";
-      }
-      render();
-    }
 
-    // 카드 위치 변경 (위치/순서 바꾸기)
-    function moveCard(index, direction) {
-      const targetIndex = index + direction;
-      if (targetIndex < 0 || targetIndex >= currentData.length) return;
-      
-      const temp = currentData[index];
-      currentData[index] = currentData[targetIndex];
-      currentData[targetIndex] = temp;
-      render();
-    }
+        function switchTab(tab) {
+            syncInputsToData();
+            activeTab = tab;
+            document.getElementById('tabSpec').className = 'tab-btn ' + (tab === 'spec' ? 'active' : '');
+            document.getElementById('tabItem').className = 'tab-btn ' + (tab === 'item' ? 'active' : '');
+            renderAll();
+        }
 
-    // 데이터 저장
-    function saveData() {
-      // 화면의 수정된 텍스트 수집
-      const editableElements = document.querySelectorAll('.editable-text');
-      editableElements.forEach(el => {
-        const index = el.getAttribute('data-index');
-        const key = el.getAttribute('data-key');
-        currentData[index][key] = el.innerText.trim();
-      });
+        function getPw() {
+            return localStorage.getItem('board_pw') || DEFAULT_PW;
+        }
 
-      // 브라우저 저장소에 보관
-      localStorage.setItem('kimteam_gear_data', JSON.stringify(currentData));
-      
-      isEditMode = false;
-      document.getElementById('editBtn').innerText = "✍️ 수정 모드";
-      document.getElementById('saveBtn').style.display = "none";
-      render();
+        /* 비밀번호 모달 제어 함수 */
+        function openLoginModal() {
+            modalMode = 'login';
+            document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "비밀번호 입력 (기본: 1234)";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
 
-      alert("수정 내용이 저장되었습니다!");
-    }
-  </script>
+        function openPwChangeModal() {
+            modalMode = 'change';
+            document.getElementById('modalTitle').innerText = "🔑 비밀번호 변경";
+            document.getElementById('pwInput').value = "";
+            document.getElementById('pwInput').placeholder = "현재 비밀번호";
+            document.getElementById('pwNewInput').value = "";
+            document.getElementById('pwNewInput').style.display = "block";
+            document.getElementById('pwModal').style.display = "flex";
+            document.getElementById('pwInput').focus();
+        }
+
+        function closePwModal() {
+            document.getElementById('pwModal').style.display = "none";
+        }
+
+        function handleModalKey(e) {
+            if (e.key === 'Enter') submitPwModal();
+            if (e.key === 'Escape') closePwModal();
+        }
+
+        function submitPwModal() {
+            const inputPw = document.getElementById('pwInput').value;
+
+            if (modalMode === 'login') {
+                if (inputPw === getPw()) {
+                    isEdit = true;
+                    closePwModal();
+                    updateUI();
+                } else {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } else if (modalMode === 'change') {
+                const newPw = document.getElementById('pwNewInput').value;
+                if (inputPw === getPw()) {
+                    if (newPw && newPw.trim()) {
+                        localStorage.setItem('board_pw', newPw.trim());
+                        alert("비밀번호가 성공적으로 변경되었습니다!");
+                        closePwModal();
+                    } else {
+                        alert("새 비밀번호를 입력해주세요.");
+                    }
+                } else {
+                    alert("현재 비밀번호가 틀렸습니다.");
+                }
+            }
+        }
+
+        function toggleAuth() {
+            if (isEdit) {
+                isEdit = false;
+                updateUI();
+            } else {
+                openLoginModal();
+            }
+        }
+
+        function updateUI() {
+            const badge = document.getElementById('modeBadge');
+            const authBtn = document.getElementById('authBtn');
+            const addBtn = document.getElementById('addBtn');
+            const addColBtn = document.getElementById('addColBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const table = document.getElementById('mainTable');
+
+            if (isEdit) {
+                badge.innerText = "✏️ 수정 모드";
+                badge.className = "badge badge-edit";
+                authBtn.innerText = "🔒 수정 잠그기";
+                addBtn.style.display = "inline-block";
+                addColBtn.style.display = "inline-block";
+                saveBtn.style.display = "inline-block";
+                table.classList.add('editable');
+            } else {
+                badge.innerText = "🔒 읽기 전용";
+                badge.className = "badge badge-view";
+                authBtn.innerText = "🔓 수정 권한 얻기";
+                addBtn.style.display = "none";
+                addColBtn.style.display = "none";
+                saveBtn.style.display = "none";
+                table.classList.remove('editable');
+            }
+
+            renderAll();
+        }
+
+        function getJobClass(jobText) {
+            if (!jobText) return 'job-default';
+            const val = jobText.trim();
+            if (val.includes('나이트')) return 'job-knight';
+            if (val.includes('위자드')) return 'job-wizard';
+            if (val.includes('워리어')) return 'job-warrior';
+            if (val.includes('어쌔신')) return 'job-assassin';
+            if (val.includes('헌터')) return 'job-hunter';
+            return 'job-default';
+        }
+
+        function handleJobChange(selectElem) {
+            const tdBox = selectElem.closest('.td-box');
+            if (tdBox) {
+                tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
+            }
+        }
+
+        function syncInputsToData() {
+            const cols = getCurrentColumns();
+            document.querySelectorAll('#headerRow input').forEach(inp => {
+                const colId = inp.dataset.colid;
+                const colObj = cols.find(c => c.id === colId);
+                if (colObj) colObj.title = inp.value;
+            });
+
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach((r, idx) => {
+                if (!membersData[idx]) return;
+                r.querySelectorAll('input[type="text"], select').forEach(inp => {
+                    const colId = inp.dataset.colid;
+                    if (colId) membersData[idx][colId] = inp.value;
+                });
+            });
+        }
+
+        function addColumn() {
+            if (!isEdit) return;
+            syncInputsToData();
+            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
+            if (!title) return;
+
+            const cols = getCurrentColumns();
+            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
+            cols.push({ id: newId, title: title.trim(), width: "90px" });
+
+            membersData.forEach(m => {
+                if (m[newId] === undefined) m[newId] = "";
+            });
+
+            renderAll();
+        }
+
+        function delColumn(colId) {
+            if (!isEdit) return;
+            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
+                syncInputsToData();
+                if (activeTab === 'spec') {
+                    specColumns = specColumns.filter(c => c.id !== colId);
+                } else {
+                    itemColumns = itemColumns.filter(c => c.id !== colId);
+                }
+                renderAll();
+            }
+        }
+
+        function moveColumn(colIdx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+
+            const cols = getCurrentColumns();
+            const targetIdx = colIdx + dir;
+            if (targetIdx < 0 || targetIdx >= cols.length) return;
+
+            const temp = cols[colIdx];
+            cols[colIdx] = cols[targetIdx];
+            cols[targetIdx] = temp;
+
+            renderAll();
+        }
+
+        function moveRow(idx, dir) {
+            if (!isEdit) return;
+            syncInputsToData();
+
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
+
+            renderBody();
+        }
+
+        function renderAll() {
+            renderHeader();
+            renderBody();
+        }
+
+        function renderHeader() {
+            const tr = document.getElementById('headerRow');
+            tr.innerHTML = `<th style="width: 55px;"><div class="th-box">프로필</div></th>`;
+
+            const cols = getCurrentColumns();
+            cols.forEach((col, idx) => {
+                const th = document.createElement('th');
+                th.style.width = col.width || "90px";
+                th.innerHTML = `
+                    <div class="th-box">
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                        <div class="col-btn-group">
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+                tr.appendChild(th);
+            });
+
+            if (isEdit) {
+                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
+            }
+        }
+
+        function renderBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const cols = getCurrentColumns();
+
+            membersData.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                let html = `
+                    <td>
+                        <div class="td-box">
+                            <div class="profile-wrap" onclick="${isEdit ? `triggerFile(${idx})` : ''}">
+                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
+                            </div>
+                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
+                        </div>
+                    </td>
+                `;
+
+                cols.forEach(col => {
+                    const val = m[col.id] || "";
+                    const isName = (col.id === 'c1');
+                    const isJob = (col.id === 'c2');
+                    
+                    if (isJob) {
+                        let optionsHtml = '';
+                        let hasMatched = false;
+                        JOB_LIST.forEach(j => {
+                            const selected = (val === j) ? 'selected' : '';
+                            if (selected) hasMatched = true;
+                            optionsHtml += `<option value="${j}" ${selected}>${j}</option>`;
+                        });
+                        if (!hasMatched && val) {
+                            optionsHtml = `<option value="${val}" selected>${val}</option>` + optionsHtml;
+                        }
+
+                        html += `
+                            <td>
+                                <div class="td-box job-tag ${getJobClass(val)}">
+                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
+                                        ${optionsHtml}
+                                    </select>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `
+                            <td>
+                                <div class="td-box">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                </div>
+                            </td>
+                        `;
+                    }
+                });
+
+                if (isEdit) {
+                    html += `
+                        <td>
+                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
+                                <div class="btn-action-group">
+                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
+                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
+                                    <button class="btn-del" onclick="delRow(this)">삭제</button>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                }
+
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function triggerFile(idx) {
+            if (isEdit) document.getElementById(`f-${idx}`).click();
+        }
+
+        function uploadImg(e, idx) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.src = evt.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 100;
+                        canvas.height = 100;
+                        ctx.drawImage(img, 0, 0, 100, 100);
+                        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        membersData[idx].img = resizedDataUrl;
+                        renderBody();
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addRow() {
+            if (!isEdit) return;
+            syncInputsToData();
+            const newMember = { img: "", c1: "새 팀원", c2: "나이트" };
+            specColumns.forEach(c => { if(!newMember[c.id]) newMember[c.id] = "0"; });
+            itemColumns.forEach(c => { if(!newMember[c.id]) newMember[c.id] = "0"; });
+            membersData.push(newMember);
+            renderBody();
+        }
+
+        function delRow(btn) {
+            if (confirm("삭제하시겠습니까?")) {
+                syncInputsToData();
+                const tr = btn.closest('tr');
+                const idx = Array.from(tr.parentNode.children).indexOf(tr);
+                membersData.splice(idx, 1);
+                renderBody();
+            }
+        }
+
+        function saveData() {
+            if (!isEdit) return;
+            syncInputsToData();
+
+            if (window.dbSet && window.dbRef) {
+                window.dbSet(window.dbRef(window.db, 'dashboard_v3'), {
+                    specColumns: specColumns,
+                    itemColumns: itemColumns,
+                    members: membersData
+                }).then(() => {
+                    alert("두 페이지의 모든 수정 내용이 성공적으로 저장되었습니다!");
+                }).catch((err) => {
+                    alert("저장 실패: " + err.message);
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+
+            const timer = setInterval(() => {
+                if (window.dbOnValue && window.dbRef && window.db) {
+                    clearInterval(timer);
+                    window.dbOnValue(window.dbRef(window.db, 'dashboard_v3'), (snapshot) => {
+                        const val = snapshot.val();
+                        if (val) {
+                            if (val.specColumns) specColumns = val.specColumns;
+                            if (val.itemColumns) itemColumns = val.itemColumns;
+                            if (val.members) membersData = val.members;
+                            renderAll();
+                        } else {
+                            renderAll();
+                        }
+                    });
+                }
+            }, 200);
+        });
+    </script>
 </body>
 </html>
