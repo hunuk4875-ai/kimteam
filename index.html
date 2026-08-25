@@ -245,6 +245,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 6px;
+            transition: all 0.2s ease;
         }
 
         td input[type="text"] {
@@ -256,6 +257,31 @@
             font-size: 0.92rem;
             outline: none;
         }
+
+        /* --- 무기 강화 단계별 전용 화려한 스타일 (9~11강 임팩트 강화) --- */
+        .enchant-default { background-color: rgba(148, 163, 184, 0.05) !important; border-color: var(--box-border) !important; color: #94a3b8; }
+        
+        /* 0~6강: 통일된 안정 구간 */
+        .enchant-safe { background-color: rgba(71, 85, 105, 0.2) !important; border-color: #64748b !important; color: #e2e8f0 !important; font-weight: bold; }
+        
+        /* 7강: 청록색 */
+        .enchant-7 { background-color: rgba(20, 184, 166, 0.2) !important; border-color: #14b8a6 !important; color: #2dd4bf !important; font-weight: bold; box-shadow: 0 0 8px rgba(20, 184, 166, 0.3); }
+        
+        /* 8강: 파란색 */
+        .enchant-8 { background-color: rgba(59, 130, 246, 0.25) !important; border-color: #3b82f6 !important; color: #60a5fa !important; font-weight: bold; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        
+        /* 9강: 보라색 (임팩트 업: 네온 글로우 및 두께감) */
+        .enchant-9 { background-color: rgba(168, 85, 247, 0.35) !important; border-color: #c084fc !important; color: #e879f9 !important; font-weight: bold; box-shadow: 0 0 15px rgba(192, 132, 252, 0.7); }
+        
+        /* 10강: 주황색 (임팩트 업: 화염/폭발 느낌의 강렬한 주황빛) */
+        .enchant-10 { background-color: rgba(249, 115, 22, 0.4) !important; border-color: #fb923c !important; color: #fdba74 !important; font-weight: bold; box-shadow: 0 0 18px rgba(251, 146, 60, 0.8); }
+        
+        /* 11강: 붉은색 (임팩트 업: 피비린내 나는 혈광 네온 효과) */
+        .enchant-11 { background-color: rgba(239, 68, 68, 0.45) !important; border-color: #f87171 !important; color: #fca5a5 !important; font-weight: bold; box-shadow: 0 0 22px rgba(248, 113, 113, 0.9); }
+        
+        /* 12강 이상: 황금빛 만렙 전설 */
+        .enchant-12 { background-color: rgba(234, 179, 8, 0.4) !important; border-color: #eab308 !important; color: #facc15 !important; font-weight: bold; box-shadow: 0 0 25px rgba(234, 179, 8, 0.9); }
+
 
         .job-select {
             width: 100%;
@@ -284,7 +310,7 @@
         .job-warrior .job-select { color: #f87171 !important; }
         .job-assassin { background-color: rgba(249, 115, 22, 0.25) !important; border-color: #f97316 !important; }
         .job-assassin .job-select { color: #fb923c !important; }
-        .job-hunter { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; }
+        .job-hunter { background-color: rgba(10, 185, 129, 0.25) !important; border-color: #10b981 !important; }
         .job-hunter .job-select { color: #34d399 !important; }
         .job-default { background-color: rgba(148, 163, 184, 0.15) !important; border-color: #64748b !important; }
 
@@ -399,7 +425,6 @@
         .modal-btn-submit { background: var(--primary); color: white; }
         .modal-btn-cancel { background: #475569; color: white; }
 
-        /* 이미지 확대 팝업 스타일 */
         .image-modal-overlay {
             display: none;
             position: fixed;
@@ -450,7 +475,6 @@
 
     <div class="board-container" id="boardContainer"></div>
 
-    <!-- 모달: 비밀번호 및 탭 추가 -->
     <div id="pwModal" class="modal-overlay">
         <div class="modal-content">
             <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
@@ -464,7 +488,6 @@
         </div>
     </div>
 
-    <!-- 이미지 확대 보기 팝업 -->
     <div id="imageModal" class="image-modal-overlay" onclick="closeImageModal()">
         <div class="image-modal-content">
             <img id="modalZoomedImg" src="" alt="확대된 이미지">
@@ -603,7 +626,6 @@
             document.getElementById('pwModal').style.display = "none";
         }
 
-        // 이미지 확대 팝업 제어 함수
         function openImageModal(imgSrc) {
             if (!imgSrc) return;
             document.getElementById('modalZoomedImg').src = imgSrc;
@@ -1013,6 +1035,9 @@
                     const isName = (col.id === 'c1');
                     const isJob = (col.id === 'c2');
                     
+                    // 오직 '무기강화' 열에만 특화 효과 적용
+                    const isWeaponEnchant = (col.title === '무기강화');
+
                     if (isJob) {
                         let optionsHtml = '';
                         let hasMatched = false;
@@ -1031,6 +1056,15 @@
                                     <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
                                         ${optionsHtml}
                                     </select>
+                                </div>
+                            </td>
+                        `;
+                    } else if (isWeaponEnchant) {
+                        // 무기강화 전용 클래스 적용
+                        html += `
+                            <td>
+                                <div class="td-box ${getEnchantClass(val)}">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} oninput="handleEnchantInput(this)">
                                 </div>
                             </td>
                         `;
@@ -1155,6 +1189,28 @@
             if (val.includes('어쌔신')) return 'job-assassin';
             if (val.includes('헌터')) return 'job-hunter';
             return 'job-default';
+        }
+
+        // 무기강화 숫자별 단계별 스타일 지정 (9, 10, 11강 임팩트 극대화)
+        function getEnchantClass(val) {
+            const num = parseInt(val);
+            if (isNaN(num)) return 'enchant-default';
+            if (num <= 6) return 'enchant-safe';     
+            if (num === 7) return 'enchant-7';     
+            if (num === 8) return 'enchant-8';     
+            if (num === 9) return 'enchant-9';     // 9강 보라빛 네온
+            if (num === 10) return 'enchant-10';   // 10강 주황빛 폭발
+            if (num === 11) return 'enchant-11';   // 11강 붉은빛 혈광
+            if (num >= 12) return 'enchant-12';    // 12강 이상 황금 만렙
+            return 'enchant-default';
+        }
+
+        function handleEnchantInput(inputElem) {
+            const tdBox = inputElem.closest('.td-box');
+            if (tdBox) {
+                const val = inputElem.value;
+                tdBox.className = 'td-box ' + getEnchantClass(val);
+            }
         }
 
         function handleJobChange(selectElem) {
