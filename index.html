@@ -487,7 +487,6 @@
             { id: "m2", title: "보스 레이드 지역", img: "", memo: "출현 시간 및 패턴 정리" }
         ];
 
-        // 🕵️ 히든직업별 무한 확장 단서 카드 구조 적용
         let hiddenJobsData = [
             { id: "h1", name: "히든직업 1", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
             { id: "h2", name: "히든직업 2", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
@@ -690,10 +689,12 @@
                     const nameElem = document.getElementById(`hidden_name_${jobIndex}`);
                     if (nameElem) job.name = nameElem.value;
                     
-                    job.items.forEach((item, itemIndex) => {
-                        const memoElem = document.getElementById(`hidden_memo_${jobIndex}_${itemIndex}`);
-                        if (memoElem) item.memo = memoElem.value;
-                    });
+                    if (job.items) {
+                        job.items.forEach((item, itemIndex) => {
+                            const memoElem = document.getElementById(`hidden_memo_${jobIndex}_${itemIndex}`);
+                            if (memoElem) item.memo = memoElem.value;
+                        });
+                    }
                 });
             } else {
                 const txtArea = document.getElementById('customTextArea');
@@ -805,7 +806,6 @@
             `;
         }
 
-        // 🕵️ 히든추리 탭 렌더링 함수 (무한 카드 추가/삭제 기능 완벽 이식)
         function renderHiddenTab(container) {
             let html = '';
             hiddenJobsData.forEach((job, jobIndex) => {
@@ -820,18 +820,20 @@
                         <div class="img-upload-grid">
                 `;
 
-                job.items.forEach((item, itemIndex) => {
-                    html += `
-                            <div class="img-card">
-                                <div class="img-card-preview" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">
-                                    ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+                if (job.items) {
+                    job.items.forEach((item, itemIndex) => {
+                        html += `
+                                <div class="img-card">
+                                    <div class="img-card-preview" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">
+                                        ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
+                                    </div>
+                                    <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
+                                    <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 추리 내용, 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
+                                    ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.85rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
                                 </div>
-                                <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
-                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 추리 내용, 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
-                                ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.85rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
-                            </div>
-                    `;
-                });
+                        `;
+                    });
+                }
 
                 html += `
                         </div>
@@ -874,10 +876,10 @@
             renderAll();
         }
 
-        // 히든 직업 단서 관련 핸들러 함수들
         function addHiddenItem(jobIndex) {
             if (!isEdit) return;
             syncInputsToData();
+            if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
             hiddenJobsData[jobIndex].items.push({ img: "", memo: "" });
             renderAll();
         }
