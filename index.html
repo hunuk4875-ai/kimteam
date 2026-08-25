@@ -240,7 +240,7 @@
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 90px;
+            height: 95px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -327,8 +327,8 @@
         .enchant-12 .enchant-select { color: #facc15 !important; text-shadow: 0 0 14px rgba(250, 204, 21, 0.9); }
 
         .profile-wrap {
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: #1e293b;
             border: 2px dashed var(--box-border);
@@ -342,7 +342,7 @@
         }
         .profile-wrap:hover { border-color: var(--text-gold); }
         .profile-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-wrap span { font-size: 0.75rem; color: #94a3b8; font-weight: bold; }
+        .profile-wrap span { font-size: 0.7rem; color: #94a3b8; font-weight: bold; }
         .file-input { display: none; }
 
         .btn-action-group { display: flex; gap: 2px; width: 100%; height: 100%; align-items: center; justify-content: center; }
@@ -1067,7 +1067,7 @@
             membersData.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 
-                // 프로필 사진 및 하단 생방송 바로가기 링크 생성
+                // 프로필 사진 및 하단 [방송국 바로가기] 링크 생성
                 const sId = soopIdMap[m.c1];
                 let profileCellHtml = `
                     <td>
@@ -1075,8 +1075,8 @@
                             <div class="profile-wrap" onclick="handleProfileClick(${idx}, '${m.c1}')">
                                 ${m.img ? `<img src="${m.img}" title="${m.c1} SOOP 방송국으로 이동">` : `<span>사진</span>`}
                             </div>
-                            <div style="font-size: 0.72rem; margin-top: 2px;">
-                                ${m.img && sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">🔴 생방송</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">대기중</span>`)}
+                            <div style="font-size: 0.75rem; margin-top: 2px;">
+                                ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국 바로가기</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">정보없음</span>`)}
                             </div>
                             <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
                         </div>
@@ -1166,13 +1166,9 @@
         // 프로필 클릭 시 방송국 이동 또는 업로드 처리 함수
         function handleProfileClick(idx, streamerName) {
             const member = membersData[idx];
-            if (member.img) {
-                const sId = soopIdMap[streamerName];
-                if (sId) {
-                    window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
-                } else {
-                    alert("등록된 SOOP 방송국 정보가 없습니다.");
-                }
+            const sId = soopIdMap[streamerName];
+            if (sId) {
+                window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
             } else if (isEdit) {
                 triggerFile(idx);
             }
