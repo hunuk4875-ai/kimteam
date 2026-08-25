@@ -258,7 +258,7 @@
             outline: none;
         }
 
-        /* --- 직업 색상 설정 (독립적인 파스텔/비비드 톤) --- */
+        /* --- 직업 색상 설정 --- */
         .job-select {
             width: 100%;
             height: 100%;
@@ -292,8 +292,7 @@
         .job-default { background-color: rgba(51, 65, 85, 0.3) !important; border-color: #64748b !important; }
         .job-default .job-select { color: #cbd5e1 !important; }
 
-
-        /* --- 무기 강화 드롭다운 및 단계별 전용 화려한 스타일 (직업과 색상 완전 분리) --- */
+        /* --- 무기 강화 스타일 --- */
         .enchant-select {
             width: 100%;
             height: 100%;
@@ -310,35 +309,20 @@
 
         .enchant-default { background-color: rgba(148, 163, 184, 0.05) !important; border-color: var(--box-border) !important; }
         .enchant-default .enchant-select { color: #94a3b8; }
-        
-        /* 0~6강: 안전 구간 */
         .enchant-safe { background-color: rgba(15, 23, 42, 0.6) !important; border-color: #475569 !important; }
         .enchant-safe .enchant-select { color: #e2e8f0 !important; }
-        
-        /* 7강: 청록색 빛 */
         .enchant-7 { background-color: rgba(13, 148, 136, 0.3) !important; border-color: #0d9488 !important; box-shadow: inset 0 0 10px rgba(13, 148, 136, 0.3); }
         .enchant-7 .enchant-select { color: #2dd4bf !important; }
-        
-        /* 8강: 블루빛 */
         .enchant-8 { background-color: rgba(37, 99, 235, 0.35) !important; border-color: #2563eb !important; box-shadow: inset 0 0 12px rgba(37, 99, 235, 0.4); }
         .enchant-8 .enchant-select { color: #60a5fa !important; }
-        
-        /* 9강: 보라빛 네온 영기 */
         .enchant-9 { background-color: rgba(147, 51, 234, 0.45) !important; border-color: #a855f7 !important; box-shadow: 0 0 16px rgba(168, 85, 247, 0.7), inset 0 0 12px rgba(168, 85, 247, 0.4); }
         .enchant-9 .enchant-select { color: #e879f9 !important; text-shadow: 0 0 8px rgba(232, 121, 249, 0.6); }
-        
-        /* 10강: 치명적인 주황빛 폭발 */
         .enchant-10 { background-color: rgba(234, 88, 12, 0.5) !important; border-color: #f97316 !important; box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), inset 0 0 15px rgba(249, 115, 22, 0.5); }
         .enchant-10 .enchant-select { color: #fdba74 !important; text-shadow: 0 0 10px rgba(253, 186, 116, 0.8); }
-        
-        /* 11강: 강렬한 피의 붉은빛 혈광 */
         .enchant-11 { background-color: rgba(220, 38, 38, 0.55) !important; border-color: #ef4444 !important; box-shadow: 0 0 24px rgba(239, 68, 68, 0.9), inset 0 0 18px rgba(239, 68, 68, 0.6); }
         .enchant-11 .enchant-select { color: #fca5a5 !important; text-shadow: 0 0 12px rgba(252, 165, 165, 0.9); }
-        
-        /* 12강 이상: 눈부신 황금빛 전설 */
         .enchant-12 { background-color: rgba(202, 138, 4, 0.5) !important; border-color: #eab308 !important; box-shadow: 0 0 28px rgba(234, 179, 8, 0.9), inset 0 0 20px rgba(234, 179, 8, 0.6); }
         .enchant-12 .enchant-select { color: #facc15 !important; text-shadow: 0 0 14px rgba(250, 204, 21, 0.9); }
-
 
         .profile-wrap {
             width: 68px;
@@ -552,19 +536,28 @@
             { id: "i7", title: "아이템 비고", width: "190px" }
         ];
 
+        let huntColumns = [
+            { id: "c1", title: "팀원명", width: "110px" },
+            { id: "c2", title: "직업", width: "110px" },
+            { id: "h_spot", title: "현재 사냥터", width: "150px" },
+            { id: "h_gold", title: "시간당 기대 수익(골드/재화)", width: "160px" },
+            { id: "h_drop", title: "주요 득템 현황", width: "160px" },
+            { id: "h_memo", title: "파밍 비고", width: "200px" }
+        ];
+
         let membersData = [
-            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" },
-            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" }
+            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" }
         ];
 
         let mapImages = [
@@ -600,7 +593,10 @@
         });
 
         function getCurrentColumns() {
-            return activeTab === 'spec' ? specColumns : itemColumns;
+            if (activeTab === 'spec') return specColumns;
+            if (activeTab === 'item') return itemColumns;
+            if (activeTab === 'hunt') return huntColumns;
+            return [];
         }
 
         function getPw() {
@@ -734,9 +730,9 @@
                 saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "inline-block";
                 addTabBtn.style.display = "inline-block";
-                if (activeTab === 'spec' || activeTab === 'item') {
+                if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block";
+                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
                 } else {
                     addBtn.style.display = "none";
                     addColBtn.style.display = "none";
@@ -757,14 +753,16 @@
         }
 
         function syncInputsToData() {
-            if (activeTab === 'spec' || activeTab === 'item') {
+            if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 const cols = getCurrentColumns();
-                const headerInputs = document.querySelectorAll('#headerRow input');
-                headerInputs.forEach(inp => {
-                    const colId = inp.dataset.colid;
-                    const colObj = cols.find(c => c.id === colId);
-                    if (colObj) colObj.title = inp.value;
-                });
+                if (activeTab !== 'hunt') {
+                    const headerInputs = document.querySelectorAll('#headerRow input');
+                    headerInputs.forEach(inp => {
+                        const colId = inp.dataset.colid;
+                        const colObj = cols.find(c => c.id === colId);
+                        if (colObj) colObj.title = inp.value;
+                    });
+                }
 
                 const rows = document.querySelectorAll('#tableBody tr');
                 rows.forEach((r, idx) => {
@@ -807,6 +805,7 @@
             let html = `
                 <div class="tab-btn-wrap"><button id="tabSpec" class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙 현황</button></div>
                 <div class="tab-btn-wrap"><button id="tabItem" class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabHunt" class="tab-btn ${activeTab === 'hunt' ? 'active' : ''}" onclick="switchTab('hunt')">💰 사냥효율</button></div>
                 <div class="tab-btn-wrap"><button id="tabMap" class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵 탭</button></div>
                 <div class="tab-btn-wrap"><button id="tabHidden" class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button></div>
             `;
@@ -839,10 +838,10 @@
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
 
-            if (activeTab === 'spec' || activeTab === 'item') {
+            if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 if (isEdit) {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block";
+                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
                     container.classList.add('editable');
                 } else {
                     addBtn.style.display = "none";
@@ -896,7 +895,7 @@
             container.innerHTML = `
                 <div class="section-box">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3 style="color:var(--text-gold);">🗺️ 맵 및 사냥터 정보 관리</h3>
+                        <h3 style="color:var(--text-gold);">🗺️ 사냥터 재화 정보 및 득템 명당 관리</h3>
                         ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
                     </div>
                     <div class="img-upload-grid">${cardsHtml}</div>
@@ -966,7 +965,7 @@
         }
         function addMapCard() {
             syncInputsToData();
-            mapImages.push({ id: "m_" + Date.now(), title: "새로운 맵/지역", img: "", memo: "" });
+            mapImages.push({ id: "m_" + Date.now(), title: "새로운 사냥터", img: "", memo: "" });
             renderAll();
         }
         function delMapCard(idx) {
@@ -1020,14 +1019,17 @@
             cols.forEach((col, idx) => {
                 const th = document.createElement('th');
                 th.style.width = col.width || "100px";
+                const isFixedHuntCol = (activeTab === 'hunt' && (col.id === 'c1' || col.id === 'c2'));
+                
                 th.innerHTML = `
                     <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${(!isEdit || activeTab === 'hunt') ? 'readonly' : ''}>
+                        ${(isEdit && activeTab !== 'hunt') ? `
                         <div class="col-btn-group">
-                            <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
-                            <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                            <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                            <button class="col-btn-mv" onclick="moveColumn(${idx}, 1)">▶</button>
                             <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
-                        </div>
+                        </div>` : ''}
                     </div>
                 `;
                 tr.appendChild(th);
@@ -1061,7 +1063,7 @@
                     const val = m[col.id] || "0";
                     const isName = (col.id === 'c1');
                     const isJob = (col.id === 'c2');
-                    const isWeaponEnchant = (col.title === '무기강화');
+                    const isWeaponEnchant = (activeTab === 'spec' && col.title === '무기강화');
 
                     if (isJob) {
                         let optionsHtml = '';
@@ -1109,7 +1111,7 @@
                         html += `
                             <td>
                                 <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${(!isEdit || (activeTab === 'hunt' && isName)) ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
                                 </div>
                             </td>
                         `;
@@ -1150,7 +1152,7 @@
         function addRow() {
             if (!isEdit) return;
             syncInputsToData();
-            let newObj = { img: "", c1: "새팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "" };
+            let newObj = { img: "", c1: "새팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" };
             membersData.push(newObj);
             renderBody();
         }
@@ -1165,7 +1167,7 @@
         }
 
         function addColumn() {
-            if (!isEdit || (activeTab !== 'spec' && activeTab !== 'item')) return;
+            if (!isEdit || activeTab === 'hunt' || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
             syncInputsToData();
             const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
             if (!title) return;
@@ -1182,12 +1184,12 @@
         }
 
         function delColumn(colId) {
-            if (!isEdit) return;
+            if (!isEdit || activeTab === 'hunt') return;
             if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
                 syncInputsToData();
                 if (activeTab === 'spec') {
                     specColumns = specColumns.filter(c => c.id !== colId);
-                } else {
+                } else if (activeTab === 'item') {
                     itemColumns = itemColumns.filter(c => c.id !== colId);
                 }
                 renderAll();
@@ -1195,7 +1197,7 @@
         }
 
         function moveColumn(colIdx, dir) {
-            if (!isEdit) return;
+            if (!isEdit || activeTab === 'hunt') return;
             syncInputsToData();
             const cols = getCurrentColumns();
             const targetIdx = colIdx + dir;
