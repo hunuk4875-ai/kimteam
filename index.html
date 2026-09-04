@@ -35,7 +35,6 @@
         window.addColumn = addColumn;
         window.addRow = addRow;
         window.openAddTabModal = openAddTabModal;
-        window.saveData = saveData;
         window.openPwChangeModal = openPwChangeModal;
         window.switchTab = switchTab;
         window.deleteCustomTab = deleteCustomTab;
@@ -625,7 +624,6 @@
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
-                <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
             </div>
         </div>
@@ -754,7 +752,6 @@
         ];
         let customTabs = [];
 
-        // 산해궁 커뮤니티 데이터 구조 (탭별 게시글 배열 및 공지사항 내용)
         let sanhaeNoticeContent = "⚽ 산해궁 클럽 공식 공지사항입니다. (관리자만 작성/수정 가능합니다)";
         let commPosts = {
             squad: [
@@ -796,6 +793,27 @@
             checkAndUpdateMyAuth();
             updateSanhaeAuthUI();
         });
+
+        function syncSaveToFirebase() {
+            syncInputsToData();
+            const dataToSave = {
+                specColumns,
+                itemColumns,
+                huntColumns,
+                membersData,
+                mapImages,
+                hiddenJobsData,
+                customTabs,
+                pendingApplicants,
+                approvedMembers,
+                sanhaeData: {
+                    noticeContent: sanhaeNoticeContent,
+                    commPosts,
+                    customTabs: sanhaeCustomTabs
+                }
+            };
+            window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+        }
 
         function checkAndUpdateMyAuth() {
             if (myAuthStatus !== 'admin' && myForestNick) {
@@ -1082,7 +1100,7 @@
         }
 
         function returnToLobby() {
-            syncInputsToData();
+            syncSaveToFirebase();
             isEdit = false;
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
@@ -1100,7 +1118,7 @@
         }
 
         function switchTab(tab) {
-            syncInputsToData();
+            syncSaveToFirebase();
             activeTab = tab;
             currentViewingPostId = null;
             renderAll();
@@ -1142,8 +1160,14 @@
         }
 
         function openAddTabModal() {
+            // 요구사항: 탭 추가는 관리자만 할 수 있게 제한
+            if (myAuthStatus !== 'admin') {
+                alert("탭 추가 권한은 관리자에게만 있습니다.");
+                return;
+            }
+
             modalMode = 'addTab';
-            document.getElementById('modalTitle').innerText = "➕ 새 탭 추가";
+            document.getElementById('modalTitle').innerText = "➕ 새 탭 추가 (관리자 전용)";
             document.getElementById('pwInput').style.display = "none";
             document.getElementById('pwNewInput').style.display = "none";
             document.getElementById('customTabInput').style.display = "block";
@@ -1206,8 +1230,8 @@
                     alert("현재 비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'addTab') {
-                if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
-                    alert("회원 또는 관리자만 탭을 추가할 수 있습니다.");
+                if (myAuthStatus !== 'admin') {
+                    alert("관리자만 탭을 추가할 수 있습니다.");
                     closeModal();
                     return;
                 }
@@ -1221,6 +1245,7 @@
                         commPosts[newId] = [];
                     }
                     activeTab = newId;
+                    syncSaveToFirebase();
                     closeModal();
                     renderAll();
                 } else {
@@ -1267,7 +1292,6 @@
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
             const addTabBtn = document.getElementById('addTabBtn');
-            const saveBtn = document.getElementById('saveBtn');
             const pwChangeBtn = document.getElementById('pwChangeBtn');
             const applyBtn = document.getElementById('applyBtn');
             const memberLoginBtn = document.getElementById('memberLoginBtn');
@@ -1300,9 +1324,8 @@
                 badge.innerText = "✏️ 관리자 수정 모드";
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
-                saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "inline-block";
-                addTabBtn.style.display = "inline-block";
+                addTabBtn.style.display = "inline-block"; // 관리자이므로 탭 추가 버튼 표시
 
                 if (currentCategory === 'kimteam' && (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt')) {
                     addBtn.style.display = "inline-block";
@@ -1317,9 +1340,14 @@
                 authBtn.innerText = "🔓 관리자 권한";
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
-                addTabBtn.style.display = "inline-block"; // 산해궁 일반회원도 탭 추가 가능하도록 활성화 유지
-                saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "none";
+                
+                // 관리자 로그인 상태일 때만 탭 추가 버튼 표시
+                if (myAuthStatus === 'admin') {
+                    addTabBtn.style.display = "inline-block";
+                } else {
+                    addTabBtn.style.display = "none";
+                }
             }
 
             renderTabBar();
@@ -1384,6 +1412,8 @@
             const tabBar = document.getElementById('tabBar');
             let html = '';
 
+            const canDeleteTab = (myAuthStatus === 'admin');
+
             if (currentCategory === 'kimteam') {
                 html += `
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙</button></div>
@@ -1394,9 +1424,9 @@
                 `;
                 customTabs.forEach(t => {
                     html += `
-                        <div class="tab-btn-wrap ${isEdit ? 'editable-tabs' : ''}">
+                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
                             <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
-                            <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>
+                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
                         </div>
                     `;
                 });
@@ -1408,9 +1438,9 @@
                 `;
                 sanhaeCustomTabs.forEach(t => {
                     html += `
-                        <div class="tab-btn-wrap editable-tabs">
+                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
                             <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
-                            <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>
+                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
                         </div>
                     `;
                 });
@@ -1420,9 +1450,8 @@
         }
 
         function deleteCustomTab(tabId) {
-            if (currentCategory === 'kimteam' && !isEdit) return;
-            if (currentCategory === 'sanhae' && myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
-                alert("권한이 없습니다.");
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 탭을 삭제할 수 있습니다.");
                 return;
             }
             if (confirm("이 탭을 삭제하시겠습니까?")) {
@@ -1434,6 +1463,7 @@
                     delete commPosts[tabId];
                     if (activeTab === tabId) activeTab = 'notice';
                 }
+                syncSaveToFirebase();
                 renderTabBar();
                 renderAll();
             }
@@ -1483,7 +1513,6 @@
                 container.classList.remove('editable');
 
                 if (activeTab === 'notice') {
-                    // 공지사항 탭: 관리자만 수정 가능, 댓글 없음
                     const canEditNotice = (myAuthStatus === 'admin');
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
@@ -1491,17 +1520,15 @@
                                 <h3 style="color:#34d399; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항 (댓글 작성 불가)</h3>
                                 ${canEditNotice ? '<span style="font-size:0.85rem; color:#34d399;">관리자 수정 모드 활성화됨</span>' : '<span style="font-size:0.85rem; color:#94a3b8;">관리자만 수정할 수 있습니다</span>'}
                             </div>
-                            <textarea id="sanhaeNoticeArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEditNotice ? 'readonly' : ''}>${sanhaeNoticeContent}</textarea>
+                            <textarea id="sanhaeNoticeArea" oninput="syncSaveToFirebase()" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEditNotice ? 'readonly' : ''}>${sanhaeNoticeContent}</textarea>
                         </div>
                     `;
                 } else {
-                    // 공지사항을 제외한 모든 탭 (스쿼드, 산이봤?, 커스텀탭): 일반 커뮤니티 게시판 형태 (로그인 시 글쓰기/댓글/추천 가능)
                     renderCommunityBoard(container, activeTab);
                 }
             }
         }
 
-        // --- 클럽 커뮤니티 렌더링 함수들 ---
         function renderCommunityBoard(container, tabKey) {
             if (!commPosts[tabKey]) commPosts[tabKey] = [];
             const posts = commPosts[tabKey];
@@ -1666,42 +1693,44 @@
                     const isMyComment = (c.author === myForestNick || myAuthStatus === 'admin');
                     html += `
                         <div class="comment-item">
-                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
-                                <b style="color:var(--text-gold);">${c.author}</b>
-                                <span style="color:#94a3b8;">${c.date}</span>
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-gold); margin-bottom:4px;">
+                                <div><b>${c.author}</b> <span style="color:#94a3b8; font-size:0.75rem;">(${c.date})</span></div>
+                                ${isMyComment ? `<button style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem;" onclick="deleteComment('${tabKey}', ${postId}, ${cIdx})">삭제</button>` : ''}
                             </div>
-                            <div style="font-size:0.95rem; word-break:break-all;">${c.content}</div>
-                            ${isMyComment ? `<div style="text-align:right;"><button style="background:none; border:none; color:var(--danger); font-size:0.75rem; cursor:pointer;" onclick="deleteComment('${tabKey}', ${postId}, ${cIdx})">삭제</button></div>` : ''}
+                            <div style="font-size:0.95rem; color:var(--text-light); white-space:pre-wrap;">${c.content}</div>
                         </div>
                     `;
                 });
             }
 
-            html += `
+            html += `</div>`;
+
+            if (canInteract) {
+                html += `
+                    <div style="display:flex; gap:8px; margin-top:15px;">
+                        <input type="text" id="commentInput_${postId}" class="modal-input" placeholder="댓글을 입력하세요" style="margin-bottom:0; text-align:left;" onkeyup="if(event.key==='Enter') addComment('${tabKey}', ${postId})">
+                        <button class="btn btn-add" style="white-space:nowrap;" onclick="addComment('${tabKey}', ${postId})">댓글 등록</button>
                     </div>
-                    ${canInteract ? `
-                        <div style="display:flex; gap:8px; margin-top:15px;">
-                            <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." class="modal-input" style="margin-bottom:0; text-align:left;">
-                            <button class="btn btn-add" style="white-space:nowrap;" onclick="addComment('${tabKey}', ${postId})">댓글 등록</button>
-                        </div>
-                    ` : `<div style="color:#94a3b8; font-size:0.9rem; text-align:center; padding:10px; background:var(--box-bg); border-radius:6px;">로그인한 회원만 댓글을 작성할 수 있습니다.</div>`}
-                </div>
-            `;
+                `;
+            } else {
+                html += `<div style="color:#94a3b8; font-size:0.9rem; margin-top:10px;">로그인 후 댓글을 작성할 수 있습니다.</div>`;
+            }
+
+            html += `</div>`;
             container.innerHTML = html;
         }
 
         function votePost(tabKey, postId, type) {
             if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
-                alert("로그인한 회원만 추천/비추천할 수 있습니다.");
+                alert("로그인한 승인 회원만 추천할 수 있습니다.");
                 return;
             }
-            const posts = commPosts[tabKey];
-            const post = posts.find(p => p.id === postId);
+            const post = commPosts[tabKey].find(p => p.id === postId);
             if (!post) return;
 
             if (!post.voters) post.voters = [];
             if (post.voters.includes(myForestNick)) {
-                alert("이미 추천 또는 비추천을 하셨습니다.");
+                alert("이미 평가한 게시글입니다.");
                 return;
             }
 
@@ -1713,44 +1742,8 @@
             renderAll();
         }
 
-        function addComment(tabKey, postId) {
-            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
-                alert("로그인한 회원만 댓글을 작성할 수 있습니다.");
-                return;
-            }
-            const input = document.getElementById('commentInput');
-            const content = input.value.trim();
-            if (!content) return;
-
-            const posts = commPosts[tabKey];
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-
-            post.comments.push({
-                author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
-                content,
-                date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-
-            input.value = "";
-            syncSaveToFirebase();
-            renderAll();
-        }
-
-        function deleteComment(tabKey, postId, cIdx) {
-            if (confirm("댓글을 삭제하시겠습니까?")) {
-                const posts = commPosts[tabKey];
-                const post = posts.find(p => p.id === postId);
-                if (post && post.comments[cIdx]) {
-                    post.comments.splice(cIdx, 1);
-                    syncSaveToFirebase();
-                    renderAll();
-                }
-            }
-        }
-
         function deletePost(tabKey, postId) {
-            if (confirm("이 게시글을 삭제하시겠습니까?")) {
+            if (confirm("정말 게시글을 삭제하시겠습니까?")) {
                 commPosts[tabKey] = commPosts[tabKey].filter(p => p.id !== postId);
                 currentViewingPostId = null;
                 syncSaveToFirebase();
@@ -1758,232 +1751,119 @@
             }
         }
 
-        function renderMapTab(container) {
-            let cardsHtml = '';
-            mapImages.forEach((item, idx) => {
-                cardsHtml += `
-                    <div class="img-card">
-                        <input type="text" id="map_title_${idx}" value="${item.title}" ${!isEdit ? 'readonly' : ''} placeholder="맵/지역 이름">
-                        <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerMapFile(${idx})` : '')}">
-                            ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
-                        </div>
-                        <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
-                        ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem; margin-top:2px;" onclick="triggerMapFile(${idx})">사진 변경/업로드</button>` : ''}
-                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보 및 메모">${item.memo}</textarea>
-                        ${isEdit ? `<button class="btn btn-del" style="padding:6px; font-size:0.85rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
-                    </div>
-                `;
+        function addComment(tabKey, postId) {
+            const input = document.getElementById(`commentInput_${postId}`);
+            if (!input || !input.value.trim()) return;
+
+            const post = commPosts[tabKey].find(p => p.id === postId);
+            if (!post) return;
+
+            if (!post.comments) post.comments = [];
+            post.comments.push({
+                author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                content: input.value.trim(),
+                date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             });
 
-            container.innerHTML = `
-                <div class="section-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                        <h3 style="color:var(--text-gold); font-size: 1.1rem;">🗺️ 사냥터 재화 정보 관리</h3>
-                        ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
-                    </div>
-                    <div class="img-upload-grid">${cardsHtml}</div>
-                </div>
-            `;
+            syncSaveToFirebase();
+            renderAll();
         }
 
-        function renderHiddenTab(container) {
-            let html = '';
-            hiddenJobsData.forEach((job, jobIndex) => {
-                html += `
-                    <div class="section-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" 
-                                style="background:transparent; border:none; color:var(--text-gold); font-size:1.1rem; font-weight:bold; outline:none; width: 200px;" 
-                                ${!isEdit ? 'readonly' : ''}>
-                            ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addHiddenItem(${jobIndex})">+ 단서 추가</button>` : ''}
-                        </div>
-                        <div class="img-upload-grid">
-                `;
-
-                if (job.items) {
-                    job.items.forEach((item, itemIndex) => {
-                        html += `
-                                <div class="img-card">
-                                    <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerHiddenFile(${jobIndex}, ${itemIndex})` : '')}">
-                                        ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
-                                    </div>
-                                    <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
-                                    ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem; margin-top:2px;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">사진 변경</button>` : ''}
-                                    <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건 및 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
-                                    ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.9rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
-                                </div>
-                        `;
-                    });
+        function deleteComment(tabKey, postId, commentIdx) {
+            if (confirm("댓글을 삭제하시겠습니까?")) {
+                const post = commPosts[tabKey].find(p => p.id === postId);
+                if (post && post.comments) {
+                    post.comments.splice(commentIdx, 1);
+                    syncSaveToFirebase();
+                    renderAll();
                 }
-                html += `</div></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function renderCustomTab(container) {
-            const found = customTabs.find(t => t.id === activeTab);
-            const contentVal = found ? found.content : "";
-            container.innerHTML = `
-                <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom: 12px; font-size: 1.1rem;">📌 ${found ? found.name : '사용자 탭'}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
-                </div>
-            `;
-        }
-
-        function triggerMapFile(idx) { document.getElementById(`map_file_${idx}`).click(); }
-        function uploadMapImg(e, idx) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                mapImages[idx].img = evt.target.result;
-                renderAll();
-            };
-            reader.readAsDataURL(file);
-        }
-        function addMapCard() {
-            syncInputsToData();
-            mapImages.push({ id: "m_" + Date.now(), title: "새로운 사냥터", img: "", memo: "" });
-            renderAll();
-        }
-        function delMapCard(idx) {
-            syncInputsToData();
-            mapImages.splice(idx, 1);
-            renderAll();
-        }
-
-        function addHiddenItem(jobIndex) {
-            if (!isEdit) return;
-            syncInputsToData();
-            if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
-            hiddenJobsData[jobIndex].items.push({ img: "", memo: "" });
-            renderAll();
-        }
-
-        function delHiddenItem(jobIndex, itemIndex) {
-            if (!isEdit) return;
-            syncInputsToData();
-            if (confirm("이 단서 카드를 삭제하시겠습니까?")) {
-                hiddenJobsData[jobIndex].items.splice(itemIndex, 1);
-                renderAll();
             }
         }
 
-        function triggerHiddenFile(jobIndex, itemIndex) {
-            if (!isEdit) return;
-            syncInputsToData();
-            const fileInput = document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`);
-            if (fileInput) fileInput.click();
-        }
-
-        function uploadHiddenImg(e, jobIndex, itemIndex) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                syncInputsToData();
-                hiddenJobsData[jobIndex].items[itemIndex].img = evt.target.result;
-                renderAll();
-            };
-            reader.readAsDataURL(file);
-        }
-
+        // --- 코창서버 내실표 테이블 관련 렌더링 함수들 ---
         function renderHeader() {
-            const tr = document.getElementById('headerRow');
-            if (!tr) return;
-            tr.innerHTML = `<th style="width: 70px;"><div class="th-box">프로필</div></th>`;
-
+            const headerRow = document.getElementById('headerRow');
             const cols = getCurrentColumns();
-            cols.forEach((col, idx) => {
-                const th = document.createElement('th');
-                th.style.width = col.width || "100px";
-                th.innerHTML = `
-                    <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
-                        ${isEdit ? `
-                        <div class="col-btn-group">
-                            <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
-                            <button class="col-btn-mv" onclick="moveColumn(${idx}, 1)">▶</button>
-                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
-                        </div>` : ''}
-                    </div>
+            let html = '';
+
+            cols.forEach((col, index) => {
+                html += `
+                    <th style="width: ${col.width || 'auto'}">
+                        <div class="th-box">
+                            <input type="text" value="${col.title}" data-colid="${col.id}" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
+                            <div class="col-btn-group">
+                                <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
+                                <button class="btn-col-del" onclick="delColumn(${index})">✕</button>
+                                <button class="btn-col-mv" onclick="moveColumn(${index}, 1)">▶</button>
+                            </div>
+                        </div>
+                    </th>
                 `;
-                tr.appendChild(th);
             });
 
             if (isEdit) {
-                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
+                html += `<th style="width: 80px;"><div class="th-box" style="color:#94a3b8; font-size:0.8rem;">관리</div></th>`;
             }
+            headerRow.innerHTML = html;
         }
 
         function renderBody() {
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+            const tableBody = document.getElementById('tableBody');
             const cols = getCurrentColumns();
+            let html = '';
 
-            membersData.forEach((m, idx) => {
-                const tr = document.createElement('tr');
-                const sId = soopIdMap[m.c1];
-                let profileCellHtml = `
-                    <td>
-                        <div class="td-box">
-                            <div class="profile-wrap" onclick="handleProfileClick(${idx}, '${m.c1}')">
-                                ${m.img ? `<img src="${m.img}" title="${m.c1} SOOP 방송국으로 이동">` : `<span>사진</span>`}
-                            </div>
-                            <div style="font-size: 0.7rem; margin-top: 2px;">
-                                ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">-</span>`)}
-                            </div>
-                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
-                        </div>
-                    </td>
-                `;
-
-                let html = profileCellHtml;
+            membersData.forEach((row, rIndex) => {
+                html += `<tr>`;
                 cols.forEach(col => {
-                    const val = m[col.id] || "0";
-                    const isName = (col.id === 'c1');
-                    const isJob = (col.id === 'c2');
-                    const isWeaponEnchant = (activeTab === 'spec' && col.title === '무기강화');
+                    const val = row[col.id] || '';
+                    if (col.id === 'c2') {
+                        let jobClass = 'job-default';
+                        if (val === '나이트') jobClass = 'job-knight';
+                        else if (val === '위자드') jobClass = 'job-wizard';
+                        else if (val === '워리어') jobClass = 'job-warrior';
+                        else if (val === '어쌔신') jobClass = 'job-assassin';
+                        else if (val === '헌터') jobClass = 'job-hunter';
 
-                    if (isJob) {
-                        let optionsHtml = '';
-                        let hasMatched = false;
-                        JOB_LIST.forEach(j => {
-                            const selected = (val === j) ? 'selected' : '';
-                            if (selected) hasMatched = true;
-                            optionsHtml += `<option value="${j}" ${selected}>${j}</option>`;
-                        });
-                        if (!hasMatched && val) {
-                            optionsHtml = `<option value="${val}" selected>${val}</option>` + optionsHtml;
-                        }
                         html += `
                             <td>
-                                <div class="td-box job-tag ${getJobClass(val)}">
-                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
-                                        ${optionsHtml}
+                                <div class="td-box job-tag ${jobClass}">
+                                    <select class="job-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                        <option value="">직업선택</option>
+                                        ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
                                     </select>
                                 </div>
                             </td>
                         `;
-                    } else if (isWeaponEnchant) {
-                        let optionsHtml = '';
-                        let hasMatched = false;
-                        ENCHANT_LIST.forEach(e => {
-                            const selected = (val === e) ? 'selected' : '';
-                            if (selected) hasMatched = true;
-                            optionsHtml += `<option value="${e}" ${selected}>+${e}강</option>`;
-                        });
-                        if (!hasMatched && val) {
-                            optionsHtml = `<option value="${val}" selected>+${val}강</option>` + optionsHtml;
-                        }
+                    } else if (col.id === 'c3' || col.id === 'c4') {
+                        let enClass = 'enchant-default';
+                        if (val === 'safe') enClass = 'enchant-safe';
+                        else if (['7', '8', '9', '10', '11', '12'].includes(val)) enClass = `enchant-${val}`;
+
                         html += `
                             <td>
-                                <div class="td-box ${getEnchantClass(val)}">
-                                    <select class="enchant-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleEnchantChange(this)">
-                                        ${optionsHtml}
+                                <div class="td-box ${enClass}">
+                                    <select class="enchant-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                        <option value="">강화</option>
+                                        <option value="safe" ${val === 'safe' ? 'selected' : ''}>안전강화</option>
+                                        ${ENCHANT_LIST.map(e => `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}</option>`).join('')}
                                     </select>
+                                </div>
+                            </td>
+                        `;
+                    } else if (col.id === 'c1') {
+                        const profileImg = row.profileImg || '';
+                        const soopId = soopIdMap[val];
+                        const soopLink = soopId ? `https://ch.sooplive.co.kr/${soopId}` : '#';
+                        const hasSoop = !!soopId;
+
+                        html += `
+                            <td>
+                                <div class="td-box" style="gap:2px;">
+                                    <div class="profile-wrap" onclick="handleProfileClick(${rIndex})" title="프로필 이미지 변경">
+                                        ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
+                                    </div>
+                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()" placeholder="이름" style="font-weight:bold; font-size:0.9rem;">
+                                    ${hasSoop ? `<a href="${soopLink}" target="_blank" style="font-size:0.65rem; color:#38bdf8; text-decoration:none;">🔴 숲방송</a>` : ''}
                                 </div>
                             </td>
                         `;
@@ -1991,7 +1871,7 @@
                         html += `
                             <td>
                                 <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${(!isEdit) ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()">
                                 </div>
                             </td>
                         `;
@@ -2001,168 +1881,232 @@
                 if (isEdit) {
                     html += `
                         <td>
-                            <div class="td-box" style="padding:2px; border:none; background:transparent;">
-                                <div class="btn-action-group">
-                                    <button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button>
-                                    <button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button>
-                                    <button class="btn-del" onclick="delRow(${idx})">삭제</button>
-                                </div>
+                            <div class="btn-action-group">
+                                <button class="btn-move" onclick="moveRow(${rIndex}, -1)">▲</button>
+                                <button class="btn-del" onclick="delRow(${rIndex})">✕</button>
+                                <button class="btn-move" onclick="moveRow(${rIndex}, 1)">▼</button>
                             </div>
                         </td>
                     `;
                 }
-
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
+                html += `</tr>`;
             });
-        }
 
-        function handleProfileClick(idx, streamerName) {
-            const sId = soopIdMap[streamerName];
-            if (sId) {
-                window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
-            } else if (isEdit) {
-                triggerFile(idx);
-            }
-        }
-
-        function triggerFile(idx) { document.getElementById(`f-${idx}`).click(); }
-        function uploadImg(e, idx) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                membersData[idx].img = evt.target.result;
-                renderBody();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function addRow() {
-            if (!isEdit) return;
-            syncInputsToData();
-            let newObj = { img: "", c1: "새팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" };
-            membersData.push(newObj);
-            renderBody();
-        }
-
-        function delRow(idx) {
-            if (!isEdit) return;
-            if (confirm("해당 팀원을 삭제하시겠습니까?")) {
-                syncInputsToData();
-                membersData.splice(idx, 1);
-                renderBody();
-            }
+            tableBody.innerHTML = html;
         }
 
         function addColumn() {
-            if (!isEdit || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
-            syncInputsToData();
-            const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
-            if (!title) return;
-
+            if (!isEdit) return;
             const cols = getCurrentColumns();
-            const prefix = (activeTab === 'spec' ? 'c_' : (activeTab === 'item' ? 'i_' : 'h_'));
-            const newId = prefix + Date.now();
-            cols.push({ id: newId, title: title.trim(), width: "100px" });
-
-            membersData.forEach(m => { if (m[newId] === undefined) m[newId] = "0"; });
+            const newId = 'col_' + Date.now();
+            cols.push({ id: newId, title: "새열", width: "100px" });
+            syncSaveToFirebase();
             renderAll();
         }
 
-        function delColumn(colId) {
-            if (!isEdit) return;
-            if (colId === 'c1' || colId === 'c2') {
-                alert("팀원명과 직업 열은 삭제할 수 없습니다.");
-                return;
-            }
-            if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
-                syncInputsToData();
-                if (activeTab === 'spec') specColumns = specColumns.filter(c => c.id !== colId);
-                else if (activeTab === 'item') itemColumns = itemColumns.filter(c => c.id !== colId);
-                else if (activeTab === 'hunt') huntColumns = huntColumns.filter(c => c.id !== colId);
+        function moveColumn(index, direction) {
+            const cols = getCurrentColumns();
+            const target = index + direction;
+            if (target >= 0 && target < cols.length) {
+                const temp = cols[index];
+                cols[index] = cols[target];
+                cols[target] = temp;
+                syncSaveToFirebase();
                 renderAll();
             }
         }
 
-        function moveColumn(colIdx, dir) {
-            if (!isEdit) return;
-            syncInputsToData();
+        function delColumn(index) {
             const cols = getCurrentColumns();
-            const targetIdx = colIdx + dir;
-            if (targetIdx < 0 || targetIdx >= cols.length) return;
-            const temp = cols[colIdx];
-            cols[colIdx] = cols[targetIdx];
-            cols[targetIdx] = temp;
+            if (cols.length <= 1) {
+                alert("최소 1개 이상의 열이 있어야 합니다.");
+                return;
+            }
+            cols.splice(index, 1);
+            syncSaveToFirebase();
             renderAll();
         }
 
-        function moveRow(idx, dir) {
+        function addRow() {
             if (!isEdit) return;
-            syncInputsToData();
-            const targetIdx = idx + dir;
-            if (targetIdx < 0 || targetIdx >= membersData.length) return;
-            let tempRow = membersData[idx];
-            membersData[idx] = membersData[targetIdx];
-            membersData[targetIdx] = tempRow;
-            renderBody();
+            const cols = getCurrentColumns();
+            let newRow = {};
+            cols.forEach(c => newRow[c.id] = "");
+            membersData.push(newRow);
+            syncSaveToFirebase();
+            renderAll();
         }
 
-        function getJobClass(jobText) {
-            if (!jobText) return 'job-default';
-            const val = jobText.trim();
-            if (val.includes('나이트')) return 'job-knight';
-            if (val.includes('위자드')) return 'job-wizard';
-            if (val.includes('워리어')) return 'job-warrior';
-            if (val.includes('어쌔신')) return 'job-assassin';
-            if (val.includes('헌터')) return 'job-hunter';
-            return 'job-default';
+        function moveRow(index, direction) {
+            const target = index + direction;
+            if (target >= 0 && target < membersData.length) {
+                const temp = membersData[index];
+                membersData[index] = membersData[target];
+                membersData[target] = temp;
+                syncSaveToFirebase();
+                renderAll();
+            }
         }
 
-        function getEnchantClass(val) {
-            const num = parseInt(val);
-            if (isNaN(num)) return 'enchant-default';
-            if (num <= 6) return 'enchant-safe';     
-            if (num === 7) return 'enchant-7';     
-            if (num === 8) return 'enchant-8';     
-            if (num === 9) return 'enchant-9';     
-            if (num === 10) return 'enchant-10';   
-            if (num === 11) return 'enchant-11';   
-            if (num >= 12) return 'enchant-12';    
-            return 'enchant-default';
+        function delRow(index) {
+            membersData.splice(index, 1);
+            syncSaveToFirebase();
+            renderAll();
         }
 
-        function handleEnchantChange(selectElem) {
-            const tdBox = selectElem.closest('.td-box');
-            if (tdBox) tdBox.className = 'td-box ' + getEnchantClass(selectElem.value);
-        }
-
-        function handleJobChange(selectElem) {
-            const tdBox = selectElem.closest('.td-box');
-            if (tdBox) tdBox.className = 'td-box job-tag ' + getJobClass(selectElem.value);
-        }
-
-        function syncSaveToFirebase() {
-            const dataToSave = {
-                specColumns, itemColumns, huntColumns, membersData, mapImages, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
+        function handleProfileClick(rIndex) {
+            if (!isEdit) return;
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        membersData[rIndex].profileImg = event.target.result;
+                        syncSaveToFirebase();
+                        renderAll();
+                    };
+                    reader.readAsDataURL(file);
+                }
             };
-            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
-            window.dbSet(dbRefInstance, dataToSave).catch((error) => {
-                console.error("데이터 동기화 실패: " + error.message);
+            input.click();
+        }
+
+        function renderMapTab(container) {
+            let html = `
+                <div class="section-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
+                        ${isEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
+                    </div>
+                    <div class="img-upload-grid">
+            `;
+
+            if (mapImages.length === 0) {
+                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 맵 카드가 없습니다.</div>`;
+            } else {
+                mapImages.forEach((item, idx) => {
+                    html += `
+                        <div class="img-card">
+                            <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
+                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
+                            </div>
+                            ${isEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
+                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
+                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                            ${isEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function addMapCard() {
+            mapImages.push({ title: "새 맵", memo: "", img: "" });
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function delMapCard(idx) {
+            mapImages.splice(idx, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function triggerMapFile(idx) {
+            document.getElementById(`map_file_${idx}`).click();
+        }
+
+        function uploadMapImg(idx) {
+            const file = document.getElementById(`map_file_${idx}`).files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    mapImages[idx].img = e.target.result;
+                    syncSaveToFirebase();
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderHiddenTab(container) {
+            let html = '';
+            hiddenJobsData.forEach((job, jobIndex) => {
+                html += `
+                    <div class="section-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" oninput="syncSaveToFirebase()" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isEdit ? 'readonly' : ''}>
+                            ${isEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
+                        </div>
+                        <div class="img-upload-grid">
+                `;
+
+                if (!job.items || job.items.length === 0) {
+                    html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 히든 정보가 없습니다.</div>`;
+                } else {
+                    job.items.forEach((item, itemIndex) => {
+                        html += `
+                            <div class="img-card">
+                                <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
+                                    ${item.img ? `<img src="${item.img}">` : `<span>이미지</span>`}
+                                </div>
+                                ${isEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
+                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                                ${isEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                html += `</div></div>`;
             });
+            container.innerHTML = html;
         }
 
-        function saveData() {
-            syncInputsToData();
-            const dataToSave = {
-                specColumns, itemColumns, huntColumns, membersData, mapImages, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
-            };
-            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
-            window.dbSet(dbRefInstance, dataToSave)
-                .then(() => alert("성공적으로 저장(실시간 동기화)되었습니다!"))
-                .catch((error) => alert("저장 실패: " + error.message));
+        function addHiddenItem(jobIndex) {
+            if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
+            hiddenJobsData[jobIndex].items.push({ memo: "", img: "" });
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function delHiddenItem(jobIndex, itemIndex) {
+            hiddenJobsData[jobIndex].items.splice(itemIndex, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function triggerHiddenFile(jobIndex, itemIndex) {
+            document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).click();
+        }
+
+        function uploadHiddenImg(jobIndex, itemIndex) {
+            const file = document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    hiddenJobsData[jobIndex].items[itemIndex].img = e.target.result;
+                    syncSaveToFirebase();
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderCustomTab(container) {
+            const found = customTabs.find(t => t.id === activeTab);
+            if (!found) return;
+
+            container.innerHTML = `
+                <div class="section-box">
+                    <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
+                    <textarea id="customTextArea" oninput="syncSaveToFirebase()" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
+                </div>
+            `;
         }
     </script>
 </body>
