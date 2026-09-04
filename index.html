@@ -1662,7 +1662,6 @@
         function getEmbedVideoHtml(url) {
             if (!url) return '';
             let embedUrl = '';
-            // 유튜브 URL 변환 처리
             if (url.includes('youtu.be/')) {
                 const id = url.split('youtu.be/')[1].split('?')[0];
                 embedUrl = `https://www.youtube.com/embed/${id}`;
@@ -1818,7 +1817,6 @@
             }
         }
 
-        // --- 코창서버 내실표 테이블 관련 렌더링 함수들 ---
         function renderHeader() {
             const headerRow = document.getElementById('headerRow');
             const cols = getCurrentColumns();
