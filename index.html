@@ -63,11 +63,12 @@
         window.handleJobChange = handleJobChange;
         window.applyMembership = applyMembership;
         window.approveUser = approveUser;
+        window.rejectUser = rejectUser; // 거절 함수 전역 등록 추가[cite: 6]
         window.openApplyModal = openApplyModal;
         window.openMemberLoginModal = openMemberLoginModal;
         window.memberLogout = memberLogout;
         window.revokeUser = revokeUser;
-        window.switchAdminTab = switchAdminTab; // 관리자 센터 탭 전환 함수 등록
+        window.switchAdminTab = switchAdminTab;
     </script>
     <style>
         :root {
@@ -889,6 +890,23 @@
             }
         }
 
+        // 승인 거절 함수 추가 (대기 목록에서 즉시 삭제 및 파이어베이스 동기화)[cite: 6]
+        function rejectUser(index) {
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 거절할 수 있습니다.");
+                return;
+            }
+            const target = pendingApplicants[index];
+            if (confirm(`[${target.forest}] 님의 가입 신청을 거절(삭제)하시겠습니까?`)) {
+                pendingApplicants.splice(index, 1);
+                localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+                syncSaveToFirebase();
+                renderAdminPendingList();
+                updateSanhaeAuthUI();
+                alert(`[${target.forest}] 님의 가입 신청이 거절되었습니다.`);
+            }
+        }
+
         function renderAdminApprovedList() {
             const container = document.getElementById('adminApprovedUsersContainer');
             if (!container) return;
@@ -937,10 +955,14 @@
 
             let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
             pendingApplicants.forEach((item, idx) => {
+                // 승인 및 거절 버튼 추가[cite: 6]
                 html += `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--box-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--box-border);">
                         <div>숲: <b style="color:var(--text-gold);">${item.forest}</b> / FC: <b style="color:#38bdf8;">${item.fc}</b> <span style="font-size:0.8rem; color:#94a3b8;">(${item.date})</span></div>
-                        <button class="btn btn-add" style="padding: 4px 10px; font-size: 0.85rem;" onclick="approveUser(${idx})">승인하기</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-add" style="padding: 4px 10px; font-size: 0.85rem;" onclick="approveUser(${idx})">승인</button>
+                            <button class="btn btn-del" style="padding: 4px 10px; font-size: 0.85rem;" onclick="rejectUser(${idx})">거절</button>
+                        </div>
                     </div>
                 `;
             });
