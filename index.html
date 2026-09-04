@@ -70,6 +70,7 @@
         window.switchAdminTab = switchAdminTab;
         window.manualSaveKimteam = manualSaveKimteam;
         window.changeHiddenColumns = changeHiddenColumns;
+        window.updateStreamerFcData = updateStreamerFcData;
 
         // 커뮤니티 전용 전역 함수 등록
         window.openWritePostModal = openWritePostModal;
@@ -423,24 +424,6 @@
             font-size: 0.95rem;
         }
 
-        .col-btn-group {
-            display: none;
-            gap: 2px;
-            margin-top: 2px;
-        }
-        .editable .col-btn-group { display: flex; }
-
-        .btn-col-mv, .btn-col-del {
-            border: none;
-            border-radius: 3px;
-            padding: 0 4px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            color: white;
-        }
-        .btn-col-mv { background: #334155; }
-        .btn-col-del { background: var(--danger); }
-
         td { padding: 0; vertical-align: middle; }
 
         .td-box {
@@ -473,51 +456,11 @@
         }
         .job-select option { background-color: #1e293b; color: #f8fafc; }
 
-        .job-tag { border-radius: 6px; font-weight: bold; }
-        .job-knight { background-color: rgba(30, 58, 138, 0.4) !important; border-color: #3b82f6 !important; }
-        .job-knight .job-select { color: #93c5fd !important; }
-        .job-wizard { background-color: rgba(88, 28, 135, 0.4) !important; border-color: #a855f7 !important; }
-        .job-wizard .job-select { color: #d8b4fe !important; }
-        .job-warrior { background-color: rgba(127, 29, 29, 0.4) !important; border-color: #ef4444 !important; }
-        .job-warrior .job-select { color: #fca5a5 !important; }
-        .job-assassin { background-color: rgba(124, 45, 18, 0.4) !important; border-color: #f97316 !important; }
-        .job-assassin .job-select { color: #fdba74 !important; }
-        .job-hunter { background-color: rgba(6, 78, 59, 0.4) !important; border-color: #10b981 !important; }
-        .job-hunter .job-select { color: #6ee7b7 !important; }
-        .job-default { background-color: rgba(51, 65, 85, 0.3) !important; border-color: #64748b !important; }
-        .job-default .job-select { color: #cbd5e1 !important; }
-
         .enchant-select {
             width: 100%; height: 100%; background: transparent; border: none; outline: none;
             text-align: center; text-align-last: center; font-weight: bold; font-size: 1.05rem; cursor: pointer;
         }
         .enchant-select option { background-color: #1e293b; color: #f8fafc; }
-
-        .enchant-default { background-color: rgba(148, 163, 184, 0.05) !important; border-color: var(--box-border) !important; }
-        .enchant-default .enchant-select { color: #94a3b8; }
-        .enchant-safe { background-color: rgba(15, 23, 42, 0.6) !important; border-color: #475569 !important; }
-        .enchant-safe .enchant-select { color: #e2e8f0 !important; }
-        .enchant-7 { background-color: rgba(13, 148, 136, 0.3) !important; border-color: #0d9488 !important; }
-        .enchant-7 .enchant-select { color: #2dd4bf !important; }
-        .enchant-8 { background-color: rgba(37, 99, 235, 0.35) !important; border-color: #2563eb !important; }
-        .enchant-8 .enchant-select { color: #60a5fa !important; }
-        .enchant-9 { background-color: rgba(147, 51, 234, 0.45) !important; border-color: #a855f7 !important; }
-        .enchant-9 .enchant-select { color: #e879f9 !important; }
-        .enchant-10 { background-color: rgba(234, 88, 12, 0.5) !important; border-color: #f97316 !important; }
-        .enchant-10 .enchant-select { color: #fdba74 !important; }
-        .enchant-11 { background-color: rgba(220, 38, 38, 0.55) !important; border-color: #ef4444 !important; }
-        .enchant-11 .enchant-select { color: #fca5a5 !important; }
-        .enchant-12 { background-color: rgba(202, 138, 4, 0.5) !important; border-color: #eab308 !important; }
-        .enchant-12 .enchant-select { color: #facc15 !important; }
-
-        .profile-wrap {
-            width: 40px; height: 40px; border-radius: 50%; background: #1e293b;
-            border: 2px dashed var(--box-border); margin: 0 auto; display: flex;
-            align-items: center; justify-content: center; overflow: hidden; cursor: pointer;
-        }
-        .profile-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-wrap span { font-size: 0.65rem; color: #94a3b8; font-weight: bold; }
-        .file-input { display: none; }
 
         .section-box {
             background: var(--box-bg);
@@ -808,6 +751,22 @@
             "견자희": "gyeonjahee", "라무": "5959700", "킴나니": "sksgml16", "망구": "nmangoquince"
         };
 
+        // SOOP 스트리머별 FC온라인 구단 정보 데이터
+        let streamerFcData = [
+            { name: "킴성태", soopId: "rrvv17", teamColor: "대한민국 / 첼시", value: "조 단위", mainPlayer: "ICON 급 선수들", memo: "팀의 수장 및 핵심 구단주" },
+            { name: "오아", soopId: "legendhyuk", teamColor: "레알 마드리드", value: "고가치", mainPlayer: "지단, 호날두", memo: "화려한 개인기 위주" },
+            { name: "도현", soopId: "dobby1031", teamColor: "AC 밀란", value: "안정적", mainPlayer: "굴리트, 레이카르트", memo: "적폐 묵직한 스쿼드" },
+            { name: "김진솔", soopId: "kissday621", teamColor: "맨체스터 유나이티드", value: "성장형", mainPlayer: "케미스트리 중심", memo: "열정적인 강화러" },
+            { name: "중력", soopId: "vkzm14", teamColor: "바이에른 뮌헨", value: "고강 덱", mainPlayer: "레반도프스키 등", memo: "묵직한 피지컬 축구" },
+            { name: "수피", soopId: "lovely5959", teamColor: "토트넘 홋스퍼", value: "팬심 덱", mainPlayer: "손흥민, 해리 케인", memo: "토트넘 단일 컬러 진심" },
+            { name: "김진아", soopId: "ase7129", teamColor: "프랑스", value: "국대 덱", mainPlayer: "음바페, 앙리", memo: "스피드 위주 돌파" },
+            { name: "표우", soopId: "pyowoo", teamColor: "브라질", value: "화려한 브라질", mainPlayer: "호나우두, 네이마르", memo: "개인기 및 감아차기 특화" },
+            { name: "견자희", soopId: "gyeonjahee", teamColor: "아르헨티나", value: "알비셀레스테", mainPlayer: "메시", memo: "리오넬 메시 중심 스쿼드" },
+            { name: "라무", soopId: "5959700", teamColor: "맨체스터 시티", value: "패스 플레이", mainPlayer: "더 브라위너", memo: "점유율 축구 지향" },
+            { name: "킴나니", soopId: "sksgml16", teamColor: "스페인", value: "티키타카", mainPlayer: "티아고, 라모스", memo: "안정적인 패스 워크" },
+            { name: "망구", soopId: "nmangoquince", teamColor: "도르트문트", value: "꿀벌 군단", mainPlayer: "홀란, 벨링엄", memo: "속도감 있는 역습" }
+        ];
+
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
         const ENCHANT_LIST = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
@@ -876,6 +835,7 @@
                         if (serverData.sanhaeData.noticeContent) sanhaeNoticeContent = serverData.sanhaeData.noticeContent;
                         if (serverData.sanhaeData.commPosts) commPosts = serverData.sanhaeData.commPosts;
                         if (serverData.sanhaeData.customTabs) sanhaeCustomTabs = serverData.sanhaeData.customTabs;
+                        if (serverData.sanhaeData.streamerFcData) streamerFcData = serverData.sanhaeData.streamerFcData;
                     }
                 }
                 checkAndUpdateMyAuth();
@@ -893,10 +853,10 @@
             const dataToSave = {
                 specColumns, itemColumns, huntColumns, membersData, mapImages,
                 hiddenJobsColumns, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
+                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs, streamerFcData }
             };
             window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
-            alert("클창서버내실표 데이터가 성공적으로 저장되었습니다!");
+            alert("데이터가 성공적으로 저장되었습니다!");
         }
 
         function syncSaveToFirebase() {
@@ -905,7 +865,7 @@
                 const dataToSave = {
                     specColumns, itemColumns, huntColumns, membersData, mapImages,
                     hiddenJobsColumns, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                    sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
+                    sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs, streamerFcData }
                 };
                 window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
             }
@@ -1159,7 +1119,7 @@
 
                 document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클럽 산해궁";
                 document.getElementById('appHeaderTitle').innerHTML = `⚽ 클럽 산해궁 전용관 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
-                activeTab = 'main'; // 💡 변경 포인트: 산해궁 첫 진입 시 통합 메인 홈 탭으로 설정
+                activeTab = 'main'; 
                 currentViewingPostId = null;
             } else {
                 sanhaeAuthSec.style.display = 'none';
@@ -1459,12 +1419,12 @@
                     `;
                 });
             } else {
-                // 💡 산해궁 탭 바 구성 (메인 홈 탭 추가)
                 html += `
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'main' ? 'active' : ''}" onclick="switchTab('main')">🏠 메인 홈</button></div>
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'notice' ? 'active' : ''}" onclick="switchTab('notice')">📢 공지사항</button></div>
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'squad' ? 'active' : ''}" onclick="switchTab('squad')">📋 스쿼드 및 전술</button></div>
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'seen' ? 'active' : ''}" onclick="switchTab('seen')">👀 산이봤?</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'fc' ? 'active' : ''}" onclick="switchTab('fc')">⚽ 스트리머 구단정보</button></div>
                 `;
                 sanhaeCustomTabs.forEach(t => {
                     html += `
@@ -1526,7 +1486,6 @@
                 addBtn.style.display = "none"; addColBtn.style.display = "none"; container.classList.remove('editable');
 
                 if (activeTab === 'main') {
-                    // 💡 산해궁 클릭 시 각 탭들의 최신글을 분할하여 메인 화면에 모아 보여주는 뷰
                     renderSanhaeMainHome(container);
                 } else if (activeTab === 'notice') {
                     const canEditNotice = isSanhaeAdmin;
@@ -1539,17 +1498,72 @@
                             <textarea id="sanhaeNoticeArea" oninput="syncSaveToFirebase()" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEditNotice ? 'readonly' : ''}>${sanhaeNoticeContent}</textarea>
                         </div>
                     `;
+                } else if (activeTab === 'fc') {
+                    renderStreamerFcTab(container);
                 } else {
                     renderCommunityBoard(container, activeTab);
                 }
             }
         }
 
-        // 💡 산해궁 메인 홈 (각 탭 최신글 나눔 배치) 함수 구현
+        // 스트리머 FC온라인 구단 정보 탭 렌더링 함수
+        function renderStreamerFcTab(container) {
+            let html = `
+                <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="color:#34d399; font-size: 1.2rem;">⚽ SOOP 스트리머별 FC온라인 구단 정보</h3>
+                        ${isSanhaeAdmin ? '<span style="font-size:0.85rem; color:#34d399;">관리자 수정 모드 활성화 (내용 수정 시 자동 저장)</span>' : '<span style="font-size:0.85rem; color:#94a3b8;">읽기 전용 모드</span>'}
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="comm-table" style="min-width: 900px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 100px; text-align:center;">스트리머</th>
+                                    <th style="width: 110px; text-align:center;">SOOP 방송국</th>
+                                    <th style="width: 140px; text-align:center;">주요 팀 컬러</th>
+                                    <th style="width: 120px; text-align:center;">구단 가치/특징</th>
+                                    <th style="width: 160px; text-align:center;">핵심 선수</th>
+                                    <th>구단 비고 및 플레이 스타일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            streamerFcData.forEach((item, idx) => {
+                html += `
+                    <tr>
+                        <td style="text-align:center; font-weight:bold; color:var(--text-gold);">${item.name}</td>
+                        <td style="text-align:center;"><a href="https://ch.sooplive.co.kr/${item.soopId}" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:bold;">방송국 바로가기 ↗</a></td>
+                        <td style="text-align:center;"><input type="text" value="${item.teamColor}" data-fckey="teamColor" data-index="${idx}" oninput="updateStreamerFcData(this)" ${!isSanhaeAdmin ? 'readonly' : ''} style="width:100%; background:transparent; border:${isSanhaeAdmin ? '1px solid var(--box-border)' : 'none'}; color:white; text-align:center; border-radius:4px; padding:4px;"></td>
+                        <td style="text-align:center;"><input type="text" value="${item.value}" data-fckey="value" data-index="${idx}" oninput="updateStreamerFcData(this)" ${!isSanhaeAdmin ? 'readonly' : ''} style="width:100%; background:transparent; border:${isSanhaeAdmin ? '1px solid var(--box-border)' : 'none'}; color:white; text-align:center; border-radius:4px; padding:4px;"></td>
+                        <td style="text-align:center;"><input type="text" value="${item.mainPlayer}" data-fckey="mainPlayer" data-index="${idx}" oninput="updateStreamerFcData(this)" ${!isSanhaeAdmin ? 'readonly' : ''} style="width:100%; background:transparent; border:${isSanhaeAdmin ? '1px solid var(--box-border)' : 'none'}; color:white; text-align:center; border-radius:4px; padding:4px;"></td>
+                        <td><input type="text" value="${item.memo}" data-fckey="memo" data-index="${idx}" oninput="updateStreamerFcData(this)" ${!isSanhaeAdmin ? 'readonly' : ''} style="width:100%; background:transparent; border:${isSanhaeAdmin ? '1px solid var(--box-border)' : 'none'}; color:white; border-radius:4px; padding:4px;"></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function updateStreamerFcData(input) {
+            if (!isSanhaeAdmin) return;
+            const idx = input.dataset.index;
+            const key = input.dataset.fckey;
+            if (streamerFcData[idx]) {
+                streamerFcData[idx][key] = input.value;
+                syncSaveToFirebase();
+            }
+        }
+
         function renderSanhaeMainHome(container) {
             let html = `
                 <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- 상단 공지사항 요약 박스 -->
                     <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669; margin-bottom: 0;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
                             <h3 style="color:#34d399; font-size: 1.1rem;">📢 클럽 공지사항 요약</h3>
@@ -1559,7 +1573,6 @@
                     </div>
             `;
 
-            // 고정 커뮤니티 탭들 (스쿼드, 산이봤?) 및 커스텀 탭들의 최신글 각각 렌더링
             const targetTabs = [
                 { key: 'squad', name: '📋 스쿼드 및 전술' },
                 { key: 'seen', name: '👀 산이봤?' }
@@ -1591,7 +1604,6 @@
                 if (posts.length === 0) {
                     html += `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:15px;">등록된 게시글이 없습니다.</td></tr>`;
                 } else {
-                    // 최신글 최대 5개 표시
                     posts.slice().reverse().slice(0, 5).forEach((p, index) => {
                         const realIdx = posts.length - index;
                         html += `
@@ -2040,40 +2052,11 @@
             syncSaveToFirebase();
         }
 
-        function handleProfileClick(rIdx) {
-            if (!isKimteamEdit) return;
-            const input = document.getElementById(`profile_file_${rIdx}`);
-            if (input) input.click();
-        }
-
-        function uploadImg(e, rIdx) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) { membersData[rIdx].profileImg = event.target.result; syncSaveToFirebase(); renderAll(); };
-                reader.readAsDataURL(file);
-            }
-        }
-
         function addColumn() {
             if (!isKimteamEdit) return;
             const cols = getCurrentColumns();
-            cols.push({ id: 'col_' + Date.now(), title: '새 열', width: '100px' });
+            cols.push({ id: 'col_' + Date.Now(), title: '새 열', width: '100px' });
             renderAll();
-        }
-
-        function moveColumn(idx, direction) {
-            const cols = getCurrentColumns();
-            const target = idx + direction;
-            if (target < 0 || target >= cols.length) return;
-            const temp = cols[idx]; cols[idx] = cols[target]; cols[target] = temp;
-            renderAll();
-        }
-
-        function delColumn(idx) {
-            const cols = getCurrentColumns();
-            if (cols.length <= 1) { alert("최소 1개의 열이 있어야 합니다."); return; }
-            if (confirm("열을 삭제하시겠습니까?")) { cols.splice(idx, 1); renderAll(); }
         }
 
         function addRow() {
