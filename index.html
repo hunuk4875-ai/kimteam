@@ -71,6 +71,7 @@
 
         // 커뮤니티 전용 전역 함수 등록
         window.openWritePostModal = openWritePostModal;
+        window.openEditPostModal = openEditPostModal; // 게시글 수정 모달 열기 추가
         window.viewPostDetail = viewPostDetail;
         window.closePostDetail = closePostDetail;
         window.submitPost = submitPost;
@@ -678,10 +679,10 @@
         </div>
     </div>
 
-    <!-- 커뮤니티 글쓰기 모달 -->
+    <!-- 커뮤니티 글쓰기/수정 모달 -->
     <div id="postModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 500px; text-align: left;">
-            <div class="modal-title" style="text-align: center;">✍️ 새 게시글 작성</div>
+            <div id="postModalTitle" class="modal-title" style="text-align: center;">✍️ 새 게시글 작성</div>
             <label style="font-size:0.85rem; color:#94a3b8;">제목</label>
             <input type="text" id="postTitleInput" class="modal-input" placeholder="제목을 입력하세요" style="margin-top:4px; text-align:left;">
             <label style="font-size:0.85rem; color:#94a3b8;">내용</label>
@@ -767,6 +768,7 @@
         };
         let currentViewingPostId = null;
         let sanhaeCustomTabs = [];
+        let editingPostId = null; // 수정 중인 게시글 ID 추적용 변수
 
         window.addEventListener('DOMContentLoaded', () => {
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
@@ -840,7 +842,7 @@
                 renderAdminPendingList();
                 renderAdminApprovedList();
             } else if (myAuthStatus === 'approved') {
-                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 가능)</span>`;
+                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 및 수정 가능)</span>`;
             } else {
                 const found = pendingApplicants.find(p => p.forest === myForestNick);
                 if (found) {
@@ -1597,10 +1599,33 @@
                 alert("로그인한 승인 회원만 글을 작성할 수 있습니다.");
                 return;
             }
+            editingPostId = null; // 새 글 작성 모드
+            document.getElementById('postModalTitle').innerText = "✍️ 새 게시글 작성";
             document.getElementById('postTitleInput').value = "";
             document.getElementById('postContentInput').value = "";
             document.getElementById('postVideoInput').value = "";
             document.getElementById('postImageInput').value = "";
+            window.activePostTabKey = tabKey;
+            document.getElementById('postModal').style.display = "flex";
+        }
+
+        function openEditPostModal(tabKey, postId) {
+            if (!commPosts[tabKey]) return;
+            const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
+            if (!post) return;
+
+            const isMyPost = (post.author === myForestNick || myAuthStatus === 'admin');
+            if (!isMyPost) {
+                alert("본인이 작성한 글만 수정할 수 있습니다.");
+                return;
+            }
+
+            editingPostId = Number(postId); // 수정 모드 설정
+            document.getElementById('postModalTitle').innerText = "✏️ 게시글 수정";
+            document.getElementById('postTitleInput').value = post.title || "";
+            document.getElementById('postContentInput').value = post.content || "";
+            document.getElementById('postVideoInput').value = post.video || "";
+            document.getElementById('postImageInput').value = ""; // 파일 입력창은 초기화
             window.activePostTabKey = tabKey;
             document.getElementById('postModal').style.display = "flex";
         }
@@ -1617,35 +1642,58 @@
                 return;
             }
 
-            const saveNewPost = (imgBase64) => {
+            const savePostData = (imgBase64) => {
                 if (!commPosts[tabKey]) commPosts[tabKey] = [];
-                const newPost = {
-                    id: Date.now(),
-                    title,
-                    content,
-                    video: videoUrl,
-                    author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
-                    date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    image: imgBase64 || "",
-                    comments: [],
-                    likes: 0,
-                    dislikes: 0,
-                    voters: []
-                };
-                commPosts[tabKey].push(newPost);
+
+                if (editingPostId !== null) {
+                    // 기존 게시글 수정
+                    const post = commPosts[tabKey].find(p => Number(p.id) === Number(editingPostId));
+                    if (post) {
+                        post.title = title;
+                        post.content = content;
+                        post.video = videoUrl;
+                        if (imgBase64) {
+                            post.image = imgBase64; // 새 이미지가 업로드된 경우에만 갱신
+                        }
+                    }
+                } else {
+                    // 새 게시글 등록
+                    const newPost = {
+                        id: Date.now(),
+                        title,
+                        content,
+                        video: videoUrl,
+                        author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                        date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        image: imgBase64 || "",
+                        comments: [],
+                        likes: 0,
+                        dislikes: 0,
+                        voters: []
+                    };
+                    commPosts[tabKey].push(newPost);
+                }
+
                 syncSaveToFirebase();
                 document.getElementById('postModal').style.display = "none";
+                editingPostId = null;
                 renderAll();
             };
 
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    saveNewPost(e.target.result);
+                    savePostData(e.target.result);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                saveNewPost("");
+                // 수정 시 새 이미지를 첨부하지 않았으면 기존 이미지 유지
+                let existingImg = "";
+                if (editingPostId !== null) {
+                    const post = commPosts[tabKey].find(p => Number(p.id) === Number(editingPostId));
+                    if (post) existingImg = post.image || "";
+                }
+                savePostData(existingImg);
             }
         }
 
@@ -1662,7 +1710,6 @@
         function getEmbedVideoHtml(url) {
             if (!url) return '';
             let embedUrl = '';
-            // 유튜브 URL 변환 처리
             if (url.includes('youtu.be/')) {
                 const id = url.split('youtu.be/')[1].split('?')[0];
                 embedUrl = `https://www.youtube.com/embed/${id}`;
@@ -1717,7 +1764,13 @@
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:25px;">
                         <button class="btn" style="background:#0284c7;" onclick="votePost('${tabKey}', ${postId}, 'like')">👍 추천 (${post.likes || 0})</button>
                         <button class="btn" style="background:#475569;" onclick="votePost('${tabKey}', ${postId}, 'dislike')">👎 비추천 (${post.dislikes || 0})</button>
-                        ${isMyPost ? `<button class="btn btn-del" style="margin-left:auto;" onclick="deletePost('${tabKey}', ${postId})">게시글 삭제</button>` : ''}
+                        
+                        ${isMyPost ? `
+                            <div style="margin-left:auto; display:flex; gap:6px;">
+                                <button class="btn" style="background:var(--primary);" onclick="openEditPostModal('${tabKey}', ${postId})">게시글 수정</button>
+                                <button class="btn btn-del" onclick="deletePost('${tabKey}', ${postId})">게시글 삭제</button>
+                            </div>
+                        ` : ''}
                     </div>
 
                     <h4 style="color:#34d399; margin-bottom:10px;">💬 댓글 (${post.comments ? post.comments.length : 0})</h4>
