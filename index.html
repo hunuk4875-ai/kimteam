@@ -46,12 +46,10 @@
         window.uploadMapImg = uploadMapImg;
         window.addMapCard = addMapCard;
         window.delMapCard = delMapCard;
-        window.addHiddenItem = addHiddenItem;
-        window.delHiddenItem = delHiddenItem;
-        window.triggerHiddenFile = triggerHiddenFile;
-        window.uploadHiddenImg = uploadHiddenImg;
         window.addHiddenCard = addHiddenCard;
         window.delHiddenCard = delHiddenCard;
+        window.triggerHiddenFile = triggerHiddenFile;
+        window.uploadHiddenImg = uploadHiddenImg;
         window.openImageModal = openImageModal;
         window.triggerFile = triggerFile;
         window.uploadImg = uploadImg;
@@ -546,69 +544,6 @@
         }
         .img-card textarea { resize: vertical; height: 70px; }
 
-        /* 히든 탭 가로 한 줄 행 스타일 추가 */
-        .hidden-row-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .hidden-row-preview {
-            width: 130px;
-            height: 110px;
-            background: #0f172a;
-            border: 1px dashed var(--box-border);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .hidden-row-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .hidden-row-preview span { color: #94a3b8; font-size: 0.85rem; font-weight: bold; }
-        .hidden-row-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .hidden-row-content input[type="text"] {
-            width: 100%;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            color: var(--text-light);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            outline: none;
-        }
-        .hidden-row-content textarea {
-            width: 100%;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            color: var(--text-light);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 0.90rem;
-            resize: vertical;
-            height: 65px;
-            outline: none;
-        }
-        .hidden-row-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -643,9 +578,6 @@
             .btn-group { justify-content: center; width: 100%; }
             .btn { flex: 1; padding: 8px 10px; font-size: 0.85rem; text-align: center; }
             .tab-btn { padding: 8px 12px; font-size: 0.9rem; }
-            .hidden-row-card { flex-direction: column; align-items: stretch; }
-            .hidden-row-preview { width: 100%; height: 140px; }
-            .hidden-row-actions { flex-direction: row; justify-content: flex-end; }
         }
     </style>
 </head>
@@ -692,6 +624,7 @@
                 <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 관리자 권한</button>
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
+                <!-- 탭추가 버튼: 현재 카테고리의 관리자 권한일 때만 노출 -->
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
                 <button id="saveKimteamBtn" class="btn btn-save" style="display:none;" onclick="manualSaveKimteam()">💾 저장하기</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
@@ -2268,37 +2201,29 @@
             }
         }
 
-        // 히든 탭 각 종류별 가로 한 줄 행 구조 렌더링 함수
         function renderHiddenTab(container) {
             let html = `
                 <div class="section-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h3 style="color:var(--text-gold);">🕵️ 히든직업 전직 조건 및 진행 현황 (종류별 가로 한 줄 분류)</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:var(--text-gold);">🕵️ 히든직업 전직 조건 및 진행 현황</h3>
                         ${isKimteamEdit ? '<button class="btn btn-add" onclick="addHiddenCard()">+ 히든 카드 추가</button>' : ''}
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="img-upload-grid">
             `;
 
             if (hiddenJobsData.length === 0) {
-                html += `<div style="color:#94a3b8; text-align:center; padding:30px;">등록된 히든직업이 없습니다.</div>`;
+                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 히든직업 카드가 없습니다.</div>`;
             } else {
                 hiddenJobsData.forEach((item, idx) => {
                     html += `
-                        <div class="hidden-row-card">
-                            <div class="hidden-row-preview" onclick="openImageModal('${item.img || ''}')">
-                                ${item.img ? `<img src="${item.img}">` : `<span>사진 업로드</span>`}
+                        <div class="img-card">
+                            <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
+                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
                             </div>
-                            <div class="hidden-row-content">
-                                <input type="text" id="hidden_name_${idx}" value="${item.name || ''}" placeholder="히든직업 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
-                                <textarea id="hidden_memo_${idx}" placeholder="전직 조건, 퀘스트 및 재료 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                            </div>
-                            ${isKimteamEdit ? `
-                                <div class="hidden-row-actions">
-                                    <input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${idx})">
-                                    <button class="btn" style="padding:6px 10px; font-size:0.8rem; white-space:nowrap;" onclick="triggerHiddenFile(${idx})">📁 사진변경</button>
-                                    <button class="btn btn-del" style="padding:6px 10px; font-size:0.8rem; white-space:nowrap;" onclick="delHiddenCard(${idx})">삭제</button>
-                                </div>
-                            ` : ''}
+                            ${isKimteamEdit ? `<input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${idx})">📁 사진 변경</button>` : ''}
+                            <input type="text" id="hidden_name_${idx}" value="${item.name || ''}" placeholder="히든직업 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
+                            <textarea id="hidden_memo_${idx}" placeholder="전직 조건, 퀘스트 및 재료 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                            ${isKimteamEdit ? `<button class="btn btn-del" onclick="delHiddenCard(${idx})">카드 삭제</button>` : ''}
                         </div>
                     `;
                 });
@@ -2308,7 +2233,8 @@
         }
 
         function addHiddenCard() {
-            hiddenJobsData.push({ name: "새 히든직업", memo: "", img: "" });
+            const newId = 'hidden_' + Date.now();
+            hiddenJobsData.push({ id: newId, name: "새 히든직업", memo: "", img: "" });
             renderAll();
         }
 
