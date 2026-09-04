@@ -68,7 +68,7 @@
         window.memberLogout = memberLogout;
         window.revokeUser = revokeUser;
         window.switchAdminTab = switchAdminTab;
-        window.manualSaveKimteam = manualSaveKimteam;
+        window.manualSaveKimteam = manualSaveKimteam; // 수동 저장 함수 등록
 
         // 커뮤니티 전용 전역 함수 등록
         window.openWritePostModal = openWritePostModal;
@@ -803,7 +803,7 @@
             updateSanhaeAuthUI();
         });
 
-        // 코창서버 내실표 수동 저장 함수 (자동 저장 대신 '저장하기' 버튼을 누를 때만 서버 반영)
+        // 코창서버 내실표 수동 저장 함수
         function manualSaveKimteam() {
             syncInputsToData();
             const dataToSave = {
@@ -871,7 +871,12 @@
             } else if (myAuthStatus === 'approved') {
                 statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 및 수정 가능)</span>`;
             } else {
-                statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
+                const found = pendingApplicants.find(p => p.forest === myForestNick);
+                if (found) {
+                    statusDiv.innerHTML = `⏳ <span style='color: #38bdf8; font-weight:bold;'>(${myForestNick}) 가입 심사 대기 중입니다. 관리자 승인을 기다려주세요.</span>`;
+                } else {
+                    statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
+                }
             }
         }
 
@@ -1193,7 +1198,7 @@
         }
 
         function openAddTabModal() {
-            // 탭 추가 버튼은 오직 관리자(admin) 권한만 사용 가능하도록 엄격하게 체크
+            // [수정] 탭 추가 버튼은 관리자 권한(admin)일 때만 엄격하게 허용
             if (myAuthStatus !== 'admin') {
                 alert("탭 추가 권한은 관리자에게만 있습니다.");
                 return;
@@ -1263,6 +1268,7 @@
                     alert("현재 비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'addTab') {
+                // [수정] 모달 제출 시에도 관리자 권한 재검증
                 if (myAuthStatus !== 'admin') {
                     alert("관리자만 탭을 추가할 수 있습니다.");
                     closeModal();
@@ -1356,18 +1362,18 @@
                 sanhaeAuthSec.style.display = "none";
             }
 
-            // 탭 추가 버튼은 관리자(admin) 권한일 때만 노출되도록 제한
-            if (myAuthStatus === 'admin') {
-                addTabBtn.style.display = "inline-block";
-            } else {
-                addTabBtn.style.display = "none";
-            }
-
             if (isEdit) {
                 badge.innerText = "✏️ 관리자 수정 모드";
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
                 pwChangeBtn.style.display = "inline-block";
+                
+                // [수정] 오직 관리자(admin) 권한일 때만 탭 추가 버튼 노출
+                if (myAuthStatus === 'admin') {
+                    addTabBtn.style.display = "inline-block";
+                } else {
+                    addTabBtn.style.display = "none";
+                }
 
                 if (currentCategory === 'kimteam') {
                     saveKimteamBtn.style.display = "inline-block";
@@ -1391,6 +1397,13 @@
                 addColBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
                 saveKimteamBtn.style.display = "none";
+                
+                // [수정] 읽기 전용 모드여도 관리자(admin) 권한이면 탭 추가 버튼 노출 허용 (비회원/승인회원은 숨김)
+                if (myAuthStatus === 'admin') {
+                    addTabBtn.style.display = "inline-block";
+                } else {
+                    addTabBtn.style.display = "none";
+                }
             }
 
             renderTabBar();
@@ -2212,12 +2225,11 @@
         function renderCustomTab(container) {
             const found = customTabs.find(t => t.id === activeTab);
             if (!found) return;
-            const canEdit = isEdit;
 
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:12px;">📌 ${found.name}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEdit ? 'readonly' : ''}>${found.content || ''}</textarea>
+                    <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
                 </div>
             `;
         }
