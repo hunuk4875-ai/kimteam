@@ -715,13 +715,8 @@
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
 
-        // 서버에서 동기화될 비밀번호 변수
-        let serverKimteamPw = DEFAULT_PW;
-        let serverSanhaePw = DEFAULT_PW;
-
-        // 카테고리별 관리자 및 회원 상태 분리
-        let isKimteamEdit = false; // 코창서버 내실표 관리자 편집 모드 여부
-        let isSanhaeAdmin = localStorage.getItem('isSanhaeAdmin') === 'true'; // 클럽 산해궁 관리자 여부
+        let isKimteamEdit = false; 
+        let isSanhaeAdmin = localStorage.getItem('isSanhaeAdmin') === 'true';
 
         let myAuthStatus = localStorage.getItem('myAuthStatus') || 'guest';
         let myForestNick = localStorage.getItem('myForestNick') || '';
@@ -794,12 +789,6 @@
                     if (serverData.pendingApplicants) pendingApplicants = serverData.pendingApplicants;
                     if (serverData.approvedMembers) approvedMembers = serverData.approvedMembers;
 
-                    // 서버 비밀번호 동기화 반영
-                    if (serverData.passwords) {
-                        if (serverData.passwords.kimteam) serverKimteamPw = serverData.passwords.kimteam;
-                        if (serverData.passwords.sanhae) serverSanhaePw = serverData.passwords.sanhae;
-                    }
-
                     if (serverData.sanhaeData) {
                         if (serverData.sanhaeData.noticeContent) sanhaeNoticeContent = serverData.sanhaeData.noticeContent;
                         if (serverData.sanhaeData.commPosts) commPosts = serverData.sanhaeData.commPosts;
@@ -828,10 +817,6 @@
                 customTabs,
                 pendingApplicants,
                 approvedMembers,
-                passwords: {
-                    kimteam: serverKimteamPw,
-                    sanhae: serverSanhaePw
-                },
                 sanhaeData: {
                     noticeContent: sanhaeNoticeContent,
                     commPosts,
@@ -843,28 +828,26 @@
         }
 
         function syncSaveToFirebase() {
-            syncInputsToData();
-            const dataToSave = {
-                specColumns,
-                itemColumns,
-                huntColumns,
-                membersData,
-                mapImages,
-                hiddenJobsData,
-                customTabs,
-                pendingApplicants,
-                approvedMembers,
-                passwords: {
-                    kimteam: serverKimteamPw,
-                    sanhae: serverSanhaePw
-                },
-                sanhaeData: {
-                    noticeContent: sanhaeNoticeContent,
-                    commPosts,
-                    customTabs: sanhaeCustomTabs
-                }
-            };
-            window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+            if (currentCategory === 'sanhae') {
+                syncInputsToData();
+                const dataToSave = {
+                    specColumns,
+                    itemColumns,
+                    huntColumns,
+                    membersData,
+                    mapImages,
+                    hiddenJobsData,
+                    customTabs,
+                    pendingApplicants,
+                    approvedMembers,
+                    sanhaeData: {
+                        noticeContent: sanhaeNoticeContent,
+                        commPosts,
+                        customTabs: sanhaeCustomTabs
+                    }
+                };
+                window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+            }
         }
 
         function checkAndUpdateMyAuth() {
@@ -889,12 +872,7 @@
             } else if (myAuthStatus === 'approved') {
                 statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 및 수정 가능)</span>`;
             } else {
-                const found = pendingApplicants.find(p => p.forest === myForestNick);
-                if (found) {
-                    statusDiv.innerHTML = `⏳ <span style='color: #38bdf8; font-weight:bold;'>(${myForestNick}) 가입 심사 대기 중입니다. 관리자 승인을 기다려주세요.</span>`;
-                } else {
-                    statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
-                }
+                statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
             }
         }
 
@@ -1159,7 +1137,9 @@
         }
 
         function returnToLobby() {
-            syncSaveToFirebase();
+            if (currentCategory === 'sanhae') {
+                syncSaveToFirebase();
+            }
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
         }
@@ -1171,17 +1151,18 @@
             return [];
         }
 
-        // 서버에 저장된 카테고리별 비밀번호 반환
         function getPw() {
             if (currentCategory === 'kimteam') {
-                return serverKimteamPw;
+                return localStorage.getItem('kimteam_board_pw') || DEFAULT_PW;
             } else {
-                return serverSanhaePw;
+                return localStorage.getItem('sanhae_board_pw') || DEFAULT_PW;
             }
         }
 
         function switchTab(tab) {
-            syncSaveToFirebase();
+            if (currentCategory === 'sanhae') {
+                syncSaveToFirebase();
+            }
             activeTab = tab;
             currentViewingPostId = null;
             renderAll();
@@ -1288,14 +1269,12 @@
                 const newPw = document.getElementById('pwNewInput').value;
                 if (inputPw === getPw()) {
                     if (newPw && newPw.trim()) {
-                        // 비밀번호 변경 후 Firebase 서버로 즉시 전파 저장
                         if (currentCategory === 'kimteam') {
-                            serverKimteamPw = newPw.trim();
+                            localStorage.setItem('kimteam_board_pw', newPw.trim());
                         } else {
-                            serverSanhaePw = newPw.trim();
+                            localStorage.setItem('sanhae_board_pw', newPw.trim());
                         }
-                        syncSaveToFirebase();
-                        alert("비밀번호가 성공적으로 변경되어 모든 사용자에게 적용되었습니다!");
+                        alert("비밀번호가 성공적으로 변경되었습니다!");
                         closeModal();
                     } else {
                         alert("새 비밀번호를 입력해주세요.");
@@ -1319,7 +1298,9 @@
                         sanhaeCustomTabs.push({ id: newId, name: tabName.trim() });
                         commPosts[newId] = [];
                     }
-                    syncSaveToFirebase();
+                    if (currentCategory === 'sanhae') {
+                        syncSaveToFirebase();
+                    }
                     closeModal();
                     renderAll();
                 } else {
@@ -1429,7 +1410,6 @@
                 }
             }
 
-            // 각 카테고리별 관리자 권한에 따라 탭 추가 버튼 노출 분리
             if (hasAdminPermission) {
                 addTabBtn.style.display = "inline-block";
             } else {
@@ -1578,7 +1558,9 @@
                     delete commPosts[tabId];
                     if (activeTab === tabId) activeTab = 'notice';
                 }
-                syncSaveToFirebase();
+                if (currentCategory === 'sanhae') {
+                    syncSaveToFirebase();
+                }
                 renderTabBar();
                 renderAll();
             }
@@ -2222,41 +2204,40 @@
         }
 
         function renderHiddenTab(container) {
-            let html = '';
+            let html = `<div class="section-box"><h3 style="color:var(--text-gold); margin-bottom:15px;">🕵️ 히든직업 전직 조건 및 진행 현황</h3><div style="display:flex; flex-direction:column; gap:16px;">`;
+
             hiddenJobsData.forEach((job, jobIndex) => {
                 html += `
-                    <div class="section-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>
-                            ${isKimteamEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
+                    <div style="background:var(--panel-bg); border:1px solid var(--box-border); border-radius:8px; padding:12px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" style="background:var(--box-bg); border:1px solid var(--box-border); color:var(--text-gold); font-weight:bold; font-size:1.05rem; padding:6px 10px; border-radius:4px; width:200px; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>
+                            ${isKimteamEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 조건/메모 추가</button>` : ''}
                         </div>
-                        <div class="img-upload-grid">
+                        <div style="display:flex; flex-direction:column; gap:6px;">
                 `;
 
                 if (!job.items || job.items.length === 0) {
-                    html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 히든 정보가 없습니다.</div>`;
+                    html += `<div style="color:#94a3b8; font-size:0.9rem; padding:4px;">등록된 전직 조건이나 메모가 없습니다.</div>`;
                 } else {
                     job.items.forEach((item, itemIndex) => {
                         html += `
-                            <div class="img-card">
-                                <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
-                                    ${item.img ? `<img src="${item.img}">` : `<span>이미지</span>`}
-                                </div>
-                                ${isKimteamEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
-                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                                ${isKimteamEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" id="hidden_memo_${jobIndex}_${itemIndex}" value="${item.memo || ''}" placeholder="예: 재료 수집 현황 또는 퀘스트 조건" style="flex:1; background:var(--box-bg); border:1px solid var(--box-border); color:var(--text-light); padding:6px 10px; border-radius:4px; font-size:0.9rem; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>
+                                ${isKimteamEdit ? `<button class="btn btn-del" style="padding:4px 8px; font-size:0.8rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">✕</button>` : ''}
                             </div>
                         `;
                     });
                 }
                 html += `</div></div>`;
             });
+
+            html += `</div></div>`;
             container.innerHTML = html;
         }
 
         function addHiddenItem(jobIndex) {
             if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
-            hiddenJobsData[jobIndex].items.push({ memo: "", img: "" });
+            hiddenJobsData[jobIndex].items.push({ memo: "" });
             renderAll();
         }
 
@@ -2265,30 +2246,14 @@
             renderAll();
         }
 
-        function triggerHiddenFile(jobIndex, itemIndex) {
-            document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).click();
-        }
-
-        function uploadHiddenImg(jobIndex, itemIndex) {
-            const file = document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    hiddenJobsData[jobIndex].items[itemIndex].img = e.target.result;
-                    renderAll();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
         function renderCustomTab(container) {
             const found = customTabs.find(t => t.id === activeTab);
             if (!found) return;
 
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isKimteamEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
+                    <h3 style="color:var(--text-gold); margin-bottom:12px;">📌 ${found.name}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>${found.content || ''}</textarea>
                 </div>
             `;
         }
