@@ -61,6 +61,8 @@
         window.delRow = delRow;
         window.handleEnchantChange = handleEnchantChange;
         window.handleJobChange = handleJobChange;
+        window.applyMembership = applyMembership;
+        window.approveUser = approveUser;
     </script>
     <style>
         :root {
@@ -181,6 +183,8 @@
             border-radius: 8px;
             margin-bottom: 12px;
             border: 1px solid var(--box-border);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn-lobby {
@@ -564,14 +568,14 @@
             padding: 24px;
             border-radius: 12px;
             width: 100%;
-            max-width: 320px;
+            max-width: 360px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         .modal-title { font-size: 1.15rem; font-weight: bold; color: var(--text-gold); margin-bottom: 16px; }
         .modal-input {
             width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--box-border);
-            background: var(--box-bg); color: white; text-align: center; font-size: 1.05rem; margin-bottom: 16px; outline: none;
+            background: var(--box-bg); color: white; text-align: center; font-size: 1.05rem; margin-bottom: 12px; outline: none;
         }
         .modal-btn-group { display: flex; gap: 8px; }
         .modal-btn { flex: 1; padding: 10px 0; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
@@ -616,7 +620,7 @@
 </head>
 <body>
 
-    <!-- 🌟 메인 로비 화면 (요청사항 반영 문구) -->
+    <!-- 🌟 메인 로비 화면 -->
     <div id="mainLobby">
         <div class="lobby-title">킴성태팀 통합 포털</div>
         <div class="lobby-subtitle">입장할 카테고리를 선택해주세요</div>
@@ -632,13 +636,27 @@
                 <div class="portal-desc">클럽 공지사항, 스쿼드 및 전술, 축구장 콘셉트의 전용 커뮤니티 공간입니다.</div>
             </div>
         </div>
+        
+        <!-- 메인로비 하단 가입 신청 / 상태 확인 영역 -->
+        <div style="margin-top: 40px; background: var(--panel-bg); border: 1px solid var(--box-border); padding: 20px; border-radius: 12px; width: 100%; max-width: 800px; text-align: center;">
+            <h3 style="color: var(--text-gold); margin-bottom: 10px;">🛡️ 클럽 회원 인증 센터</h3>
+            <div id="lobbyAuthStatus" style="font-size: 0.95rem; margin-bottom: 12px; color: #94a3b8;">상태 확인 중...</div>
+            <div id="lobbyAuthForm" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <input type="text" id="applyForest" placeholder="숲 닉네임" style="padding: 8px; border-radius: 6px; border: 1px solid var(--box-border); background: var(--box-bg); color: white; width: 180px;">
+                <input type="text" id="applyFc" placeholder="FC온라인 닉네임" style="padding: 8px; border-radius: 6px; border: 1px solid var(--box-border); background: var(--box-bg); color: white; width: 180px;">
+                <button class="btn btn-add" onclick="applyMembership()">가입 신청하기</button>
+            </div>
+        </div>
     </div>
 
     <!-- 🚀 실제 컨텐츠 앱 영역 -->
     <div id="appContainer">
         <div class="top-nav-bar">
             <button class="btn-lobby" onclick="returnToLobby()">🏠 메인 로비로 돌아가기</button>
-            <span id="categoryIndicator" style="font-weight: bold; color: var(--text-gold);"></span>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span id="userPermissionBadge" style="font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #334155; color: #94a3b8;">비회원 (읽기 전용)</span>
+                <span id="categoryIndicator" style="font-weight: bold; color: var(--text-gold);"></span>
+            </div>
         </div>
 
         <div class="header-bar">
@@ -647,13 +665,19 @@
                 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
             </div>
             <div class="btn-group">
-                <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한</button>
+                <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 관리자 권한</button>
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
                 <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
             </div>
+        </div>
+
+        <!-- 관리자 전용: 회원 가입 승인 대기 목록 박스 -->
+        <div id="adminApprovalSection" class="section-box" style="display: none; width: 100%; border: 2px dashed var(--text-gold); background: #172033;">
+            <h3 style="color: var(--text-gold); margin-bottom: 10px;">📋 클럽 가입 신청 승인 관리</h3>
+            <div id="pendingUsersContainer" style="font-size: 0.95rem; color: #cbd5e1;">대기 중인 신청자가 없습니다.</div>
         </div>
 
         <!-- 탭 바 -->
@@ -687,6 +711,12 @@
         let activeTab = 'spec';
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
+
+        // 회원 권한 관리 상태 (guest: 비회원/미승인, approved: 승인된 회원, admin: 관리자)
+        let myAuthStatus = localStorage.getItem('myAuthStatus') || 'guest';
+        let myForestNick = localStorage.getItem('myForestNick') || '';
+        let pendingApplicants = JSON.parse(localStorage.getItem('pendingApplicants')) || [];
+        let approvedMembers = JSON.parse(localStorage.getItem('approvedMembers')) || [];
 
         const soopIdMap = {
             "킴성태": "rrvv17",
@@ -766,6 +796,8 @@
                     if (serverData.mapImages) mapImages = serverData.mapImages;
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
                     if (serverData.customTabs) customTabs = serverData.customTabs;
+                    if (serverData.pendingApplicants) pendingApplicants = serverData.pendingApplicants;
+                    if (serverData.approvedMembers) approvedMembers = serverData.approvedMembers;
 
                     if (serverData.sanhaeData) {
                         if (serverData.sanhaeData.notice) sanhaeNotice = serverData.sanhaeData.notice;
@@ -774,17 +806,122 @@
                         if (serverData.sanhaeData.customTabs) sanhaeCustomTabs = serverData.sanhaeData.customTabs;
                     }
                 }
+                updateLobbyAuthUI();
                 if (document.getElementById('appContainer').style.display === 'flex') {
                     renderAll();
                 }
             });
+            updateLobbyAuthUI();
         });
+
+        function updateLobbyAuthUI() {
+            const statusDiv = document.getElementById('lobbyAuthStatus');
+            const formDiv = document.getElementById('lobbyAuthForm');
+            
+            if (myAuthStatus === 'admin') {
+                statusDiv.innerHTML = "👑 <span style='color: var(--text-gold); font-weight:bold;'>관리자 계정으로 접속 중입니다.</span>";
+                formDiv.style.display = 'none';
+            } else if (myAuthStatus === 'approved') {
+                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (게시글/댓글 작성 가능)</span>`;
+                formDiv.style.display = 'none';
+            } else {
+                // 대기 중인지 체크
+                const found = pendingApplicants.find(p => p.forest === myForestNick);
+                if (found) {
+                    statusDiv.innerHTML = `⏳ <span style='color: #38bdf8; font-weight:bold;'>(${myForestNick}) 가입 심사 대기 중입니다. 관리자 승인을 기다려주세요.</span>`;
+                    formDiv.style.display = 'none';
+                } else {
+                    statusDiv.innerHTML = "🔒 비회원 상태입니다. 클럽 회원 기능을 이용하려면 가입 신청을 해주세요. (내용 조회는 자유롭게 가능합니다)";
+                    formDiv.style.display = 'flex';
+                }
+            }
+        }
+
+        function applyMembership() {
+            const forest = document.getElementById('applyForest').value.trim();
+            const fc = document.getElementById('applyFc').value.trim();
+            if (!forest || !fc) {
+                alert("숲 닉네임과 FC온라인 닉네임을 모두 입력해주세요.");
+                return;
+            }
+
+            // 중복 신청 체크
+            if (pendingApplicants.some(p => p.forest === forest) || approvedMembers.some(m => m.forest === forest)) {
+                alert("이미 신청되었거나 등록된 숲 닉네임입니다.");
+                return;
+            }
+
+            pendingApplicants.push({ forest, fc, date: new Date().toLocaleDateString() });
+            myForestNick = forest;
+            localStorage.setItem('myForestNick', myForestNick);
+            localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+            
+            // 파이어베이스 동기화 저장 시도
+            syncSaveToFirebase();
+
+            alert("가입 신청이 완료되었습니다! 관리자 승인을 기다려주세요.");
+            updateLobbyAuthUI();
+        }
+
+        function approveUser(index) {
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 승인할 수 있습니다.");
+                return;
+            }
+            const target = pendingApplicants.splice(index, 1)[0];
+            if (target) {
+                approvedMembers.push(target);
+                localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+                localStorage.setItem('approvedMembers', JSON.stringify(approvedMembers));
+                syncSaveToFirebase();
+                renderAdminPendingList();
+                alert(`[${target.forest}] 회원 가입이 승인되었습니다.`);
+            }
+        }
+
+        function renderAdminPendingList() {
+            const container = document.getElementById('pendingUsersContainer');
+            if (!container) return;
+
+            if (pendingApplicants.length === 0) {
+                container.innerHTML = "대기 중인 신청자가 없습니다.";
+                return;
+            }
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            pendingApplicants.forEach((item, idx) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--box-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--box-border);">
+                        <div>숲 닉네임: <b style="color:var(--text-gold);">${item.forest}</b> / FC온라인: <b style="color:#38bdf8;">${item.fc}</b> <span style="font-size:0.8rem; color:#94a3b8;">(${item.date})</span></div>
+                        <button class="btn btn-add" style="padding: 4px 10px; font-size: 0.85rem;" onclick="approveUser(${idx})">승인하기</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
 
         function enterCategory(category) {
             currentCategory = category;
             isEdit = false;
             document.getElementById('mainLobby').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
+
+            // 권한 뱃지 표시 설정
+            const permBadge = document.getElementById('userPermissionBadge');
+            if (myAuthStatus === 'admin') {
+                permBadge.innerText = "👑 관리자 권한";
+                permBadge.style.background = "#065f46";
+                permBadge.style.color = "#34d399";
+            } else if (myAuthStatus === 'approved') {
+                permBadge.innerText = "✅ 승인된 클럽 회원 (작성 가능)";
+                permBadge.style.background = "#065f46";
+                permBadge.style.color = "#34d399";
+            } else {
+                permBadge.innerText = "🔒 비회원 (읽기 전용)";
+                permBadge.style.background = "#334155";
+                permBadge.style.color = "#94a3b8";
+            }
 
             if (category === 'kimteam') {
                 document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 코창서버 내실표";
@@ -803,6 +940,7 @@
             isEdit = false;
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
+            updateLobbyAuthUI();
         }
 
         function getCurrentColumns() {
@@ -824,7 +962,7 @@
 
         function openLoginModal() {
             modalMode = 'login';
-            document.getElementById('modalTitle').innerText = "🔑 수정 권한 비밀번호";
+            document.getElementById('modalTitle').innerText = "🔑 관리자 비밀번호 입력";
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
             document.getElementById('pwInput').placeholder = "비밀번호 입력";
@@ -885,6 +1023,8 @@
                 const inputPw = document.getElementById('pwInput').value;
                 if (inputPw === getPw()) {
                     isEdit = true;
+                    myAuthStatus = 'admin';
+                    localStorage.setItem('myAuthStatus', myAuthStatus);
                     closeModal();
                     updateUI();
                 } else {
@@ -905,6 +1045,11 @@
                     alert("현재 비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'addTab') {
+                if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                    alert("회원 또는 관리자만 탭을 추가할 수 있습니다.");
+                    closeModal();
+                    return;
+                }
                 const tabName = document.getElementById('customTabInput').value;
                 if (tabName && tabName.trim()) {
                     const newId = 'custom_' + Date.now();
@@ -939,14 +1084,21 @@
             const addTabBtn = document.getElementById('addTabBtn');
             const saveBtn = document.getElementById('saveBtn');
             const pwChangeBtn = document.getElementById('pwChangeBtn');
+            const adminApprovalSec = document.getElementById('adminApprovalSection');
+
+            // 회원 권한 체크 (승인된 회원 또는 관리자인 경우에만 수정 기능 활성화 허용 검토 가능)
+            const canContribute = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
 
             if (isEdit) {
-                badge.innerText = "✏️ 수정 모드";
+                badge.innerText = "✏️ 관리자 수정 모드";
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
                 saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "inline-block";
                 addTabBtn.style.display = "inline-block";
+                adminApprovalSec.style.display = "block";
+                renderAdminPendingList();
+
                 if (currentCategory === 'kimteam' && (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt')) {
                     addBtn.style.display = "inline-block";
                     addColBtn.style.display = "inline-block";
@@ -955,14 +1107,15 @@
                     addColBtn.style.display = "none";
                 }
             } else {
-                badge.innerText = "🔒 읽기 전용";
+                badge.innerText = "🔒 읽기 전용 (비회원은 조회만 가능)";
                 badge.className = "badge badge-view";
-                authBtn.innerText = "🔓 수정 권한";
+                authBtn.innerText = "🔓 관리자 권한";
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
                 addTabBtn.style.display = "none";
                 saveBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
+                adminApprovalSec.style.display = "none";
             }
 
             renderTabBar();
@@ -970,6 +1123,9 @@
         }
 
         function syncInputsToData() {
+            // 비회원은 입력/수정 내용을 로컬 데이터에 반영하지 못하도록 차단 (읽기 전용 보호)
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') return;
+
             if (currentCategory === 'kimteam') {
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     const cols = getCurrentColumns();
@@ -1093,6 +1249,9 @@
             const container = document.getElementById('boardContainer');
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
+            
+            // 미승인 비회원일 경우 textarea나 인풋 수정 원천 차단 (readonly 강제 적용 여부 결정)
+            const isReadonlyUser = (myAuthStatus !== 'admin' && myAuthStatus !== 'approved');
 
             if (currentCategory === 'kimteam') {
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
@@ -1135,25 +1294,27 @@
                 addColBtn.style.display = "none";
                 container.classList.remove('editable');
 
+                const textEditable = isEdit && !isReadonlyUser;
+
                 if (activeTab === 'notice') {
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항</h3>
-                            <textarea id="sanhaeNoticeArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${sanhaeNotice}</textarea>
+                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항 ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(비회원은 읽기만 가능합니다)</span>' : ''}</h3>
+                            <textarea id="sanhaeNoticeArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeNotice}</textarea>
                         </div>
                     `;
                 } else if (activeTab === 'squad') {
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">📋 클럽 스쿼드 및 전술 배치</h3>
-                            <textarea id="sanhaeSquadArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${sanhaeSquad}</textarea>
+                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">📋 클럽 스쿼드 및 전술 배치 ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(비회원은 읽기만 가능합니다)</span>' : ''}</h3>
+                            <textarea id="sanhaeSquadArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeSquad}</textarea>
                         </div>
                     `;
                 } else if (activeTab === 'seen') {
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">👀 산이봤? (클럽 일지)</h3>
-                            <textarea id="sanhaeSeenArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${sanhaeSeen}</textarea>
+                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">👀 산이봤? (클럽 일지) ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(비회원은 읽기만 가능합니다)</span>' : ''}</h3>
+                            <textarea id="sanhaeSeenArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeSeen}</textarea>
                         </div>
                     `;
                 } else {
@@ -1162,7 +1323,7 @@
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
                             <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">📌 ${found ? found.name : '산해궁 커스텀 탭'}</h3>
-                            <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
+                            <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${contentVal}</textarea>
                         </div>
                     `;
                 }
@@ -1574,6 +1735,31 @@
             }
         }
 
+        function syncSaveToFirebase() {
+            const dataToSave = {
+                specColumns: specColumns,
+                itemColumns: itemColumns,
+                huntColumns: huntColumns,
+                membersData: membersData,
+                mapImages: mapImages,
+                hiddenJobsData: hiddenJobsData,
+                customTabs: customTabs,
+                pendingApplicants: pendingApplicants,
+                approvedMembers: approvedMembers,
+                sanhaeData: {
+                    notice: sanhaeNotice,
+                    squad: sanhaeSquad,
+                    seen: sanhaeSeen,
+                    customTabs: sanhaeCustomTabs
+                }
+            };
+
+            const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
+            window.dbSet(dbRefInstance, dataToSave).catch((error) => {
+                console.error("데이터 동기화 실패: " + error.message);
+            });
+        }
+
         function saveData() {
             syncInputsToData();
             const dataToSave = {
@@ -1584,6 +1770,8 @@
                 mapImages: mapImages,
                 hiddenJobsData: hiddenJobsData,
                 customTabs: customTabs,
+                pendingApplicants: pendingApplicants,
+                approvedMembers: approvedMembers,
                 sanhaeData: {
                     notice: sanhaeNotice,
                     squad: sanhaeSquad,
