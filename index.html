@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ 종합 통합 포털 (코창서버 내실표 & 산해궁)</title>
+    <title>🛡️ 킴성태팀 통합 포털 & 산해궁</title>
     <!-- Firebase SDK (v9) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -27,6 +27,40 @@
         window.dbRef = ref;
         window.dbSet = set;
         window.dbOnValue = onValue;
+
+        // 전역 함수 등록
+        window.enterCategory = enterCategory;
+        window.returnToLobby = returnToLobby;
+        window.toggleAuth = toggleAuth;
+        window.addColumn = addColumn;
+        window.addRow = addRow;
+        window.openAddTabModal = openAddTabModal;
+        window.saveData = saveData;
+        window.openPwChangeModal = openPwChangeModal;
+        window.switchTab = switchTab;
+        window.deleteCustomTab = deleteCustomTab;
+        window.closeModal = closeModal;
+        window.closeImageModal = closeImageModal;
+        window.handleModalKey = handleModalKey;
+        window.submitModal = submitModal;
+        window.triggerMapFile = triggerMapFile;
+        window.uploadMapImg = uploadMapImg;
+        window.addMapCard = addMapCard;
+        window.delMapCard = delMapCard;
+        window.addHiddenItem = addHiddenItem;
+        window.delHiddenItem = delHiddenItem;
+        window.triggerHiddenFile = triggerHiddenFile;
+        window.uploadHiddenImg = uploadHiddenImg;
+        window.openImageModal = openImageModal;
+        window.triggerFile = triggerFile;
+        window.uploadImg = uploadImg;
+        window.handleProfileClick = handleProfileClick;
+        window.moveColumn = moveColumn;
+        window.delColumn = delColumn;
+        window.moveRow = moveRow;
+        window.delRow = delRow;
+        window.handleEnchantChange = handleEnchantChange;
+        window.handleJobChange = handleJobChange;
     </script>
     <style>
         :root {
@@ -58,7 +92,6 @@
             min-height: 100vh;
         }
 
-        /* --- 메인 로비 스타일 --- */
         #mainLobby {
             width: 100%;
             max-width: 1200px;
@@ -129,7 +162,6 @@
             line-height: 1.4;
         }
 
-        /* --- 컨텐츠 앱 컨테이너 --- */
         #appContainer {
             width: 100%;
             max-width: 1600px;
@@ -371,7 +403,6 @@
             outline: none;
         }
 
-        /* --- 직업 색상 설정 --- */
         .job-select {
             width: 100%;
             height: 100%;
@@ -405,7 +436,6 @@
         .job-default { background-color: rgba(51, 65, 85, 0.3) !important; border-color: #64748b !important; }
         .job-default .job-select { color: #cbd5e1 !important; }
 
-        /* --- 무기 강화 스타일 --- */
         .enchant-select {
             width: 100%;
             height: 100%;
@@ -574,7 +604,6 @@
             margin: 0 auto;
         }
 
-        /* 모바일 최적화 미디어 쿼리 */
         @media (max-width: 768px) {
             body { padding: 8px; }
             .header-bar { padding: 10px 14px; flex-direction: column; align-items: stretch; }
@@ -587,9 +616,9 @@
 </head>
 <body>
 
-    <!-- 🌟 메인 로비 화면 (코창서버 내실표 vs 산해궁 선택) -->
+    <!-- 🌟 메인 로비 화면 (요청사항 반영 문구) -->
     <div id="mainLobby">
-        <div class="lobby-title">🛡️ 종합 통합 포털</div>
+        <div class="lobby-title">킴성태팀 통합 포털</div>
         <div class="lobby-subtitle">입장할 카테고리를 선택해주세요</div>
         <div class="portal-grid">
             <div class="portal-card" onclick="enterCategory('kimteam')">
@@ -653,7 +682,7 @@
     </div>
 
     <script>
-        let currentCategory = 'kimteam'; // 'kimteam' 또는 'sanhae'
+        let currentCategory = 'kimteam'; 
         let isEdit = false;
         let activeTab = 'spec';
         let modalMode = 'login';
@@ -677,7 +706,6 @@
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
         const ENCHANT_LIST = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
-        // --- 코창서버 내실표 데이터 구조 ---
         let specColumns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "c2", title: "직업", width: "100px" },
@@ -721,7 +749,6 @@
         ];
         let customTabs = [];
 
-        // --- 산해궁 클럽 데이터 구조 ---
         let sanhaeNotice = "산해궁 클럽 공지사항을 입력하세요.";
         let sanhaeSquad = "클럽 스쿼드 및 전술 배치 내용을 입력하세요.";
         let sanhaeSeen = "산이봤? 관련 내용 및 일지를 입력하세요.";
@@ -732,7 +759,6 @@
             window.dbOnValue(dbRefInstance, (snapshot) => {
                 const serverData = snapshot.val();
                 if (serverData) {
-                    // 코창서버 데이터 동기화
                     if (serverData.specColumns) specColumns = serverData.specColumns;
                     if (serverData.itemColumns) itemColumns = serverData.itemColumns;
                     if (serverData.huntColumns) huntColumns = serverData.huntColumns;
@@ -741,7 +767,6 @@
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
                     if (serverData.customTabs) customTabs = serverData.customTabs;
 
-                    // 산해궁 데이터 동기화
                     if (serverData.sanhaeData) {
                         if (serverData.sanhaeData.notice) sanhaeNotice = serverData.sanhaeData.notice;
                         if (serverData.sanhaeData.squad) sanhaeSquad = serverData.sanhaeData.squad;
@@ -990,7 +1015,6 @@
                     }
                 }
             } else {
-                // 산해궁 데이터 동기화
                 if (activeTab === 'notice') {
                     const elem = document.getElementById('sanhaeNoticeArea');
                     if (elem) sanhaeNotice = elem.value;
@@ -1107,7 +1131,6 @@
                     renderCustomTab(container);
                 }
             } else {
-                // 산해궁 렌더링 (축구장 콘셉트 배경 적용)
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
                 container.classList.remove('editable');
@@ -1506,9 +1529,6 @@
             syncInputsToData();
             const targetIdx = idx + dir;
             if (targetIdx < 0 || targetIdx >= membersData.length) return;
-            const temp = membersData[idx];
-            membersData[idx] = membersData.targetIdx]; // 버그 방지를 위해 아래와 같이 수정
-            // 수정: membersData[targetIdx]와 교환
             let tempRow = membersData[idx];
             membersData[idx] = membersData[targetIdx];
             membersData[targetIdx] = tempRow;
