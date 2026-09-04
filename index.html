@@ -715,6 +715,10 @@
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
 
+        // 서버에서 동기화될 비밀번호 변수
+        let serverKimteamPw = DEFAULT_PW;
+        let serverSanhaePw = DEFAULT_PW;
+
         // 카테고리별 관리자 및 회원 상태 분리
         let isKimteamEdit = false; // 코창서버 내실표 관리자 편집 모드 여부
         let isSanhaeAdmin = localStorage.getItem('isSanhaeAdmin') === 'true'; // 클럽 산해궁 관리자 여부
@@ -790,6 +794,12 @@
                     if (serverData.pendingApplicants) pendingApplicants = serverData.pendingApplicants;
                     if (serverData.approvedMembers) approvedMembers = serverData.approvedMembers;
 
+                    // 서버 비밀번호 동기화 반영
+                    if (serverData.passwords) {
+                        if (serverData.passwords.kimteam) serverKimteamPw = serverData.passwords.kimteam;
+                        if (serverData.passwords.sanhae) serverSanhaePw = serverData.passwords.sanhae;
+                    }
+
                     if (serverData.sanhaeData) {
                         if (serverData.sanhaeData.noticeContent) sanhaeNoticeContent = serverData.sanhaeData.noticeContent;
                         if (serverData.sanhaeData.commPosts) commPosts = serverData.sanhaeData.commPosts;
@@ -818,6 +828,10 @@
                 customTabs,
                 pendingApplicants,
                 approvedMembers,
+                passwords: {
+                    kimteam: serverKimteamPw,
+                    sanhae: serverSanhaePw
+                },
                 sanhaeData: {
                     noticeContent: sanhaeNoticeContent,
                     commPosts,
@@ -829,26 +843,28 @@
         }
 
         function syncSaveToFirebase() {
-            if (currentCategory === 'sanhae') {
-                syncInputsToData();
-                const dataToSave = {
-                    specColumns,
-                    itemColumns,
-                    huntColumns,
-                    membersData,
-                    mapImages,
-                    hiddenJobsData,
-                    customTabs,
-                    pendingApplicants,
-                    approvedMembers,
-                    sanhaeData: {
-                        noticeContent: sanhaeNoticeContent,
-                        commPosts,
-                        customTabs: sanhaeCustomTabs
-                    }
-                };
-                window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
-            }
+            syncInputsToData();
+            const dataToSave = {
+                specColumns,
+                itemColumns,
+                huntColumns,
+                membersData,
+                mapImages,
+                hiddenJobsData,
+                customTabs,
+                pendingApplicants,
+                approvedMembers,
+                passwords: {
+                    kimteam: serverKimteamPw,
+                    sanhae: serverSanhaePw
+                },
+                sanhaeData: {
+                    noticeContent: sanhaeNoticeContent,
+                    commPosts,
+                    customTabs: sanhaeCustomTabs
+                }
+            };
+            window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
         }
 
         function checkAndUpdateMyAuth() {
@@ -1143,9 +1159,7 @@
         }
 
         function returnToLobby() {
-            if (currentCategory === 'sanhae') {
-                syncSaveToFirebase();
-            }
+            syncSaveToFirebase();
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
         }
@@ -1157,19 +1171,17 @@
             return [];
         }
 
-        // 카테고리별 독립된 비밀번호 조회
+        // 서버에 저장된 카테고리별 비밀번호 반환
         function getPw() {
             if (currentCategory === 'kimteam') {
-                return localStorage.getItem('kimteam_board_pw') || DEFAULT_PW;
+                return serverKimteamPw;
             } else {
-                return localStorage.getItem('sanhae_board_pw') || DEFAULT_PW;
+                return serverSanhaePw;
             }
         }
 
         function switchTab(tab) {
-            if (currentCategory === 'sanhae') {
-                syncSaveToFirebase();
-            }
+            syncSaveToFirebase();
             activeTab = tab;
             currentViewingPostId = null;
             renderAll();
@@ -1276,12 +1288,14 @@
                 const newPw = document.getElementById('pwNewInput').value;
                 if (inputPw === getPw()) {
                     if (newPw && newPw.trim()) {
+                        // 비밀번호 변경 후 Firebase 서버로 즉시 전파 저장
                         if (currentCategory === 'kimteam') {
-                            localStorage.setItem('kimteam_board_pw', newPw.trim());
+                            serverKimteamPw = newPw.trim();
                         } else {
-                            localStorage.setItem('sanhae_board_pw', newPw.trim());
+                            serverSanhaePw = newPw.trim();
                         }
-                        alert("비밀번호가 성공적으로 변경되었습니다!");
+                        syncSaveToFirebase();
+                        alert("비밀번호가 성공적으로 변경되어 모든 사용자에게 적용되었습니다!");
                         closeModal();
                     } else {
                         alert("새 비밀번호를 입력해주세요.");
@@ -1305,9 +1319,7 @@
                         sanhaeCustomTabs.push({ id: newId, name: tabName.trim() });
                         commPosts[newId] = [];
                     }
-                    if (currentCategory === 'sanhae') {
-                        syncSaveToFirebase();
-                    }
+                    syncSaveToFirebase();
                     closeModal();
                     renderAll();
                 } else {
@@ -1566,9 +1578,7 @@
                     delete commPosts[tabId];
                     if (activeTab === tabId) activeTab = 'notice';
                 }
-                if (currentCategory === 'sanhae') {
-                    syncSaveToFirebase();
-                }
+                syncSaveToFirebase();
                 renderTabBar();
                 renderAll();
             }
