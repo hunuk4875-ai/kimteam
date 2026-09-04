@@ -68,7 +68,7 @@
         window.memberLogout = memberLogout;
         window.revokeUser = revokeUser;
         window.switchAdminTab = switchAdminTab;
-        window.manualSaveKimteam = manualSaveKimteam; // 수동 저장 함수 등록
+        window.manualSaveKimteam = manualSaveKimteam;
 
         // 커뮤니티 전용 전역 함수 등록
         window.openWritePostModal = openWritePostModal;
@@ -624,7 +624,7 @@
                 <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 관리자 권한</button>
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
-                <!-- 탭추가 버튼: 관리자 권한일 때만 노출 -->
+                <!-- 탭추가 버튼: 현재 카테고리의 관리자 권한일 때만 노출 -->
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
                 <button id="saveKimteamBtn" class="btn btn-save" style="display:none;" onclick="manualSaveKimteam()">💾 저장하기</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
@@ -711,10 +711,13 @@
 
     <script>
         let currentCategory = 'kimteam'; 
-        let isEdit = false;
         let activeTab = 'spec';
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
+
+        // 카테고리별 관리자 및 회원 상태 분리
+        let isKimteamEdit = false; // 코창서버 내실표 관리자 편집 모드 여부
+        let isSanhaeAdmin = localStorage.getItem('isSanhaeAdmin') === 'true'; // 클럽 산해궁 관리자 여부
 
         let myAuthStatus = localStorage.getItem('myAuthStatus') || 'guest';
         let myForestNick = localStorage.getItem('myForestNick') || '';
@@ -849,7 +852,7 @@
         }
 
         function checkAndUpdateMyAuth() {
-            if (myAuthStatus !== 'admin' && myForestNick) {
+            if (!isSanhaeAdmin && myForestNick) {
                 const isApproved = approvedMembers.some(m => m.forest === myForestNick);
                 if (isApproved) {
                     myAuthStatus = 'approved';
@@ -863,8 +866,8 @@
             const statusDiv = document.getElementById('sanhaeAuthStatus');
             if (!statusDiv) return;
 
-            if (myAuthStatus === 'admin') {
-                statusDiv.innerHTML = "👑 <span style='color: var(--text-gold); font-weight:bold;'>관리자 계정으로 접속 중입니다. (모든 수정 및 회원 관리 권한 활성화)</span>";
+            if (isSanhaeAdmin) {
+                statusDiv.innerHTML = "👑 <span style='color: var(--text-gold); font-weight:bold;'>클럽 산해궁 관리자 계정으로 접속 중입니다. (모든 수정 및 회원 관리 권한 활성화)</span>";
                 renderAdminPendingList();
                 renderAdminApprovedList();
             } else if (myAuthStatus === 'approved') {
@@ -991,7 +994,7 @@
         }
 
         function approveUser(index) {
-            if (myAuthStatus !== 'admin') {
+            if (!isSanhaeAdmin) {
                 alert("관리자만 승인할 수 있습니다.");
                 return;
             }
@@ -1009,7 +1012,7 @@
         }
 
         function rejectUser(index) {
-            if (myAuthStatus !== 'admin') {
+            if (!isSanhaeAdmin) {
                 alert("관리자만 거절할 수 있습니다.");
                 return;
             }
@@ -1047,7 +1050,7 @@
         }
 
         function revokeUser(index) {
-            if (myAuthStatus !== 'admin') return;
+            if (!isSanhaeAdmin) return;
             const target = approvedMembers.splice(index, 1)[0];
             if (target) {
                 pendingApplicants.push(target);
@@ -1088,7 +1091,6 @@
 
         function enterCategory(category) {
             currentCategory = category;
-            isEdit = false;
             document.getElementById('mainLobby').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
 
@@ -1097,37 +1099,45 @@
             const applyBtn = document.getElementById('applyBtn');
 
             if (category === 'sanhae') {
-                sanhaeAuthSec.style.display = (myAuthStatus === 'admin') ? 'block' : 'none';
+                sanhaeAuthSec.style.display = isSanhaeAdmin ? 'block' : 'none';
                 applyBtn.style.display = 'inline-block';
                 updateSanhaeAuthUI();
-            } else {
-                sanhaeAuthSec.style.display = 'none';
-                applyBtn.style.display = 'none';
-            }
 
-            if (myAuthStatus === 'admin') {
-                permBadge.innerText = "👑 관리자 권한";
-                permBadge.style.background = "#065f46";
-                permBadge.style.color = "#34d399";
-            } else if (myAuthStatus === 'approved') {
-                permBadge.innerText = `✅ 승인 회원 (${myForestNick}) 권한 활성화`;
-                permBadge.style.background = "#065f46";
-                permBadge.style.color = "#34d399";
-            } else {
-                permBadge.innerText = "🔒 비회원 (읽기 전용)";
-                permBadge.style.background = "#334155";
-                permBadge.style.color = "#94a3b8";
-            }
+                if (isSanhaeAdmin) {
+                    permBadge.innerText = "👑 산해궁 관리자 권한";
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else if (myAuthStatus === 'approved') {
+                    permBadge.innerText = `✅ 승인 회원 (${myForestNick}) 권한 활성화`;
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else {
+                    permBadge.innerText = "🔒 비회원 (읽기 전용)";
+                    permBadge.style.background = "#334155";
+                    permBadge.style.color = "#94a3b8";
+                }
 
-            if (category === 'kimteam') {
-                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 코창서버 내실표";
-                document.getElementById('appHeaderTitle').innerHTML = `🛡️ 킴성태팀 종합 현황판 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
-                activeTab = 'spec';
-            } else {
                 document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클럽 산해궁";
                 document.getElementById('appHeaderTitle').innerHTML = `⚽ 클럽 산해궁 전용관 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
                 activeTab = 'notice';
                 currentViewingPostId = null;
+            } else {
+                sanhaeAuthSec.style.display = 'none';
+                applyBtn.style.display = 'none';
+
+                if (isKimteamEdit) {
+                    permBadge.innerText = "👑 코창서버 내실표 관리자 권한";
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else {
+                    permBadge.innerText = "🔒 읽기 전용";
+                    permBadge.style.background = "#334155";
+                    permBadge.style.color = "#94a3b8";
+                }
+
+                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 코창서버 내실표";
+                document.getElementById('appHeaderTitle').innerHTML = `🛡️ 킴성태팀 종합 현황판 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
+                activeTab = 'spec';
             }
             updateUI();
         }
@@ -1136,7 +1146,6 @@
             if (currentCategory === 'sanhae') {
                 syncSaveToFirebase();
             }
-            isEdit = false;
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
         }
@@ -1148,8 +1157,13 @@
             return [];
         }
 
+        // 카테고리별 독립된 비밀번호 조회
         function getPw() {
-            return localStorage.getItem('board_pw') || DEFAULT_PW;
+            if (currentCategory === 'kimteam') {
+                return localStorage.getItem('kimteam_board_pw') || DEFAULT_PW;
+            } else {
+                return localStorage.getItem('sanhae_board_pw') || DEFAULT_PW;
+            }
         }
 
         function switchTab(tab) {
@@ -1163,7 +1177,8 @@
 
         function openLoginModal() {
             modalMode = 'login';
-            document.getElementById('modalTitle').innerText = "🔑 관리자 비밀번호 입력";
+            const catName = currentCategory === 'kimteam' ? '코창서버 내실표' : '클럽 산해궁';
+            document.getElementById('modalTitle').innerText = `🔑 [${catName}] 관리자 비밀번호 입력`;
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
             document.getElementById('pwInput').placeholder = "관리자 비밀번호 입력";
@@ -1180,7 +1195,8 @@
 
         function openPwChangeModal() {
             modalMode = 'change';
-            document.getElementById('modalTitle').innerText = "🔑 마스터 비밀번호 변경";
+            const catName = currentCategory === 'kimteam' ? '코창서버 내실표' : '클럽 산해궁';
+            document.getElementById('modalTitle').innerText = `🔑 [${catName}] 관리자 비밀번호 변경`;
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
             document.getElementById('pwInput').placeholder = "현재 비밀번호";
@@ -1196,10 +1212,10 @@
             document.getElementById('pwInput').focus();
         }
 
-        // 탭 추가 모달 열기 (관리자 권한 엄격 검증)
         function openAddTabModal() {
-            if (myAuthStatus !== 'admin') {
-                alert("탭 추가 권한은 관리자에게만 있습니다.");
+            const hasPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
+            if (!hasPermission) {
+                alert("탭 추가 권한은 해당 카테고리의 관리자에게만 있습니다.");
                 return;
             }
 
@@ -1244,9 +1260,12 @@
             if (modalMode === 'login') {
                 const inputPw = document.getElementById('pwInput').value;
                 if (inputPw === getPw()) {
-                    isEdit = true;
-                    myAuthStatus = 'admin';
-                    localStorage.setItem('myAuthStatus', myAuthStatus);
+                    if (currentCategory === 'kimteam') {
+                        isKimteamEdit = true;
+                    } else {
+                        isSanhaeAdmin = true;
+                        localStorage.setItem('isSanhaeAdmin', 'true');
+                    }
                     closeModal();
                     updateUI();
                 } else {
@@ -1257,7 +1276,11 @@
                 const newPw = document.getElementById('pwNewInput').value;
                 if (inputPw === getPw()) {
                     if (newPw && newPw.trim()) {
-                        localStorage.setItem('board_pw', newPw.trim());
+                        if (currentCategory === 'kimteam') {
+                            localStorage.setItem('kimteam_board_pw', newPw.trim());
+                        } else {
+                            localStorage.setItem('sanhae_board_pw', newPw.trim());
+                        }
                         alert("비밀번호가 성공적으로 변경되었습니다!");
                         closeModal();
                     } else {
@@ -1267,7 +1290,8 @@
                     alert("현재 비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'addTab') {
-                if (myAuthStatus !== 'admin') {
+                const hasPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
+                if (!hasPermission) {
                     alert("관리자만 탭을 추가할 수 있습니다.");
                     closeModal();
                     return;
@@ -1316,8 +1340,14 @@
         }
 
         function toggleAuth() {
-            if (isEdit) {
-                isEdit = false;
+            const hasPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
+            if (hasPermission) {
+                if (currentCategory === 'kimteam') {
+                    isKimteamEdit = false;
+                } else {
+                    isSanhaeAdmin = false;
+                    localStorage.setItem('isSanhaeAdmin', 'false');
+                }
                 updateUI();
             } else {
                 openLoginModal();
@@ -1336,17 +1366,34 @@
             const memberLoginBtn = document.getElementById('memberLoginBtn');
             const memberLogoutBtn = document.getElementById('memberLogoutBtn');
             const sanhaeAuthSec = document.getElementById('sanhaeAuthSection');
+            const permBadge = document.getElementById('userPermissionBadge');
+
+            const hasAdminPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
 
             if (currentCategory === 'sanhae') {
                 updateSanhaeAuthUI();
                 applyBtn.style.display = "inline-block";
-                sanhaeAuthSec.style.display = (myAuthStatus === 'admin') ? 'block' : 'none';
+                sanhaeAuthSec.style.display = isSanhaeAdmin ? 'block' : 'none';
                 saveKimteamBtn.style.display = "none";
+
+                if (isSanhaeAdmin) {
+                    permBadge.innerText = "👑 산해궁 관리자 권한";
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else if (myAuthStatus === 'approved') {
+                    permBadge.innerText = `✅ 승인 회원 (${myForestNick}) 권한 활성화`;
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else {
+                    permBadge.innerText = "🔒 비회원 (읽기 전용)";
+                    permBadge.style.background = "#334155";
+                    permBadge.style.color = "#94a3b8";
+                }
 
                 if (myAuthStatus === 'approved') {
                     memberLoginBtn.style.display = "none";
                     memberLogoutBtn.style.display = "inline-block";
-                } else if (myAuthStatus === 'admin') {
+                } else if (isSanhaeAdmin) {
                     memberLoginBtn.style.display = "none";
                     memberLogoutBtn.style.display = "none";
                 } else {
@@ -1358,16 +1405,26 @@
                 memberLoginBtn.style.display = "none";
                 memberLogoutBtn.style.display = "none";
                 sanhaeAuthSec.style.display = "none";
+
+                if (isKimteamEdit) {
+                    permBadge.innerText = "👑 코창서버 내실표 관리자 권한";
+                    permBadge.style.background = "#065f46";
+                    permBadge.style.color = "#34d399";
+                } else {
+                    permBadge.innerText = "🔒 읽기 전용";
+                    permBadge.style.background = "#334155";
+                    permBadge.style.color = "#94a3b8";
+                }
             }
 
-            // 오직 관리자(admin) 계정일 때만 탭추가 버튼을 노출
-            if (myAuthStatus === 'admin') {
+            // 각 카테고리별 관리자 권한에 따라 탭 추가 버튼 노출 분리
+            if (hasAdminPermission) {
                 addTabBtn.style.display = "inline-block";
             } else {
                 addTabBtn.style.display = "none";
             }
 
-            if (isEdit) {
+            if (hasAdminPermission) {
                 badge.innerText = "✏️ 관리자 수정 모드";
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
@@ -1388,7 +1445,7 @@
                     addColBtn.style.display = "none";
                 }
             } else {
-                badge.innerText = "🔒 읽기 전용 (비회원은 조회만 가능)";
+                badge.innerText = "🔒 읽기 전용 (권한 필요)";
                 badge.className = "badge badge-view";
                 authBtn.innerText = "🔓 관리자 권한";
                 addBtn.style.display = "none";
@@ -1446,7 +1503,7 @@
                     }
                 }
             } else {
-                if (activeTab === 'notice' && myAuthStatus === 'admin') {
+                if (activeTab === 'notice' && isSanhaeAdmin) {
                     const elem = document.getElementById('sanhaeNoticeArea');
                     if (elem) sanhaeNoticeContent = elem.value;
                 }
@@ -1457,7 +1514,7 @@
             const tabBar = document.getElementById('tabBar');
             let html = '';
 
-            const canDeleteTab = (myAuthStatus === 'admin');
+            const hasAdminPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
 
             if (currentCategory === 'kimteam') {
                 html += `
@@ -1469,9 +1526,9 @@
                 `;
                 customTabs.forEach(t => {
                     html += `
-                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
+                        <div class="tab-btn-wrap ${hasAdminPermission ? 'editable-tabs' : ''}">
                             <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
-                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
+                            ${hasAdminPermission ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
                         </div>
                     `;
                 });
@@ -1483,9 +1540,9 @@
                 `;
                 sanhaeCustomTabs.forEach(t => {
                     html += `
-                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
+                        <div class="tab-btn-wrap ${hasAdminPermission ? 'editable-tabs' : ''}">
                             <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
-                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
+                            ${hasAdminPermission ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
                         </div>
                     `;
                 });
@@ -1495,7 +1552,8 @@
         }
 
         function deleteCustomTab(tabId) {
-            if (myAuthStatus !== 'admin') {
+            const hasAdminPermission = (currentCategory === 'kimteam' ? isKimteamEdit : isSanhaeAdmin);
+            if (!hasAdminPermission) {
                 alert("관리자만 탭을 삭제할 수 있습니다.");
                 return;
             }
@@ -1524,7 +1582,7 @@
 
             if (currentCategory === 'kimteam') {
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
-                    if (isEdit) {
+                    if (isKimteamEdit) {
                         addBtn.style.display = "inline-block";
                         addColBtn.style.display = "inline-block";
                         container.classList.add('editable');
@@ -1560,7 +1618,7 @@
                 container.classList.remove('editable');
 
                 if (activeTab === 'notice') {
-                    const canEditNotice = (myAuthStatus === 'admin');
+                    const canEditNotice = isSanhaeAdmin;
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
@@ -1593,7 +1651,7 @@
                 return;
             }
 
-            const canWrite = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
+            const canWrite = (isSanhaeAdmin || myAuthStatus === 'approved');
 
             let html = `
                 <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
@@ -1637,7 +1695,7 @@
         }
 
         function openWritePostModal(tabKey) {
-            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+            if (!isSanhaeAdmin && myAuthStatus !== 'approved') {
                 alert("로그인한 승인 회원만 글을 작성할 수 있습니다.");
                 return;
             }
@@ -1656,7 +1714,7 @@
             const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
             if (!post) return;
 
-            const isMyPost = (post.author === myForestNick || myAuthStatus === 'admin');
+            const isMyPost = (post.author === myForestNick || isSanhaeAdmin);
             if (!isMyPost) {
                 alert("본인이 작성한 글만 수정할 수 있습니다.");
                 return;
@@ -1703,7 +1761,7 @@
                         title,
                         content,
                         video: videoUrl,
-                        author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                        author: myForestNick || (isSanhaeAdmin ? '관리자' : '회원'),
                         date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         image: imgBase64 || "",
                         comments: [],
@@ -1784,8 +1842,8 @@
                 return;
             }
 
-            const canInteract = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
-            const isMyPost = (post.author === myForestNick || myAuthStatus === 'admin');
+            const canInteract = (isSanhaeAdmin || myAuthStatus === 'approved');
+            const isMyPost = (post.author === myForestNick || isSanhaeAdmin);
 
             let html = `
                 <div class="post-detail-box">
@@ -1820,7 +1878,7 @@
                 html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>`;
             } else {
                 post.comments.forEach((c, cIdx) => {
-                    const isMyComment = (c.author === myForestNick || myAuthStatus === 'admin');
+                    const isMyComment = (c.author === myForestNick || isSanhaeAdmin);
                     html += `
                         <div class="comment-item">
                             <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-gold); margin-bottom:4px;">
@@ -1851,7 +1909,7 @@
         }
 
         function votePost(tabKey, postId, type) {
-            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+            if (!isSanhaeAdmin && myAuthStatus !== 'approved') {
                 alert("로그인한 승인 회원만 추천할 수 있습니다.");
                 return;
             }
@@ -1890,7 +1948,7 @@
 
             if (!post.comments) post.comments = [];
             post.comments.push({
-                author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                author: myForestNick || (isSanhaeAdmin ? '관리자' : '회원'),
                 content: input.value.trim(),
                 date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             });
@@ -1919,7 +1977,7 @@
                 html += `
                     <th style="width: ${col.width || 'auto'}">
                         <div class="th-box">
-                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isEdit ? 'readonly' : ''}>
+                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isKimteamEdit ? 'readonly' : ''}>
                             <div class="col-btn-group">
                                 <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
                                 <button class="btn-col-del" onclick="delColumn(${index})">✕</button>
@@ -1930,7 +1988,7 @@
                 `;
             });
 
-            if (isEdit) {
+            if (isKimteamEdit) {
                 html += `<th style="width: 80px;"><div class="th-box" style="color:#94a3b8; font-size:0.8rem;">관리</div></th>`;
             }
             headerRow.innerHTML = html;
@@ -2007,7 +2065,7 @@
                     }
                 });
 
-                if (isEdit) {
+                if (isKimteamEdit) {
                     html += `
                         <td>
                             <div class="btn-action-group">
@@ -2025,7 +2083,7 @@
         }
 
         function addColumn() {
-            if (!isEdit) return;
+            if (!isKimteamEdit) return;
             const cols = getCurrentColumns();
             const newId = 'col_' + Date.now();
             cols.push({ id: newId, title: "새열", width: "100px" });
@@ -2054,7 +2112,7 @@
         }
 
         function addRow() {
-            if (!isEdit) return;
+            if (!isKimteamEdit) return;
             const cols = getCurrentColumns();
             let newRow = {};
             cols.forEach(c => newRow[c.id] = "");
@@ -2078,7 +2136,7 @@
         }
 
         function handleProfileClick(rIndex) {
-            if (!isEdit) return;
+            if (!isKimteamEdit) return;
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
@@ -2101,7 +2159,7 @@
                 <div class="section-box">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
-                        ${isEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
+                        ${isKimteamEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
                     </div>
                     <div class="img-upload-grid">
             `;
@@ -2115,10 +2173,10 @@
                             <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
                                 ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
                             </div>
-                            ${isEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
-                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" ${!isEdit ? 'readonly' : ''}>
-                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                            ${isEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
+                            ${isKimteamEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
+                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
+                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                            ${isKimteamEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                         </div>
                     `;
                 });
@@ -2159,8 +2217,8 @@
                 html += `
                     <div class="section-box">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isEdit ? 'readonly' : ''}>
-                            ${isEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>
+                            ${isKimteamEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
                         </div>
                         <div class="img-upload-grid">
                 `;
@@ -2174,9 +2232,9 @@
                                 <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
                                     ${item.img ? `<img src="${item.img}">` : `<span>이미지</span>`}
                                 </div>
-                                ${isEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
-                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                                ${isEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
+                                ${isKimteamEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
+                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                                ${isKimteamEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
                             </div>
                         `;
                     });
@@ -2220,7 +2278,7 @@
             container.innerHTML = `
                 <div class="section-box">
                     <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isKimteamEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
                 </div>
             `;
         }
