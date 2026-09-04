@@ -46,8 +46,8 @@
         window.uploadMapImg = uploadMapImg;
         window.addMapCard = addMapCard;
         window.delMapCard = delMapCard;
-        window.addHiddenItem = addHiddenItem;
-        window.delHiddenItem = delHiddenItem;
+        window.addHiddenCard = addHiddenCard;
+        window.delHiddenCard = delHiddenCard;
         window.triggerHiddenFile = triggerHiddenFile;
         window.uploadHiddenImg = uploadHiddenImg;
         window.openImageModal = openImageModal;
@@ -2205,41 +2205,29 @@
             let html = `
                 <div class="section-box">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="color:var(--text-gold);">🕵️ 히든직업 전직 조건 및 진행 현황</h3>
-                        ${isKimteamEdit ? '<button class="btn btn-add" onclick="addHiddenCard()">+ 히든 카드 추가</button>' : ''}
+                        <h3 style="color:var(--text-gold);">🕵️ 히든직업 전직 조건 및 진행 현황 (총 5종류)</h3>
                     </div>
                     <div class="img-upload-grid">
             `;
 
             if (hiddenJobsData.length === 0) {
-                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 히든직업 카드가 없습니다.</div>`;
+                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 히든직업 정보가 없습니다.</div>`;
             } else {
                 hiddenJobsData.forEach((item, idx) => {
                     html += `
                         <div class="img-card">
                             <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
-                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
+                                ${item.img ? `<img src="${item.img}">` : `<span>${item.name} 이미지 업로드</span>`}
                             </div>
                             ${isKimteamEdit ? `<input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${idx})">📁 사진 변경</button>` : ''}
-                            <input type="text" id="hidden_name_${idx}" value="${item.name || ''}" placeholder="히든직업 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
-                            <textarea id="hidden_memo_${idx}" placeholder="전직 조건, 퀘스트 및 재료 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                            ${isKimteamEdit ? `<button class="btn btn-del" onclick="delHiddenCard(${idx})">카드 삭제</button>` : ''}
+                            <input type="text" id="hidden_name_${idx}" value="${item.name || ''}" placeholder="히든직업 이름" ${!isKimteamEdit ? 'readonly' : ''} style="font-weight:bold; color:var(--text-gold);">
+                            <textarea id="hidden_memo_${idx}" placeholder="[${item.name}] 전직 조건, 퀘스트 및 재료 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
                         </div>
                     `;
                 });
             }
             html += `</div></div>`;
             container.innerHTML = html;
-        }
-
-        function addHiddenCard() {
-            hiddenJobsData.push({ name: "새 히든직업", memo: "", img: "" });
-            renderAll();
-        }
-
-        function delHiddenCard(idx) {
-            hiddenJobsData.splice(idx, 1);
-            renderAll();
         }
 
         function triggerHiddenFile(idx) {
