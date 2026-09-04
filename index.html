@@ -677,7 +677,7 @@
         <div class="portal-grid">
             <div class="portal-card" onclick="enterCategory('kimteam')">
                 <div class="portal-icon">⚔️</div>
-                <div class="portal-name">코창서버 내실표</div>
+                <div class="portal-name">클창서버내실표</div>
                 <div class="portal-desc">팀원들의 스펙, 아이템, 사냥터 및 히든 전직 정보를 실시간으로 관리하는 공간입니다.</div>
             </div>
             <div class="portal-card" onclick="enterCategory('sanhae')">
@@ -915,7 +915,7 @@
                 }
             };
             window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
-            alert("코창서버 내실표 데이터가 성공적으로 저장되었습니다!");
+            alert("클창서버내실표 데이터가 성공적으로 저장되었습니다!");
         }
 
         function syncSaveToFirebase() {
@@ -1212,7 +1212,7 @@
                 applyBtn.style.display = 'none';
 
                 if (isKimteamEdit) {
-                    permBadge.innerText = "👑 코창서버 내실표 관리자 권한";
+                    permBadge.innerText = "👑 클창서버내실표 관리자 권한";
                     permBadge.style.background = "#065f46";
                     permBadge.style.color = "#34d399";
                 } else {
@@ -1221,7 +1221,7 @@
                     permBadge.style.color = "#94a3b8";
                 }
 
-                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 코창서버 내실표";
+                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클창서버내실표";
                 document.getElementById('appHeaderTitle').innerHTML = `🛡️ 킴성태팀 종합 현황판 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
                 activeTab = 'spec';
             }
@@ -1262,7 +1262,7 @@
 
         function openLoginModal() {
             modalMode = 'login';
-            const catName = currentCategory === 'kimteam' ? '코창서버 내실표' : '클럽 산해궁';
+            const catName = currentCategory === 'kimteam' ? '클창서버내실표' : '클럽 산해궁';
             document.getElementById('modalTitle').innerText = `🔑 [${catName}] 관리자 비밀번호 입력`;
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
@@ -1280,7 +1280,7 @@
 
         function openPwChangeModal() {
             modalMode = 'change';
-            const catName = currentCategory === 'kimteam' ? '코창서버 내실표' : '클럽 산해궁';
+            const catName = currentCategory === 'kimteam' ? '클창서버내실표' : '클럽 산해궁';
             document.getElementById('modalTitle').innerText = `🔑 [${catName}] 관리자 비밀번호 변경`;
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
@@ -1492,7 +1492,7 @@
                 sanhaeAuthSec.style.display = "none";
 
                 if (isKimteamEdit) {
-                    permBadge.innerText = "👑 코창서버 내실표 관리자 권한";
+                    permBadge.innerText = "👑 클창서버내실표 관리자 권한";
                     permBadge.style.background = "#065f46";
                     permBadge.style.color = "#34d399";
                 } else {
@@ -1720,7 +1720,7 @@
             let html = `
                 <div class="section-box">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-                        <h3 style="color:var(--text-gold);">🕵️ 코창서버 히든직업 분류별 현황판</h3>
+                        <h3 style="color:var(--text-gold);">🕵️ 클창서버내실표 히든직업 분류별 현황판</h3>
                         ${isKimteamEdit ? `
                             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                                 <label style="font-size:0.9rem; color:#94a3b8;">가로 칸 수: 
@@ -1808,7 +1808,7 @@
             let html = `
                 <div class="section-box">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
+                        <h3 style="color:var(--text-gold);">🗺️ 클창서버내실표 맵 및 사냥터 정보</h3>
                         ${isKimteamEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
                     </div>
                     <div class="img-upload-grid">
@@ -2210,25 +2210,27 @@
         function renderHeader() {
             const headerRow = document.getElementById('headerRow');
             const cols = getCurrentColumns();
-            let html = '';
+            let html = `<th style="width: 50px;"><div class="th-box">No.</div></th>`;
 
-            cols.forEach((col, index) => {
+            cols.forEach((col, idx) => {
                 html += `
-                    <th style="width: ${col.width || 'auto'}">
+                    <th style="width: ${col.width || '100px'};">
                         <div class="th-box">
-                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isKimteamEdit ? 'readonly' : ''}>
-                            <div class="col-btn-group">
-                                <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
-                                <button class="btn-col-del" onclick="delColumn(${index})">✕</button>
-                                <button class="btn-col-mv" onclick="moveColumn(${index}, 1)">▶</button>
-                            </div>
+                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isKimteamEdit ? 'readonly' : ''} oninput="syncSaveToFirebase()">
+                            ${isKimteamEdit ? `
+                                <div class="col-btn-group">
+                                    <button class="btn-col-mv" onclick="moveColumn(${idx}, -1)">◀</button>
+                                    <button class="btn-col-del" onclick="delColumn(${idx})">✕</button>
+                                    <button class="btn-col-mv" onclick="moveColumn(${idx}, 1)">▶</button>
+                                </div>
+                            ` : ''}
                         </div>
                     </th>
                 `;
             });
 
             if (isKimteamEdit) {
-                html += `<th style="width: 80px;"><div class="th-box" style="color:#94a3b8; font-size:0.8rem;">관리</div></th>`;
+                html += `<th style="width: 90px;"><div class="th-box">관리</div></th>`;
             }
             headerRow.innerHTML = html;
         }
@@ -2238,79 +2240,83 @@
             const cols = getCurrentColumns();
             let html = '';
 
-            membersData.forEach((row, rIndex) => {
+            if (membersData.length === 0) {
+                const colSpanCount = cols.length + 1 + (isKimteamEdit ? 1 : 0);
+                tableBody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; color:#94a3b8; padding:30px;">등록된 팀원이 없습니다. 상단의 '+ 팀원추가' 버튼을 눌러주세요.</td></tr>`;
+                return;
+            }
+
+            membersData.forEach((row, rIdx) => {
                 html += `<tr>`;
-                cols.forEach(col => {
+                html += `<td><div class="td-box" style="font-weight:bold; color:var(--text-gold);">${rIdx + 1}</div></td>`;
+
+                cols.forEach((col) => {
                     const val = row[col.id] || '';
-                    if (col.id === 'c2') {
-                        let jobClass = 'job-default';
-                        if (val === '나이트') jobClass = 'job-knight';
-                        else if (val === '위자드') jobClass = 'job-wizard';
-                        else if (val === '워리어') jobClass = 'job-warrior';
-                        else if (val === '어쌔신') jobClass = 'job-assassin';
-                        else if (val === '헌터') jobClass = 'job-hunter';
 
-                        html += `
-                            <td>
-                                <div class="td-box job-tag ${jobClass}">
-                                    <select class="job-select" data-colid="${col.id}" onchange="renderAll();">
-                                        <option value="">직업선택</option>
-                                        ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </td>
-                        `;
-                    } else if (col.id === 'c3' || col.id === 'c4') {
-                        let enClass = 'enchant-default';
-                        if (val === 'safe') enClass = 'enchant-safe';
-                        else if (['7', '8', '9', '10', '11', '12'].includes(val)) enClass = `enchant-${val}`;
-
-                        html += `
-                            <td>
-                                <div class="td-box ${enClass}">
-                                    <select class="enchant-select" data-colid="${col.id}" onchange="renderAll();">
-                                        <option value="">강화</option>
-                                        <option value="safe" ${val === 'safe' ? 'selected' : ''}>안전강화</option>
-                                        ${ENCHANT_LIST.map(e => `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </td>
-                        `;
-                    } else if (col.id === 'c1') {
-                        const profileImg = row.profileImg || '';
-                        const soopId = soopIdMap[val];
-                        const soopLink = soopId ? `https://ch.sooplive.co.kr/${soopId}` : '#';
-                        const hasSoop = !!soopId;
-
-                        html += `
-                            <td>
-                                <div class="td-box" style="gap:2px;">
-                                    <div class="profile-wrap" onclick="handleProfileClick(${rIndex})" title="프로필 이미지 변경">
-                                        ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
-                                    </div>
-                                    <input type="text" value="${val}" data-colid="${col.id}" placeholder="이름" style="font-weight:bold; font-size:0.9rem;">
-                                    ${hasSoop ? `<a href="${soopLink}" target="_blank" style="font-size:0.65rem; color:#38bdf8; text-decoration:none;">🔴 숲방송</a>` : ''}
-                                </div>
-                            </td>
-                        `;
+                    if (activeTab === 'spec' && col.id === 'c2') {
+                        html += `<td><div class="td-box ${getJobClass(val)}">
+                            <select class="job-select" data-colid="${col.id}" ${!isKimteamEdit ? 'disabled' : ''} onchange="handleJobChange(this, ${rIdx})">
+                                ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
+                            </select>
+                        </div></td>`;
+                    } else if (activeTab === 'hunt' && col.id === 'c2') {
+                        html += `<td><div class="td-box ${getJobClass(val)}">
+                            <select class="job-select" data-colid="${col.id}" ${!isKimteamEdit ? 'disabled' : ''} onchange="handleJobChange(this, ${rIdx})">
+                                ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
+                            </select>
+                        </div></td>`;
+                    } else if (activeTab === 'spec' && (col.id === 'c3' || col.id === 'c4')) {
+                        html += `<td><div class="td-box ${getEnchantClass(val)}">
+                            <select class="enchant-select" data-colid="${col.id}" ${!isKimteamEdit ? 'disabled' : ''} onchange="handleEnchantChange(this)">
+                                ${ENCHANT_LIST.map(e => `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}</option>`).join('')}
+                            </select>
+                        </div></td>`;
+                    } else if (activeTab === 'spec' && col.id === 'c1') {
+                        const profileImg = row['profileImg'] || '';
+                        const soopUrl = soopIdMap[val] ? `https://ch.sooplive.co.kr/${soopIdMap[val]}` : '';
+                        html += `<td><div class="td-box" style="gap:2px;">
+                            <div class="profile-wrap" onclick="${isKimteamEdit ? `handleProfileClick(${rIdx})` : (soopUrl ? `window.open('${soopUrl}', '_blank')` : '')}" title="${soopUrl ? '클릭 시 숲(SOOP) 방송국 이동' : '프로필 사진'}">
+                                ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
+                            </div>
+                            ${isKimteamEdit ? `<input type="file" id="profile_file_${rIdx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${rIdx})">` : ''}
+                            <input type="text" data-colid="${col.id}" value="${val}" placeholder="이름" ${!isKimteamEdit ? 'readonly' : ''} oninput="syncSaveToFirebase()">
+                        </div></td>`;
+                    } else if (activeTab === 'item' && col.id === 'c1') {
+                        const profileImg = row['profileImg'] || '';
+                        const soopUrl = soopIdMap[val] ? `https://ch.sooplive.co.kr/${soopIdMap[val]}` : '';
+                        html += `<td><div class="td-box" style="gap:2px;">
+                            <div class="profile-wrap" onclick="${isKimteamEdit ? `handleProfileClick(${rIdx})` : (soopUrl ? `window.open('${soopUrl}', '_blank')` : '')}" title="${soopUrl ? '클릭 시 숲(SOOP) 방송국 이동' : '프로필 사진'}">
+                                ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
+                            </div>
+                            ${isKimteamEdit ? `<input type="file" id="profile_file_${rIdx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${rIdx})">` : ''}
+                            <input type="text" data-colid="${col.id}" value="${val}" placeholder="이름" ${!isKimteamEdit ? 'readonly' : ''} oninput="syncSaveToFirebase()">
+                        </div></td>`;
+                    } else if (activeTab === 'hunt' && col.id === 'c1') {
+                        const profileImg = row['profileImg'] || '';
+                        const soopUrl = soopIdMap[val] ? `https://ch.sooplive.co.kr/${soopIdMap[val]}` : '';
+                        html += `<td><div class="td-box" style="gap:2px;">
+                            <div class="profile-wrap" onclick="${isKimteamEdit ? `handleProfileClick(${rIdx})` : (soopUrl ? `window.open('${soopUrl}', '_blank')` : '')}" title="${soopUrl ? '클릭 시 숲(SOOP) 방송국 이동' : '프로필 사진'}">
+                                ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
+                            </div>
+                            ${isKimteamEdit ? `<input type="file" id="profile_file_${rIdx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${rIdx})">` : ''}
+                            <input type="text" data-colid="${col.id}" value="${val}" placeholder="이름" ${!isKimteamEdit ? 'readonly' : ''} oninput="syncSaveToFirebase()">
+                        </div></td>`;
                     } else {
-                        html += `
-                            <td>
-                                <div class="td-box">
-                                    <input type="text" value="${val}" data-colid="${col.id}">
-                                </div>
-                            </td>
-                        `;
+                        html += `<td><div class="td-box">
+                            <input type="text" data-colid="${col.id}" value="${val}" ${!isKimteamEdit ? 'readonly' : ''} oninput="syncSaveToFirebase()">
+                        </div></td>`;
                     }
                 });
 
                 if (isKimteamEdit) {
                     html += `
                         <td>
-                            <div class="btn-action-group">
-                                <button class="btn-move" onclick="moveRow(${rIndex}, -1)">▲</button>
-                                <button class="btn-del" onclick="delRow(${rIndex})">✕</button>
-                                <button class="btn-move" onclick="moveRow(${rIndex}, 1)">▼</button>
+                            <div class="td-box">
+                                <div class="btn-action-group">
+                                    <button class="btn-move" onclick="moveRow(${rIdx}, -1)">▲</button>
+                                    <button class="btn-del" onclick="delRow(${rIdx})">✕</button>
+                                    <button class="btn-move" onclick="moveRow(${rIdx}, 1)">▼</button>
+                                </div>
                             </div>
                         </td>
                     `;
@@ -2321,76 +2327,120 @@
             tableBody.innerHTML = html;
         }
 
-        function addColumn() {
-            if (!isKimteamEdit) return;
-            const cols = getCurrentColumns();
-            const newId = 'col_' + Date.now();
-            cols.push({ id: newId, title: "새열", width: "100px" });
-            renderAll();
+        function getJobClass(job) {
+            if (job === '나이트') return 'job-knight';
+            if (job === '위자드') return 'job-wizard';
+            if (job === '워리어') return 'job-warrior';
+            if (job === '어쌔신') return 'job-assassin';
+            if (job === '헌터') return 'job-hunter';
+            return 'job-default';
         }
 
-        function moveColumn(index, direction) {
-            const cols = getCurrentColumns();
-            const target = index + direction;
-            if (target >= 0 && target < cols.length) {
-                const temp = cols[index];
-                cols[index] = cols[target];
-                cols[target] = temp;
-                renderAll();
-            }
+        function getEnchantClass(val) {
+            const num = parseInt(val);
+            if (isNaN(num) || num === 0) return 'enchant-default';
+            if (num <= 6) return 'enchant-safe';
+            if (num === 7) return 'enchant-7';
+            if (num === 8) return 'enchant-8';
+            if (num === 9) return 'enchant-9';
+            if (num === 10) return 'enchant-10';
+            if (num === 11) return 'enchant-11';
+            return 'enchant-12';
         }
 
-        function delColumn(index) {
-            const cols = getCurrentColumns();
-            if (cols.length <= 1) {
-                alert("최소 1개 이상의 열이 있어야 합니다.");
-                return;
+        function handleJobChange(selectElem, rIdx) {
+            const val = selectElem.value;
+            const tdBox = selectElem.parentElement;
+            tdBox.className = `td-box ${getJobClass(val)}`;
+            syncInputsToData();
+            syncSaveToFirebase();
+        }
+
+        function handleEnchantChange(selectElem) {
+            const val = selectElem.value;
+            const tdBox = selectElem.parentElement;
+            tdBox.className = `td-box ${getEnchantClass(val)}`;
+            syncInputsToData();
+            syncSaveToFirebase();
+        }
+
+        function handleProfileClick(rIdx) {
+            const input = document.getElementById(`profile_file_${rIdx}`);
+            if (input) input.click();
+        }
+
+        function uploadImg(e, rIdx) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    membersData[rIdx].profileImg = event.target.result;
+                    syncSaveToFirebase();
+                    renderBody();
+                };
+                reader.readAsDataURL(file);
             }
-            cols.splice(index, 1);
-            renderAll();
         }
 
         function addRow() {
             if (!isKimteamEdit) return;
             const cols = getCurrentColumns();
-            let newRow = {};
-            cols.forEach(c => newRow[c.id] = "");
-            membersData.push(newRow);
-            renderAll();
+            const newObj = {};
+            cols.forEach(c => { newObj[c.id] = ""; });
+            membersData.push(newObj);
+            syncSaveToFirebase();
+            renderBody();
         }
 
-        function moveRow(index, direction) {
-            const target = index + direction;
-            if (target >= 0 && target < membersData.length) {
-                const temp = membersData[index];
-                membersData[index] = membersData[target];
-                membersData[target] = temp;
-                renderAll();
-            }
-        }
-
-        function delRow(index) {
-            membersData.splice(index, 1);
-            renderAll();
-        }
-
-        function handleProfileClick(rIndex) {
+        function delRow(idx) {
             if (!isKimteamEdit) return;
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = event => {
-                        membersData[rIndex].profileImg = event.target.result;
-                        renderAll();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
+            membersData.splice(idx, 1);
+            syncSaveToFirebase();
+            renderBody();
+        }
+
+        function moveRow(idx, direction) {
+            if (!isKimteamEdit) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= membersData.length) return;
+            const temp = membersData[idx];
+            membersData[idx] = membersData[targetIdx];
+            membersData[targetIdx] = temp;
+            syncSaveToFirebase();
+            renderBody();
+        }
+
+        function addColumn() {
+            if (!isKimteamEdit) return;
+            const cols = getCurrentColumns();
+            const newId = 'col_' + Date.now();
+            cols.push({ id: newId, title: "새열", width: "100px" });
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function delColumn(idx) {
+            if (!isKimteamEdit) return;
+            const cols = getCurrentColumns();
+            if (cols.length <= 1) {
+                alert("최소 1개의 열이 있어야 합니다.");
+                return;
+            }
+            cols.splice(idx, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function moveColumn(idx, direction) {
+            if (!isKimteamEdit) return;
+            const cols = getCurrentColumns();
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= cols.length) return;
+            const temp = cols[idx];
+            cols[idx] = cols[targetIdx];
+            cols[targetIdx] = temp;
+            syncSaveToFirebase();
+            renderAll();
         }
     </script>
 </body>
