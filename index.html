@@ -1160,7 +1160,6 @@
         }
 
         function openAddTabModal() {
-            // 요구사항: 탭 추가는 관리자만 할 수 있게 제한
             if (myAuthStatus !== 'admin') {
                 alert("탭 추가 권한은 관리자에게만 있습니다.");
                 return;
@@ -1325,7 +1324,7 @@
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
                 pwChangeBtn.style.display = "inline-block";
-                addTabBtn.style.display = "inline-block"; // 관리자이므로 탭 추가 버튼 표시
+                addTabBtn.style.display = "inline-block";
 
                 if (currentCategory === 'kimteam' && (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt')) {
                     addBtn.style.display = "inline-block";
@@ -1342,7 +1341,6 @@
                 addColBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
                 
-                // 관리자 로그인 상태일 때만 탭 추가 버튼 표시
                 if (myAuthStatus === 'admin') {
                     addTabBtn.style.display = "inline-block";
                 } else {
@@ -1643,7 +1641,7 @@
         }
 
         function viewPostDetail(tabKey, postId) {
-            currentViewingPostId = postId;
+            currentViewingPostId = Number(postId);
             renderAll();
         }
 
@@ -1653,8 +1651,10 @@
         }
 
         function renderPostDetail(container, tabKey, postId) {
+            if (!commPosts[tabKey]) commPosts[tabKey] = [];
             const posts = commPosts[tabKey];
-            const post = posts.find(p => p.id === postId);
+            const post = posts.find(p => Number(p.id) === Number(postId));
+            
             if (!post) {
                 currentViewingPostId = null;
                 renderAll();
@@ -1682,11 +1682,11 @@
                         ${isMyPost ? `<button class="btn btn-del" style="margin-left:auto;" onclick="deletePost('${tabKey}', ${postId})">게시글 삭제</button>` : ''}
                     </div>
 
-                    <h4 style="color:#34d399; margin-bottom:10px;">💬 댓글 (${post.comments.length})</h4>
+                    <h4 style="color:#34d399; margin-bottom:10px;">💬 댓글 (${post.comments ? post.comments.length : 0})</h4>
                     <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;" id="commentListContainer">
             `;
 
-            if (post.comments.length === 0) {
+            if (!post.comments || post.comments.length === 0) {
                 html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>`;
             } else {
                 post.comments.forEach((c, cIdx) => {
@@ -1725,7 +1725,7 @@
                 alert("로그인한 승인 회원만 추천할 수 있습니다.");
                 return;
             }
-            const post = commPosts[tabKey].find(p => p.id === postId);
+            const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
             if (!post) return;
 
             if (!post.voters) post.voters = [];
@@ -1744,7 +1744,7 @@
 
         function deletePost(tabKey, postId) {
             if (confirm("정말 게시글을 삭제하시겠습니까?")) {
-                commPosts[tabKey] = commPosts[tabKey].filter(p => p.id !== postId);
+                commPosts[tabKey] = commPosts[tabKey].filter(p => Number(p.id) !== Number(postId));
                 currentViewingPostId = null;
                 syncSaveToFirebase();
                 renderAll();
@@ -1755,7 +1755,7 @@
             const input = document.getElementById(`commentInput_${postId}`);
             if (!input || !input.value.trim()) return;
 
-            const post = commPosts[tabKey].find(p => p.id === postId);
+            const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
             if (!post) return;
 
             if (!post.comments) post.comments = [];
@@ -1771,7 +1771,7 @@
 
         function deleteComment(tabKey, postId, commentIdx) {
             if (confirm("댓글을 삭제하시겠습니까?")) {
-                const post = commPosts[tabKey].find(p => p.id === postId);
+                const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
                 if (post && post.comments) {
                     post.comments.splice(commentIdx, 1);
                     syncSaveToFirebase();
