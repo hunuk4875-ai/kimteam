@@ -559,6 +559,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            position: relative;
         }
         .hidden-card-preview {
             width: 100%;
@@ -820,11 +821,11 @@
         let mapImages = [];
         let hiddenJobsColumns = 3; // 기본 가로 칸 수 (3열)
         let hiddenJobsData = [
-            { id: "h1", name: "히든직업 1", memo: "", img: "" }, 
-            { id: "h2", name: "히든직업 2", memo: "", img: "" }, 
-            { id: "h3", name: "히든직업 3", memo: "", img: "" }, 
-            { id: "h4", name: "히든직업 4", memo: "", img: "" }, 
-            { id: "h5", name: "히든직업 5", memo: "", img: "" }
+            { id: "h1", name: "분류 1 (예: 전사계열 히든)", memo: "", img: "" }, 
+            { id: "h2", name: "분류 2 (예: 마법사계열 히든)", memo: "", img: "" }, 
+            { id: "h3", name: "분류 3 (예: 궁수계열 히든)", memo: "", img: "" }, 
+            { id: "h4", name: "분류 4 (예: 도적계열 히든)", memo: "", img: "" }, 
+            { id: "h5", name: "분류 5 (예: 특수계열 히든)", memo: "", img: "" }
         ];
         let customTabs = [];
 
@@ -1691,6 +1692,165 @@
             }
         }
 
+        // 🕵️ 히든 직업 탭 렌더링 함수 (가로 칸 수 조절, 분류명 변경, 카드 추가/삭제 지원)
+        function renderHiddenTab(container) {
+            syncInputsToData();
+            let html = `
+                <div class="section-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="color:var(--text-gold);">🕵️ 코창서버 히든직업 분류별 현황판</h3>
+                        ${isKimteamEdit ? `
+                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                <label style="font-size:0.9rem; color:#94a3b8;">가로 칸 수: 
+                                    <input type="number" id="hiddenColInput" value="${hiddenJobsColumns}" min="1" max="6" style="width:50px; background:var(--box-bg); border:1px solid var(--box-border); color:white; text-align:center; border-radius:4px; padding:2px;" onchange="changeHiddenColumns(this.value)">
+                                </label>
+                                <button class="btn btn-add" onclick="addHiddenCard()">+ 분류 카드 추가</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="hidden-grid-container" style="grid-template-columns: repeat(${hiddenJobsColumns}, minmax(280px, 1fr));">
+            `;
+
+            hiddenJobsData.forEach((job, idx) => {
+                html += `
+                    <div class="hidden-card">
+                        ${isKimteamEdit ? `<button class="btn btn-del" style="position:absolute; top:8px; right:8px; padding:2px 6px; font-size:0.75rem;" onclick="delHiddenCard(${idx})">✕ 삭제</button>` : ''}
+                        
+                        <div style="font-size:0.8rem; color:#94a3b8; font-weight:bold;">[분류 #${idx + 1}]</div>
+                        
+                        <input type="text" id="hidden_name_${idx}" value="${job.name}" placeholder="분류 이름 입력 (예: 전사계열 히든)" ${!isKimteamEdit ? 'readonly' : ''}>
+                        
+                        <div class="hidden-card-preview" onclick="${isKimteamEdit ? `triggerHiddenFile(${idx})` : `openImageModal('${job.img}')`}">
+                            ${job.img ? `<img src="${job.img}">` : `<span>${isKimteamEdit ? '+ 이미지 업로드' : '이미지 없음'}</span>`}
+                        </div>
+                        ${isKimteamEdit ? `<input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${idx})">` : ''}
+                        
+                        <textarea id="hidden_memo_${idx}" placeholder="히든직업 상세 조건, 스킬 정보 및 메모를 입력하세요..." ${!isKimteamEdit ? 'readonly' : ''}>${job.memo || ''}</textarea>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function changeHiddenColumns(val) {
+            let num = parseInt(val);
+            if (isNaN(num) || num < 1) num = 1;
+            if (num > 6) num = 6;
+            hiddenJobsColumns = num;
+            renderAll();
+        }
+
+        function addHiddenCard() {
+            if (!isKimteamEdit) return;
+            hiddenJobsData.push({
+                id: 'h_' + Date.now(),
+                name: `분류 ${hiddenJobsData.length + 1}`,
+                memo: '',
+                img: ''
+            });
+            renderAll();
+        }
+
+        function delHiddenCard(idx) {
+            if (!isKimteamEdit) return;
+            if (hiddenJobsData.length <= 1) {
+                alert("최소 1개의 분류 카드가 있어야 합니다.");
+                return;
+            }
+            if (confirm("이 히든직업 분류 카드를 삭제하시겠습니까?")) {
+                hiddenJobsData.splice(idx, 1);
+                renderAll();
+            }
+        }
+
+        function triggerHiddenFile(idx) {
+            const fileInput = document.getElementById(`hidden_file_${idx}`);
+            if (fileInput) fileInput.click();
+        }
+
+        function uploadHiddenImg(e, idx) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    hiddenJobsData[idx].img = event.target.result;
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderMapTab(container) {
+            let html = `
+                <div class="section-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
+                        ${isKimteamEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
+                    </div>
+                    <div class="img-upload-grid">
+            `;
+
+            mapImages.forEach((item, idx) => {
+                html += `
+                    <div class="img-card">
+                        ${isKimteamEdit ? `<button class="btn btn-del" style="margin-left:auto; padding:2px 6px; font-size:0.75rem;" onclick="delMapCard(${idx})">✕ 삭제</button>` : ''}
+                        <input type="text" id="map_title_${idx}" value="${item.title}" placeholder="맵 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
+                        <div class="img-card-preview" onclick="${isKimteamEdit ? `triggerMapFile(${idx})` : `openImageModal('${item.img}')`}">
+                            ${item.img ? `<img src="${item.img}">` : `<span>${isKimteamEdit ? '+ 이미지 업로드' : '이미지 없음'}</span>`}
+                        </div>
+                        ${isKimteamEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">` : ''}
+                        <textarea id="map_memo_${idx}" placeholder="사냥터 정보 및 드랍 아이템 메모" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo}</textarea>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function addMapCard() {
+            if (!isKimteamEdit) return;
+            mapImages.push({ title: "새로운 맵", img: "", memo: "" });
+            renderAll();
+        }
+
+        function delMapCard(idx) {
+            if (!isKimteamEdit) return;
+            mapImages.splice(idx, 1);
+            renderAll();
+        }
+
+        function triggerMapFile(idx) {
+            const input = document.getElementById(`map_file_${idx}`);
+            if (input) input.click();
+        }
+
+        function uploadMapImg(e, idx) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    mapImages[idx].img = event.target.result;
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderCustomTab(container) {
+            const found = customTabs.find(t => t.id === activeTab);
+            if (!found) return;
+            const canEdit = isKimteamEdit;
+            container.innerHTML = `
+                <div class="section-box">
+                    <h3 style="color:var(--text-gold); margin-bottom:12px;">📌 ${found.name}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEdit ? 'readonly' : ''}>${found.content}</textarea>
+                </div>
+            `;
+        }
+
         function renderCommunityBoard(container, tabKey) {
             if (!commPosts[tabKey]) commPosts[tabKey] = [];
             const posts = commPosts[tabKey];
@@ -2209,154 +2369,6 @@
                 }
             };
             input.click();
-        }
-
-        function renderMapTab(container) {
-            let html = `
-                <div class="section-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
-                        ${isKimteamEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
-                    </div>
-                    <div class="img-upload-grid">
-            `;
-
-            if (mapImages.length === 0) {
-                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 맵 카드가 없습니다.</div>`;
-            } else {
-                mapImages.forEach((item, idx) => {
-                    html += `
-                        <div class="img-card">
-                            <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
-                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
-                            </div>
-                            ${isKimteamEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
-                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
-                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                            ${isKimteamEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
-                        </div>
-                    `;
-                });
-            }
-            html += `</div></div>`;
-            container.innerHTML = html;
-        }
-
-        function addMapCard() {
-            mapImages.push({ title: "새 맵", memo: "", img: "" });
-            renderAll();
-        }
-
-        function delMapCard(idx) {
-            mapImages.splice(idx, 1);
-            renderAll();
-        }
-
-        function triggerMapFile(idx) {
-            document.getElementById(`map_file_${idx}`).click();
-        }
-
-        function uploadMapImg(idx) {
-            const file = document.getElementById(`map_file_${idx}`).files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    mapImages[idx].img = e.target.result;
-                    renderAll();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function changeHiddenColumns(delta) {
-            hiddenJobsColumns += delta;
-            if (hiddenJobsColumns < 1) hiddenJobsColumns = 1;
-            if (hiddenJobsColumns > 6) hiddenJobsColumns = 6;
-            renderAll();
-            syncSaveToFirebase();
-        }
-
-        function renderHiddenTab(container) {
-            let html = `
-                <div class="section-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
-                        <h3 style="color:var(--text-gold);">🕵️ 히든직업 전직 조건 및 진행 현황 (카드형)</h3>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            ${isKimteamEdit ? `
-                                <div style="display:flex; align-items:center; gap:6px; background:var(--box-bg); padding:4px 8px; border-radius:6px; border:1px solid var(--box-border);">
-                                    <span style="font-size:0.85rem; color:#94a3b8;">가로 칸:</span>
-                                    <button class="btn" style="padding:2px 8px; font-size:0.8rem;" onclick="changeHiddenColumns(-1)">-</button>
-                                    <b style="color:var(--text-gold); min-width:15px; text-align:center;">${hiddenJobsColumns}</b>
-                                    <button class="btn" style="padding:2px 8px; font-size:0.8rem;" onclick="changeHiddenColumns(1)">+</button>
-                                </div>
-                                <button class="btn btn-add" onclick="addHiddenCard()">+ 히든직업 카드 추가</button>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div class="hidden-grid-container" style="grid-template-columns: repeat(${hiddenJobsColumns}, minmax(240px, 1fr));">
-            `;
-
-            if (hiddenJobsData.length === 0) {
-                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 히든직업 카드가 없습니다.</div>`;
-            } else {
-                hiddenJobsData.forEach((item, idx) => {
-                    html += `
-                        <div class="hidden-card">
-                            <div class="hidden-card-preview" onclick="openImageModal('${item.img || ''}')">
-                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
-                            </div>
-                            ${isKimteamEdit ? `
-                                <input type="file" id="hidden_file_${idx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${idx})">
-                                <button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${idx})">📁 사진 변경</button>
-                            ` : ''}
-                            <input type="text" id="hidden_name_${idx}" value="${item.name || ''}" placeholder="히든직업 이름 입력" ${!isKimteamEdit ? 'readonly' : ''}>
-                            <textarea id="hidden_memo_${idx}" placeholder="전직 조건, 퀘스트 및 재료 설명" ${!isKimteamEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
-                            ${isKimteamEdit ? `<button class="btn btn-del" onclick="delHiddenCard(${idx})">카드 삭제</button>` : ''}
-                        </div>
-                    `;
-                });
-            }
-            html += `</div></div>`;
-            container.innerHTML = html;
-        }
-
-        function addHiddenCard() {
-            const newId = 'hidden_' + Date.now();
-            hiddenJobsData.push({ id: newId, name: "새 히든직업", memo: "", img: "" });
-            renderAll();
-        }
-
-        function delHiddenCard(idx) {
-            hiddenJobsData.splice(idx, 1);
-            renderAll();
-        }
-
-        function triggerHiddenFile(idx) {
-            document.getElementById(`hidden_file_${idx}`).click();
-        }
-
-        function uploadHiddenImg(idx) {
-            const file = document.getElementById(`hidden_file_${idx}`).files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    hiddenJobsData[idx].img = e.target.result;
-                    renderAll();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function renderCustomTab(container) {
-            const found = customTabs.find(t => t.id === activeTab);
-            if (!found) return;
-
-            container.innerHTML = `
-                <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom:12px;">📌 ${found.name}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isKimteamEdit ? 'readonly' : ''}>${found.content || ''}</textarea>
-                </div>
-            `;
         }
     </script>
 </body>
