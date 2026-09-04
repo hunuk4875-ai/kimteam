@@ -1148,7 +1148,7 @@
                 document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클럽 산해궁";
                 document.getElementById('appHeaderTitle').innerHTML = `⚽ 클럽 산해궁 전용관 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
                 
-                // 산해궁 진입 시 기본 탭을 메인 홈(main)으로 설정
+                // ⭐ 변경된 부분: 산해궁 진입 시 기본 탭을 'notice'(공지사항) 대신 각 탭 최신글을 모아볼 수 있는 통합 메인 'main' 탭으로 설정
                 activeTab = 'main';
                 currentViewingPostId = null;
             } else {
@@ -1419,7 +1419,7 @@
                     `;
                 });
             } else {
-                // 산해궁 탭 목록 (메인 홈 및 공지사항 탭 포함)
+                // ⭐ 산해궁 탭 목록 (메인 종합 화면 추가)
                 html += `
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'main' ? 'active' : ''}" onclick="switchTab('main')">🏠 메인 (최신글)</button></div>
                     <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'notice' ? 'active' : ''}" onclick="switchTab('notice')">📢 공지사항</button></div>
@@ -1492,6 +1492,7 @@
                 container.classList.remove('editable');
 
                 if (activeTab === 'main') {
+                    // ⭐ 산해궁 메인 진입 시 각 커뮤니티 탭별 최신 글들을 나눠서 보여주는 뷰 렌더링
                     renderSanhaeMainOverview(container);
                 } else if (activeTab === 'notice') {
                     const canEditNotice = isSanhaeAdmin;
@@ -1510,25 +1511,17 @@
             }
         }
 
-        // 산해궁 메인 진입 시 공지사항 요약 및 각 커뮤니티 탭별 최신 글을 보여주는 함수
+        // ⭐ 각 탭별 최신글을 메인에 나눠서 보여주는 함수 구현
         function renderSanhaeMainOverview(container) {
             let html = `
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669; padding: 20px;">
                         <h2 style="color: var(--text-gold); margin-bottom: 6px;">⚽ 클럽 산해궁 종합 커뮤니티 홈</h2>
-                        <p style="color: #94a3b8; font-size: 0.95rem;">공지사항 요약 및 각 전용 탭의 실시간 최신 게시글 현황입니다.</p>
-                    </div>
-
-                    <!-- 공지사항 요약 카드 추가 -->
-                    <div class="section-box" style="border: 2px solid #059669;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="color: #34d399; font-size: 1.1rem; cursor: pointer;" onclick="switchTab('notice')">📢 공지사항 요약 &gt;</h3>
-                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem; background: #059669;" onclick="switchTab('notice')">공지사항 전체보기</button>
-                        </div>
-                        <div style="background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 6px; padding: 12px; font-size: 0.95rem; color: var(--text-light); white-space: pre-wrap; max-height: 120px; overflow-y: hidden; text-overflow: ellipsis;">${sanhaeNoticeContent}</div>
+                        <p style="color: #94a3b8; font-size: 0.95rem;">각 전용 탭의 실시간 최신 게시글 현황입니다.</p>
                     </div>
             `;
 
+            // 기본 탭들과 커스텀 탭 목록 정의
             const targetTabs = [
                 { key: 'squad', name: '📋 스쿼드 및 전술' },
                 { key: 'seen', name: '👀 산이봤?' }
@@ -1539,7 +1532,7 @@
 
             targetTabs.forEach(tab => {
                 const posts = commPosts[tab.key] || [];
-                const recentPosts = posts.slice().reverse().slice(0, 5);
+                const recentPosts = posts.slice().reverse().slice(0, 5); // 최근 5개만 표시
 
                 html += `
                     <div class="section-box" style="border: 1px solid var(--box-border);">
@@ -2150,7 +2143,7 @@
         }
 
         function addRow() {
-            if (!isKimteamEdit) requireAdd();
+            if (!isKimteamEdit) return;
             const newRow = {};
             getCurrentColumns().forEach(c => newRow[c.id] = "");
             membersData.push(newRow);
