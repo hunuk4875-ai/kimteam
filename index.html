@@ -134,8 +134,22 @@
         .lobby-subtitle {
             font-size: 1.1rem;
             color: #94a3b8;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-align: center;
+        }
+
+        /* 메인로비 가로 스크롤 공지 배너 스타일 */
+        .lobby-banner {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 30px;
+            color: var(--text-gold);
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .portal-grid {
@@ -652,6 +666,14 @@
     <div id="mainLobby">
         <div class="lobby-title">킴성태팀 통합 포털</div>
         <div class="lobby-subtitle">입장할 카테고리를 선택해주세요</div>
+        
+        <!-- 가로로 지나가는 배너 추가 -->
+        <div class="lobby-banner">
+            <marquee behavior="scroll" direction="left" scrollamount="6">
+                📢 본 사이트는 팬심으로 운영되는 공간입니다. 콘텐츠의 무단 불펌, 2차 가공 및 악용·분탕 행위는 엄격히 금지합니다.
+            </marquee>
+        </div>
+
         <div class="portal-grid">
             <div class="portal-card" onclick="enterCategory('kimteam')">
                 <div class="portal-icon">⚔️</div>
