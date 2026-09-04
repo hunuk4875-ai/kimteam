@@ -63,12 +63,22 @@
         window.handleJobChange = handleJobChange;
         window.applyMembership = applyMembership;
         window.approveUser = approveUser;
-        window.rejectUser = rejectUser; // 거절 함수 전역 등록 추가[cite: 6]
+        window.rejectUser = rejectUser;
         window.openApplyModal = openApplyModal;
         window.openMemberLoginModal = openMemberLoginModal;
         window.memberLogout = memberLogout;
         window.revokeUser = revokeUser;
         window.switchAdminTab = switchAdminTab;
+
+        // 커뮤니티 전용 전역 함수 등록
+        window.openWritePostModal = openWritePostModal;
+        window.viewPostDetail = viewPostDetail;
+        window.closePostDetail = closePostDetail;
+        window.submitPost = submitPost;
+        window.deletePost = deletePost;
+        window.addComment = addComment;
+        window.deleteComment = deleteComment;
+        window.votePost = votePost;
     </script>
     <style>
         :root {
@@ -315,6 +325,48 @@
             padding: 15px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* 커뮤니티 게시판 스타일 */
+        .comm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .comm-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .comm-table th, .comm-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--box-border);
+            font-size: 0.95rem;
+        }
+        .comm-table th {
+            color: var(--text-gold);
+            background: var(--box-bg);
+        }
+        .comm-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+        .post-detail-box {
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .comment-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--box-border);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
         }
 
         table {
@@ -578,24 +630,21 @@
             </div>
         </div>
 
-        <!-- 산해궁 전용 관리자 인증 센터 (관리자 모드 시 노출: 대기 목록 및 승인된 목록을 탭으로 분리) -->
+        <!-- 산해궁 전용 관리자 인증 센터 -->
         <div id="sanhaeAuthSection" class="section-box" style="display: none; width: 100%; border: 2px solid var(--text-gold); background: #172033;">
             <h3 style="color: var(--text-gold); margin-bottom: 8px;">🛡️ 클럽 산해궁 관리자 인증 센터</h3>
             <div id="sanhaeAuthStatus" style="font-size: 0.95rem; color: #94a3b8; margin-bottom: 12px;">상태 확인 중...</div>
             
-            <!-- 관리자 센터 내부 서브 탭 버튼 -->
             <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--box-border); padding-bottom: 8px;">
                 <button id="adminTabPending" class="btn" style="background: var(--primary); font-size: 0.85rem;" onclick="switchAdminTab('pending')">📋 승인 대기 목록</button>
                 <button id="adminTabApproved" class="btn" style="background: #475569; font-size: 0.85rem;" onclick="switchAdminTab('approved')">✅ 승인된 회원 관리</button>
             </div>
 
-            <!-- 대기 목록 뷰 -->
             <div id="adminPendingView" style="display: block;">
                 <h4 style="color: var(--text-gold); margin-bottom: 8px; font-size: 1rem;">📋 관리자 승인 대기 목록</h4>
                 <div id="pendingUsersContainer" style="font-size: 0.95rem; color: #cbd5e1;">대기 중인 신청자가 없습니다.</div>
             </div>
 
-            <!-- 승인된 회원 관리 뷰 -->
             <div id="adminApprovedView" style="display: none;">
                 <h4 style="color: var(--success); margin-bottom: 8px; font-size: 1rem;">✅ 승인된 클럽 회원 관리 목록</h4>
                 <div id="adminApprovedUsersContainer" style="font-size: 0.95rem; color: #cbd5e1;">승인된 회원이 없습니다.</div>
@@ -608,28 +657,42 @@
         <div class="board-container" id="boardContainer"></div>
     </div>
 
-    <!-- 통합 모달 창 (관리자 로그인, 회원 로그인, 비번 변경, 탭 추가, 가입 신청 공용) -->
+    <!-- 통합 모달 창 -->
     <div id="pwModal" class="modal-overlay">
         <div class="modal-content">
             <div id="modalTitle" class="modal-title">🔑 인증 정보 입력</div>
             
-            <!-- 공용 일반 비밀번호 입력 -->
             <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
             <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
             <input type="text" id="customTabInput" class="modal-input" placeholder="추가할 탭 이름" style="display:none;" onkeyup="handleModalKey(event)">
             
-            <!-- 가입요청 모달용 입력 필드 (숲닉네임 / FC닉네임 / 식별번호) -->
             <input type="text" id="applyForestModal" class="modal-input" placeholder="숲 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
             <input type="text" id="applyFcModal" class="modal-input" placeholder="FC온라인 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
             <input type="password" id="applyPinModal" class="modal-input" placeholder="원하는 식별번호 (비밀번호)" style="display:none;" onkeyup="handleModalKey(event)">
 
-            <!-- 승인 회원 로그인용 입력 필드 (숲닉네임 / 식별번호) -->
             <input type="text" id="memberLoginForest" class="modal-input" placeholder="숲 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
             <input type="password" id="memberLoginPin" class="modal-input" placeholder="식별번호 (비밀번호)" style="display:none;" onkeyup="handleModalKey(event)">
 
             <div class="modal-btn-group">
                 <button class="modal-btn modal-btn-submit" onclick="submitModal()">확인</button>
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커뮤니티 글쓰기 모달 -->
+    <div id="postModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; text-align: left;">
+            <div class="modal-title" style="text-align: center;">✍️ 새 게시글 작성</div>
+            <label style="font-size:0.85rem; color:#94a3b8;">제목</label>
+            <input type="text" id="postTitleInput" class="modal-input" placeholder="제목을 입력하세요" style="margin-top:4px; text-align:left;">
+            <label style="font-size:0.85rem; color:#94a3b8;">내용</label>
+            <textarea id="postContentInput" class="modal-input" placeholder="내용을 입력하세요 (사진 또는 동영상 링크 첨부 가능)" style="height:120px; resize:vertical; text-align:left;"></textarea>
+            <label style="font-size:0.85rem; color:#94a3b8;">이미지 첨부 (선택)</label>
+            <input type="file" id="postImageInput" accept="image/*" style="margin-top:4px; margin-bottom:12px; width:100%; color:white;">
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-submit" onclick="submitPost()">등록</button>
+                <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('postModal').style.display='none'">취소</button>
             </div>
         </div>
     </div>
@@ -691,9 +754,16 @@
         ];
         let customTabs = [];
 
-        let sanhaeNotice = "산해궁 클럽 공지사항을 입력하세요.";
-        let sanhaeSquad = "클럽 스쿼드 및 전술 배치 내용을 입력하세요.";
-        let sanhaeSeen = "산이봤? 관련 내용 및 일지를 입력하세요.";
+        // 산해궁 커뮤니티 데이터 구조 (탭별 게시글 배열 및 공지사항 내용)
+        let sanhaeNoticeContent = "⚽ 산해궁 클럽 공식 공지사항입니다. (관리자만 작성/수정 가능합니다)";
+        let commPosts = {
+            squad: [
+                { id: 1, title: "클럽 기본 포메이션 및 전술 안내", author: "관리자", date: "2026-09-04", content: "4-3-3 포메이션 기반 빌드업 전술입니다.", image: "", comments: [], likes: 5, dislikes: 0, voters: [] }
+            ],
+            seen: [],
+            custom: {}
+        };
+        let currentViewingPostId = null;
         let sanhaeCustomTabs = [];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -712,9 +782,8 @@
                     if (serverData.approvedMembers) approvedMembers = serverData.approvedMembers;
 
                     if (serverData.sanhaeData) {
-                        if (serverData.sanhaeData.notice) sanhaeNotice = serverData.sanhaeData.notice;
-                        if (serverData.sanhaeData.squad) sanhaeSquad = serverData.sanhaeData.squad;
-                        if (serverData.sanhaeData.seen) sanhaeSeen = serverData.sanhaeData.seen;
+                        if (serverData.sanhaeData.noticeContent) sanhaeNoticeContent = serverData.sanhaeData.noticeContent;
+                        if (serverData.sanhaeData.commPosts) commPosts = serverData.sanhaeData.commPosts;
                         if (serverData.sanhaeData.customTabs) sanhaeCustomTabs = serverData.sanhaeData.customTabs;
                     }
                 }
@@ -741,7 +810,6 @@
         function updateSanhaeAuthUI() {
             checkAndUpdateMyAuth();
             const statusDiv = document.getElementById('sanhaeAuthStatus');
-            
             if (!statusDiv) return;
 
             if (myAuthStatus === 'admin') {
@@ -749,18 +817,17 @@
                 renderAdminPendingList();
                 renderAdminApprovedList();
             } else if (myAuthStatus === 'approved') {
-                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (공지 및 게시글 작성 가능)</span>`;
+                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 가능)</span>`;
             } else {
                 const found = pendingApplicants.find(p => p.forest === myForestNick);
                 if (found) {
                     statusDiv.innerHTML = `⏳ <span style='color: #38bdf8; font-weight:bold;'>(${myForestNick}) 가입 심사 대기 중입니다. 관리자 승인을 기다려주세요.</span>`;
                 } else {
-                    statusDiv.innerHTML = "🔒 클럽 회원 전용 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
+                    statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
                 }
             }
         }
 
-        // 관리자 센터 서브 탭 전환 (대기 목록 / 승인된 목록 분리)
         function switchAdminTab(tabType) {
             const pendingView = document.getElementById('adminPendingView');
             const approvedView = document.getElementById('adminApprovedView');
@@ -890,7 +957,6 @@
             }
         }
 
-        // 승인 거절 함수 추가 (대기 목록에서 즉시 삭제 및 파이어베이스 동기화)[cite: 6]
         function rejectUser(index) {
             if (myAuthStatus !== 'admin') {
                 alert("관리자만 거절할 수 있습니다.");
@@ -955,7 +1021,6 @@
 
             let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
             pendingApplicants.forEach((item, idx) => {
-                // 승인 및 거절 버튼 추가[cite: 6]
                 html += `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--box-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--box-border);">
                         <div>숲: <b style="color:var(--text-gold);">${item.forest}</b> / FC: <b style="color:#38bdf8;">${item.fc}</b> <span style="font-size:0.8rem; color:#94a3b8;">(${item.date})</span></div>
@@ -1011,6 +1076,7 @@
                 document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클럽 산해궁";
                 document.getElementById('appHeaderTitle').innerHTML = `⚽ 클럽 산해궁 전용관 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
                 activeTab = 'notice';
+                currentViewingPostId = null;
             }
             updateUI();
         }
@@ -1036,6 +1102,7 @@
         function switchTab(tab) {
             syncInputsToData();
             activeTab = tab;
+            currentViewingPostId = null;
             renderAll();
         }
 
@@ -1150,7 +1217,8 @@
                     if (currentCategory === 'kimteam') {
                         customTabs.push({ id: newId, name: tabName.trim(), content: "새로 만든 탭의 내용을 입력하세요." });
                     } else {
-                        sanhaeCustomTabs.push({ id: newId, name: tabName.trim(), content: "새로 만든 탭의 내용을 입력하세요." });
+                        sanhaeCustomTabs.push({ id: newId, name: tabName.trim() });
+                        commPosts[newId] = [];
                     }
                     activeTab = newId;
                     closeModal();
@@ -1249,8 +1317,8 @@
                 authBtn.innerText = "🔓 관리자 권한";
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
-                addTabBtn.style.display = "none";
-                saveBtn.style.display = "none";
+                addTabBtn.style.display = "inline-block"; // 산해궁 일반회원도 탭 추가 가능하도록 활성화 유지
+                saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "none";
             }
 
@@ -1305,21 +1373,9 @@
                     }
                 }
             } else {
-                if (activeTab === 'notice') {
+                if (activeTab === 'notice' && myAuthStatus === 'admin') {
                     const elem = document.getElementById('sanhaeNoticeArea');
-                    if (elem) sanhaeNotice = elem.value;
-                } else if (activeTab === 'squad') {
-                    const elem = document.getElementById('sanhaeSquadArea');
-                    if (elem) sanhaeSquad = elem.value;
-                } else if (activeTab === 'seen') {
-                    const elem = document.getElementById('sanhaeSeenArea');
-                    if (elem) sanhaeSeen = elem.value;
-                } else {
-                    const elem = document.getElementById('customTextArea');
-                    if (elem) {
-                        const found = sanhaeCustomTabs.find(t => t.id === activeTab);
-                        if (found) found.content = elem.value;
-                    }
+                    if (elem) sanhaeNoticeContent = elem.value;
                 }
             }
         }
@@ -1352,7 +1408,7 @@
                 `;
                 sanhaeCustomTabs.forEach(t => {
                     html += `
-                        <div class="tab-btn-wrap ${isEdit ? 'editable-tabs' : ''}">
+                        <div class="tab-btn-wrap editable-tabs">
                             <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
                             <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>
                         </div>
@@ -1364,13 +1420,18 @@
         }
 
         function deleteCustomTab(tabId) {
-            if (!isEdit) return;
+            if (currentCategory === 'kimteam' && !isEdit) return;
+            if (currentCategory === 'sanhae' && myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("권한이 없습니다.");
+                return;
+            }
             if (confirm("이 탭을 삭제하시겠습니까?")) {
                 if (currentCategory === 'kimteam') {
                     customTabs = customTabs.filter(t => t.id !== tabId);
                     if (activeTab === tabId) activeTab = 'spec';
                 } else {
                     sanhaeCustomTabs = sanhaeCustomTabs.filter(t => t.id !== tabId);
+                    delete commPosts[tabId];
                     if (activeTab === tabId) activeTab = 'notice';
                 }
                 renderTabBar();
@@ -1383,7 +1444,6 @@
             const container = document.getElementById('boardContainer');
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
-            const isReadonlyUser = (myAuthStatus !== 'admin' && myAuthStatus !== 'approved');
 
             if (currentCategory === 'kimteam') {
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
@@ -1422,39 +1482,279 @@
                 addBtn.style.display = "none"; addColBtn.style.display = "none";
                 container.classList.remove('editable');
 
-                const textEditable = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
-
                 if (activeTab === 'notice') {
+                    // 공지사항 탭: 관리자만 수정 가능, 댓글 없음
+                    const canEditNotice = (myAuthStatus === 'admin');
                     container.innerHTML = `
                         <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항 ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(로그인 후 작성 가능)</span>' : ''}</h3>
-                            <textarea id="sanhaeNoticeArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeNotice}</textarea>
-                        </div>
-                    `;
-                } else if (activeTab === 'squad') {
-                    container.innerHTML = `
-                        <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">📋 클럽 스쿼드 및 전술 배치 ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(로그인 후 작성 가능)</span>' : ''}</h3>
-                            <textarea id="sanhaeSquadArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeSquad}</textarea>
-                        </div>
-                    `;
-                } else if (activeTab === 'seen') {
-                    container.innerHTML = `
-                        <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">👀 산이봤? (클럽 일지) ${isReadonlyUser ? '<span style="font-size:0.8rem; color:#94a3b8;">(로그인 후 작성 가능)</span>' : ''}</h3>
-                            <textarea id="sanhaeSeenArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${sanhaeSeen}</textarea>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                                <h3 style="color:#34d399; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항 (댓글 작성 불가)</h3>
+                                ${canEditNotice ? '<span style="font-size:0.85rem; color:#34d399;">관리자 수정 모드 활성화됨</span>' : '<span style="font-size:0.85rem; color:#94a3b8;">관리자만 수정할 수 있습니다</span>'}
+                            </div>
+                            <textarea id="sanhaeNoticeArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEditNotice ? 'readonly' : ''}>${sanhaeNoticeContent}</textarea>
                         </div>
                     `;
                 } else {
-                    const found = sanhaeCustomTabs.find(t => t.id === activeTab);
-                    const contentVal = found ? found.content : "";
-                    container.innerHTML = `
-                        <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
-                            <h3 style="color:#34d399; margin-bottom: 12px; font-size: 1.2rem;">📌 ${found ? found.name : '산해궁 커스텀 탭'}</h3>
-                            <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!textEditable ? 'readonly' : ''}>${contentVal}</textarea>
+                    // 공지사항을 제외한 모든 탭 (스쿼드, 산이봤?, 커스텀탭): 일반 커뮤니티 게시판 형태 (로그인 시 글쓰기/댓글/추천 가능)
+                    renderCommunityBoard(container, activeTab);
+                }
+            }
+        }
+
+        // --- 클럽 커뮤니티 렌더링 함수들 ---
+        function renderCommunityBoard(container, tabKey) {
+            if (!commPosts[tabKey]) commPosts[tabKey] = [];
+            const posts = commPosts[tabKey];
+
+            let tabTitle = "커뮤니티 게시판";
+            if (tabKey === 'squad') tabTitle = "📋 클럽 스쿼드 및 전술 게시판";
+            else if (tabKey === 'seen') tabTitle = "👀 산이봤? 게시판";
+            else {
+                const found = sanhaeCustomTabs.find(t => t.id === tabKey);
+                if (found) tabTitle = `📌 ${found.name}`;
+            }
+
+            if (currentViewingPostId !== null) {
+                renderPostDetail(container, tabKey, currentViewingPostId);
+                return;
+            }
+
+            const canWrite = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
+
+            let html = `
+                <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
+                    <div class="comm-header">
+                        <h3 style="color:#34d399; font-size: 1.2rem;">${tabTitle}</h3>
+                        ${canWrite ? `<button class="btn btn-add" onclick="openWritePostModal('${tabKey}')">✍️ 글쓰기</button>` : `<span style="font-size:0.85rem; color:#94a3b8;">로그인 후 글작성 및 댓글 참여가 가능합니다.</span>`}
+                    </div>
+                    <table class="comm-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px; text-align:center;">번호</th>
+                                <th>제목</th>
+                                <th style="width: 120px; text-align:center;">작성자</th>
+                                <th style="width: 100px; text-align:center;">날짜</th>
+                                <th style="width: 70px; text-align:center;">추천</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (posts.length === 0) {
+                html += `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:30px;">등록된 게시글이 없습니다. 첫 글을 작성해보세요!</td></tr>`;
+            } else {
+                posts.slice().reverse().forEach((p, index) => {
+                    const realIdx = posts.length - index;
+                    html += `
+                        <tr onclick="viewPostDetail('${tabKey}', ${p.id})">
+                            <td style="text-align:center; color:#94a3b8;">${realIdx}</td>
+                            <td><b>${p.title}</b> <span style="font-size:0.8rem; color:#38bdf8;">[${p.comments ? p.comments.length : 0}]</span> ${p.image ? '🖼️' : ''}</td>
+                            <td style="text-align:center; color:var(--text-gold);">${p.author}</td>
+                            <td style="text-align:center; font-size:0.85rem; color:#94a3b8;">${p.date}</td>
+                            <td style="text-align:center; color:#34d399;">${p.likes || 0}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        function openWritePostModal(tabKey) {
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("로그인한 승인 회원만 글을 작성할 수 있습니다.");
+                return;
+            }
+            document.getElementById('postTitleInput').value = "";
+            document.getElementById('postContentInput').value = "";
+            document.getElementById('postImageInput').value = "";
+            window.activePostTabKey = tabKey;
+            document.getElementById('postModal').style.display = "flex";
+        }
+
+        function submitPost() {
+            const title = document.getElementById('postTitleInput').value.trim();
+            const content = document.getElementById('postContentInput').value.trim();
+            const fileInput = document.getElementById('postImageInput');
+            const tabKey = window.activePostTabKey;
+
+            if (!title || !content) {
+                alert("제목과 내용을 모두 입력해주세요.");
+                return;
+            }
+
+            const saveNewPost = (imgBase64) => {
+                if (!commPosts[tabKey]) commPosts[tabKey] = [];
+                const newPost = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                    date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    image: imgBase64 || "",
+                    comments: [],
+                    likes: 0,
+                    dislikes: 0,
+                    voters: []
+                };
+                commPosts[tabKey].push(newPost);
+                syncSaveToFirebase();
+                document.getElementById('postModal').style.display = "none";
+                renderAll();
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveNewPost(e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveNewPost("");
+            }
+        }
+
+        function viewPostDetail(tabKey, postId) {
+            currentViewingPostId = postId;
+            renderAll();
+        }
+
+        function closePostDetail() {
+            currentViewingPostId = null;
+            renderAll();
+        }
+
+        function renderPostDetail(container, tabKey, postId) {
+            const posts = commPosts[tabKey];
+            const post = posts.find(p => p.id === postId);
+            if (!post) {
+                currentViewingPostId = null;
+                renderAll();
+                return;
+            }
+
+            const canInteract = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
+            const isMyPost = (post.author === myForestNick || myAuthStatus === 'admin');
+
+            let html = `
+                <div class="post-detail-box">
+                    <button class="btn btn-lobby" style="margin-bottom:15px;" onclick="closePostDetail()">← 목록으로 돌아가기</button>
+                    <h2 style="color:var(--text-gold); margin-bottom:8px;">${post.title}</h2>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#94a3b8; border-bottom:1px solid var(--box-border); padding-bottom:8px; margin-bottom:15px;">
+                        <div>작성자: <b style="color:var(--text-light);">${post.author}</b></div>
+                        <div>작성일: ${post.date}</div>
+                    </div>
+                    <div style="font-size:1.05rem; line-height:1.6; margin-bottom:20px; white-space:pre-wrap;">${post.content}</div>
+                    
+                    ${post.image ? `<div style="margin-bottom:20px;"><img src="${post.image}" style="max-width:100%; max-height:400px; border-radius:8px; cursor:pointer;" onclick="openImageModal('${post.image}')" title="클릭해서 확대"></div>` : ''}
+                    
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:25px;">
+                        <button class="btn" style="background:#0284c7;" onclick="votePost('${tabKey}', ${postId}, 'like')">👍 추천 (${post.likes || 0})</button>
+                        <button class="btn" style="background:#475569;" onclick="votePost('${tabKey}', ${postId}, 'dislike')">👎 비추천 (${post.dislikes || 0})</button>
+                        ${isMyPost ? `<button class="btn btn-del" style="margin-left:auto;" onclick="deletePost('${tabKey}', ${postId})">게시글 삭제</button>` : ''}
+                    </div>
+
+                    <h4 style="color:#34d399; margin-bottom:10px;">💬 댓글 (${post.comments.length})</h4>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;" id="commentListContainer">
+            `;
+
+            if (post.comments.length === 0) {
+                html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>`;
+            } else {
+                post.comments.forEach((c, cIdx) => {
+                    const isMyComment = (c.author === myForestNick || myAuthStatus === 'admin');
+                    html += `
+                        <div class="comment-item">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                                <b style="color:var(--text-gold);">${c.author}</b>
+                                <span style="color:#94a3b8;">${c.date}</span>
+                            </div>
+                            <div style="font-size:0.95rem; word-break:break-all;">${c.content}</div>
+                            ${isMyComment ? `<div style="text-align:right;"><button style="background:none; border:none; color:var(--danger); font-size:0.75rem; cursor:pointer;" onclick="deleteComment('${tabKey}', ${postId}, ${cIdx})">삭제</button></div>` : ''}
                         </div>
                     `;
+                });
+            }
+
+            html += `
+                    </div>
+                    ${canInteract ? `
+                        <div style="display:flex; gap:8px; margin-top:15px;">
+                            <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." class="modal-input" style="margin-bottom:0; text-align:left;">
+                            <button class="btn btn-add" style="white-space:nowrap;" onclick="addComment('${tabKey}', ${postId})">댓글 등록</button>
+                        </div>
+                    ` : `<div style="color:#94a3b8; font-size:0.9rem; text-align:center; padding:10px; background:var(--box-bg); border-radius:6px;">로그인한 회원만 댓글을 작성할 수 있습니다.</div>`}
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function votePost(tabKey, postId, type) {
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("로그인한 회원만 추천/비추천할 수 있습니다.");
+                return;
+            }
+            const posts = commPosts[tabKey];
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            if (!post.voters) post.voters = [];
+            if (post.voters.includes(myForestNick)) {
+                alert("이미 추천 또는 비추천을 하셨습니다.");
+                return;
+            }
+
+            post.voters.push(myForestNick);
+            if (type === 'like') post.likes = (post.likes || 0) + 1;
+            else post.dislikes = (post.dislikes || 0) + 1;
+
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function addComment(tabKey, postId) {
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("로그인한 회원만 댓글을 작성할 수 있습니다.");
+                return;
+            }
+            const input = document.getElementById('commentInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            const posts = commPosts[tabKey];
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            post.comments.push({
+                author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                content,
+                date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+
+            input.value = "";
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function deleteComment(tabKey, postId, cIdx) {
+            if (confirm("댓글을 삭제하시겠습니까?")) {
+                const posts = commPosts[tabKey];
+                const post = posts.find(p => p.id === postId);
+                if (post && post.comments[cIdx]) {
+                    post.comments.splice(cIdx, 1);
+                    syncSaveToFirebase();
+                    renderAll();
                 }
+            }
+        }
+
+        function deletePost(tabKey, postId) {
+            if (confirm("이 게시글을 삭제하시겠습니까?")) {
+                commPosts[tabKey] = commPosts[tabKey].filter(p => p.id !== postId);
+                currentViewingPostId = null;
+                syncSaveToFirebase();
+                renderAll();
             }
         }
 
@@ -1845,7 +2145,7 @@
         function syncSaveToFirebase() {
             const dataToSave = {
                 specColumns, itemColumns, huntColumns, membersData, mapImages, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                sanhaeData: { notice: sanhaeNotice, squad: sanhaeSquad, seen: sanhaeSeen, customTabs: sanhaeCustomTabs }
+                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
             };
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
             window.dbSet(dbRefInstance, dataToSave).catch((error) => {
@@ -1857,7 +2157,7 @@
             syncInputsToData();
             const dataToSave = {
                 specColumns, itemColumns, huntColumns, membersData, mapImages, hiddenJobsData, customTabs, pendingApplicants, approvedMembers,
-                sanhaeData: { notice: sanhaeNotice, squad: sanhaeSquad, seen: sanhaeSeen, customTabs: sanhaeCustomTabs }
+                sanhaeData: { noticeContent: sanhaeNoticeContent, commPosts, customTabs: sanhaeCustomTabs }
             };
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
             window.dbSet(dbRefInstance, dataToSave)
