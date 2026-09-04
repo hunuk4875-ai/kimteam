@@ -68,10 +68,11 @@
         window.memberLogout = memberLogout;
         window.revokeUser = revokeUser;
         window.switchAdminTab = switchAdminTab;
+        window.manualSaveKimteam = manualSaveKimteam; // 수동 저장 함수 등록
 
         // 커뮤니티 전용 전역 함수 등록
         window.openWritePostModal = openWritePostModal;
-        window.openEditPostModal = openEditPostModal; // 게시글 수정 모달 열기 추가
+        window.openEditPostModal = openEditPostModal;
         window.viewPostDetail = viewPostDetail;
         window.closePostDetail = closePostDetail;
         window.submitPost = submitPost;
@@ -261,6 +262,7 @@
         .btn-apply { background-color: #d97706; }
         .btn-member-login { background-color: #059669; }
         .btn-member-logout { background-color: #475569; }
+        .btn-save { background-color: #f59e0b; color: #fff; } /* 수동 저장 버튼 스타일 */
 
         .tab-bar {
             width: 100%;
@@ -625,6 +627,7 @@
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
+                <button id="saveKimteamBtn" class="btn btn-save" style="display:none;" onclick="manualSaveKimteam()">💾 저장하기</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
             </div>
         </div>
@@ -768,7 +771,7 @@
         };
         let currentViewingPostId = null;
         let sanhaeCustomTabs = [];
-        let editingPostId = null; // 수정 중인 게시글 ID 추적용 변수
+        let editingPostId = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
@@ -801,7 +804,8 @@
             updateSanhaeAuthUI();
         });
 
-        function syncSaveToFirebase() {
+        // 코창서버 내실표 수동 저장 함수
+        function manualSaveKimteam() {
             syncInputsToData();
             const dataToSave = {
                 specColumns,
@@ -820,6 +824,31 @@
                 }
             };
             window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+            alert("코창서버 내실표 데이터가 성공적으로 저장되었습니다!");
+        }
+
+        function syncSaveToFirebase() {
+            // 산해궁 등 기타 자동 저장이 필요한 부분만 처리 (코창내실표는 수동 저장 버튼 사용)
+            if (currentCategory === 'sanhae') {
+                syncInputsToData();
+                const dataToSave = {
+                    specColumns,
+                    itemColumns,
+                    huntColumns,
+                    membersData,
+                    mapImages,
+                    hiddenJobsData,
+                    customTabs,
+                    pendingApplicants,
+                    approvedMembers,
+                    sanhaeData: {
+                        noticeContent: sanhaeNoticeContent,
+                        commPosts,
+                        customTabs: sanhaeCustomTabs
+                    }
+                };
+                window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+            }
         }
 
         function checkAndUpdateMyAuth() {
@@ -1107,7 +1136,9 @@
         }
 
         function returnToLobby() {
-            syncSaveToFirebase();
+            if (currentCategory === 'sanhae') {
+                syncSaveToFirebase();
+            }
             isEdit = false;
             document.getElementById('appContainer').style.display = 'none';
             document.getElementById('mainLobby').style.display = 'flex';
@@ -1125,7 +1156,9 @@
         }
 
         function switchTab(tab) {
-            syncSaveToFirebase();
+            if (currentCategory === 'sanhae') {
+                syncSaveToFirebase();
+            }
             activeTab = tab;
             currentViewingPostId = null;
             renderAll();
@@ -1167,6 +1200,7 @@
         }
 
         function openAddTabModal() {
+            // 관리자 권한 엄격 체크
             if (myAuthStatus !== 'admin') {
                 alert("탭 추가 권한은 관리자에게만 있습니다.");
                 return;
@@ -1250,8 +1284,9 @@
                         sanhaeCustomTabs.push({ id: newId, name: tabName.trim() });
                         commPosts[newId] = [];
                     }
-                    activeTab = newId;
-                    syncSaveToFirebase();
+                    if (currentCategory === 'sanhae') {
+                        syncSaveToFirebase();
+                    }
                     closeModal();
                     renderAll();
                 } else {
@@ -1298,6 +1333,7 @@
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
             const addTabBtn = document.getElementById('addTabBtn');
+            const saveKimteamBtn = document.getElementById('saveKimteamBtn');
             const pwChangeBtn = document.getElementById('pwChangeBtn');
             const applyBtn = document.getElementById('applyBtn');
             const memberLoginBtn = document.getElementById('memberLoginBtn');
@@ -1308,6 +1344,7 @@
                 updateSanhaeAuthUI();
                 applyBtn.style.display = "inline-block";
                 sanhaeAuthSec.style.display = (myAuthStatus === 'admin') ? 'block' : 'none';
+                saveKimteamBtn.style.display = "none"; // 산해궁에서는 코창 저장 버튼 숨김
 
                 if (myAuthStatus === 'approved') {
                     memberLoginBtn.style.display = "none";
@@ -1331,12 +1368,25 @@
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
                 pwChangeBtn.style.display = "inline-block";
-                addTabBtn.style.display = "inline-block";
-
-                if (currentCategory === 'kimteam' && (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt')) {
-                    addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block";
+                
+                // 탭 추가 버튼은 오직 관리자(admin) 권한일 때만 표시되도록 제한
+                if (myAuthStatus === 'admin') {
+                    addTabBtn.style.display = "inline-block";
                 } else {
+                    addTabBtn.style.display = "none";
+                }
+
+                if (currentCategory === 'kimteam') {
+                    saveKimteamBtn.style.display = "inline-block"; // 코창서버 내실표 수정 모드 시 저장 버튼 노출
+                    if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
+                        addBtn.style.display = "inline-block";
+                        addColBtn.style.display = "inline-block";
+                    } else {
+                        addBtn.style.display = "none";
+                        addColBtn.style.display = "none";
+                    }
+                } else {
+                    saveKimteamBtn.style.display = "none";
                     addBtn.style.display = "none";
                     addColBtn.style.display = "none";
                 }
@@ -1347,7 +1397,9 @@
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
+                saveKimteamBtn.style.display = "none";
                 
+                // 읽기 전용 상태여도 관리자 권한이면 탭 추가 버튼 노출 허용 여부 (요구사항: "탭추가 버튼은 관리자권한으로만 가능하게 해줘")
                 if (myAuthStatus === 'admin') {
                     addTabBtn.style.display = "inline-block";
                 } else {
@@ -1360,8 +1412,6 @@
         }
 
         function syncInputsToData() {
-            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') return;
-
             if (currentCategory === 'kimteam') {
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     const cols = getCurrentColumns();
@@ -1468,7 +1518,9 @@
                     delete commPosts[tabId];
                     if (activeTab === tabId) activeTab = 'notice';
                 }
-                syncSaveToFirebase();
+                if (currentCategory === 'sanhae') {
+                    syncSaveToFirebase();
+                }
                 renderTabBar();
                 renderAll();
             }
@@ -1599,7 +1651,7 @@
                 alert("로그인한 승인 회원만 글을 작성할 수 있습니다.");
                 return;
             }
-            editingPostId = null; // 새 글 작성 모드
+            editingPostId = null;
             document.getElementById('postModalTitle').innerText = "✍️ 새 게시글 작성";
             document.getElementById('postTitleInput').value = "";
             document.getElementById('postContentInput').value = "";
@@ -1620,12 +1672,12 @@
                 return;
             }
 
-            editingPostId = Number(postId); // 수정 모드 설정
+            editingPostId = Number(postId);
             document.getElementById('postModalTitle').innerText = "✏️ 게시글 수정";
             document.getElementById('postTitleInput').value = post.title || "";
             document.getElementById('postContentInput').value = post.content || "";
             document.getElementById('postVideoInput').value = post.video || "";
-            document.getElementById('postImageInput').value = ""; // 파일 입력창은 초기화
+            document.getElementById('postImageInput').value = "";
             window.activePostTabKey = tabKey;
             document.getElementById('postModal').style.display = "flex";
         }
@@ -1646,18 +1698,16 @@
                 if (!commPosts[tabKey]) commPosts[tabKey] = [];
 
                 if (editingPostId !== null) {
-                    // 기존 게시글 수정
                     const post = commPosts[tabKey].find(p => Number(p.id) === Number(editingPostId));
                     if (post) {
                         post.title = title;
                         post.content = content;
                         post.video = videoUrl;
                         if (imgBase64) {
-                            post.image = imgBase64; // 새 이미지가 업로드된 경우에만 갱신
+                            post.image = imgBase64;
                         }
                     }
                 } else {
-                    // 새 게시글 등록
                     const newPost = {
                         id: Date.now(),
                         title,
@@ -1687,7 +1737,6 @@
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                // 수정 시 새 이미지를 첨부하지 않았으면 기존 이미지 유지
                 let existingImg = "";
                 if (editingPostId !== null) {
                     const post = commPosts[tabKey].find(p => Number(p.id) === Number(editingPostId));
@@ -1871,7 +1920,6 @@
             }
         }
 
-        // --- 코창서버 내실표 테이블 관련 렌더링 함수들 ---
         function renderHeader() {
             const headerRow = document.getElementById('headerRow');
             const cols = getCurrentColumns();
@@ -1881,7 +1929,7 @@
                 html += `
                     <th style="width: ${col.width || 'auto'}">
                         <div class="th-box">
-                            <input type="text" value="${col.title}" data-colid="${col.id}" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
+                            <input type="text" value="${col.title}" data-colid="${col.id}" ${!isEdit ? 'readonly' : ''}>
                             <div class="col-btn-group">
                                 <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
                                 <button class="btn-col-del" onclick="delColumn(${index})">✕</button>
@@ -1918,7 +1966,7 @@
                         html += `
                             <td>
                                 <div class="td-box job-tag ${jobClass}">
-                                    <select class="job-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                    <select class="job-select" data-colid="${col.id}" onchange="renderAll();">
                                         <option value="">직업선택</option>
                                         ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
                                     </select>
@@ -1933,7 +1981,7 @@
                         html += `
                             <td>
                                 <div class="td-box ${enClass}">
-                                    <select class="enchant-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                    <select class="enchant-select" data-colid="${col.id}" onchange="renderAll();">
                                         <option value="">강화</option>
                                         <option value="safe" ${val === 'safe' ? 'selected' : ''}>안전강화</option>
                                         ${ENCHANT_LIST.map(e => `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}</option>`).join('')}
@@ -1953,7 +2001,7 @@
                                     <div class="profile-wrap" onclick="handleProfileClick(${rIndex})" title="프로필 이미지 변경">
                                         ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
                                     </div>
-                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()" placeholder="이름" style="font-weight:bold; font-size:0.9rem;">
+                                    <input type="text" value="${val}" data-colid="${col.id}" placeholder="이름" style="font-weight:bold; font-size:0.9rem;">
                                     ${hasSoop ? `<a href="${soopLink}" target="_blank" style="font-size:0.65rem; color:#38bdf8; text-decoration:none;">🔴 숲방송</a>` : ''}
                                 </div>
                             </td>
@@ -1962,7 +2010,7 @@
                         html += `
                             <td>
                                 <div class="td-box">
-                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()">
+                                    <input type="text" value="${val}" data-colid="${col.id}">
                                 </div>
                             </td>
                         `;
@@ -1991,7 +2039,6 @@
             const cols = getCurrentColumns();
             const newId = 'col_' + Date.now();
             cols.push({ id: newId, title: "새열", width: "100px" });
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2002,7 +2049,6 @@
                 const temp = cols[index];
                 cols[index] = cols[target];
                 cols[target] = temp;
-                syncSaveToFirebase();
                 renderAll();
             }
         }
@@ -2014,7 +2060,6 @@
                 return;
             }
             cols.splice(index, 1);
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2024,7 +2069,6 @@
             let newRow = {};
             cols.forEach(c => newRow[c.id] = "");
             membersData.push(newRow);
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2034,14 +2078,12 @@
                 const temp = membersData[index];
                 membersData[index] = membersData[target];
                 membersData[target] = temp;
-                syncSaveToFirebase();
                 renderAll();
             }
         }
 
         function delRow(index) {
             membersData.splice(index, 1);
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2056,7 +2098,6 @@
                     const reader = new FileReader();
                     reader.onload = event => {
                         membersData[rIndex].profileImg = event.target.result;
-                        syncSaveToFirebase();
                         renderAll();
                     };
                     reader.readAsDataURL(file);
@@ -2085,8 +2126,8 @@
                                 ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
                             </div>
                             ${isEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
-                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
-                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" ${!isEdit ? 'readonly' : ''}>
+                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
                             ${isEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                         </div>
                     `;
@@ -2098,13 +2139,11 @@
 
         function addMapCard() {
             mapImages.push({ title: "새 맵", memo: "", img: "" });
-            syncSaveToFirebase();
             renderAll();
         }
 
         function delMapCard(idx) {
             mapImages.splice(idx, 1);
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2118,7 +2157,6 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     mapImages[idx].img = e.target.result;
-                    syncSaveToFirebase();
                     renderAll();
                 };
                 reader.readAsDataURL(file);
@@ -2131,7 +2169,7 @@
                 html += `
                     <div class="section-box">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" oninput="syncSaveToFirebase()" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isEdit ? 'readonly' : ''}>
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isEdit ? 'readonly' : ''}>
                             ${isEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
                         </div>
                         <div class="img-upload-grid">
@@ -2147,7 +2185,7 @@
                                     ${item.img ? `<img src="${item.img}">` : `<span>이미지</span>`}
                                 </div>
                                 ${isEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
-                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
                                 ${isEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
                             </div>
                         `;
@@ -2161,13 +2199,11 @@
         function addHiddenItem(jobIndex) {
             if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
             hiddenJobsData[jobIndex].items.push({ memo: "", img: "" });
-            syncSaveToFirebase();
             renderAll();
         }
 
         function delHiddenItem(jobIndex, itemIndex) {
             hiddenJobsData[jobIndex].items.splice(itemIndex, 1);
-            syncSaveToFirebase();
             renderAll();
         }
 
@@ -2181,7 +2217,6 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     hiddenJobsData[jobIndex].items[itemIndex].img = e.target.result;
-                    syncSaveToFirebase();
                     renderAll();
                 };
                 reader.readAsDataURL(file);
@@ -2195,7 +2230,7 @@
             container.innerHTML = `
                 <div class="section-box">
                     <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
-                    <textarea id="customTextArea" oninput="syncSaveToFirebase()" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
                 </div>
             `;
         }
