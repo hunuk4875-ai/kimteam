@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ 킴성태팀 종합 포털 (내실표 & 산해궁)</title>
+    <title>🛡️ 킴성태팀 통합 포털 & 산해궁</title>
     <!-- Firebase SDK (v9) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -27,6 +27,57 @@
         window.dbRef = ref;
         window.dbSet = set;
         window.dbOnValue = onValue;
+
+        // 전역 함수 등록
+        window.enterCategory = enterCategory;
+        window.returnToLobby = returnToLobby;
+        window.toggleAuth = toggleAuth;
+        window.addColumn = addColumn;
+        window.addRow = addRow;
+        window.openAddTabModal = openAddTabModal;
+        window.openPwChangeModal = openPwChangeModal;
+        window.switchTab = switchTab;
+        window.deleteCustomTab = deleteCustomTab;
+        window.closeModal = closeModal;
+        window.closeImageModal = closeImageModal;
+        window.handleModalKey = handleModalKey;
+        window.submitModal = submitModal;
+        window.triggerMapFile = triggerMapFile;
+        window.uploadMapImg = uploadMapImg;
+        window.addMapCard = addMapCard;
+        window.delMapCard = delMapCard;
+        window.addHiddenItem = addHiddenItem;
+        window.delHiddenItem = delHiddenItem;
+        window.triggerHiddenFile = triggerHiddenFile;
+        window.uploadHiddenImg = uploadHiddenImg;
+        window.openImageModal = openImageModal;
+        window.triggerFile = triggerFile;
+        window.uploadImg = uploadImg;
+        window.handleProfileClick = handleProfileClick;
+        window.moveColumn = moveColumn;
+        window.delColumn = delColumn;
+        window.moveRow = moveRow;
+        window.delRow = delRow;
+        window.handleEnchantChange = handleEnchantChange;
+        window.handleJobChange = handleJobChange;
+        window.applyMembership = applyMembership;
+        window.approveUser = approveUser;
+        window.rejectUser = rejectUser;
+        window.openApplyModal = openApplyModal;
+        window.openMemberLoginModal = openMemberLoginModal;
+        window.memberLogout = memberLogout;
+        window.revokeUser = revokeUser;
+        window.switchAdminTab = switchAdminTab;
+
+        // 커뮤니티 전용 전역 함수 등록
+        window.openWritePostModal = openWritePostModal;
+        window.viewPostDetail = viewPostDetail;
+        window.closePostDetail = closePostDetail;
+        window.submitPost = submitPost;
+        window.deletePost = deletePost;
+        window.addComment = addComment;
+        window.deleteComment = deleteComment;
+        window.votePost = votePost;
     </script>
     <style>
         :root {
@@ -58,37 +109,102 @@
             min-height: 100vh;
         }
 
-        /* --- 메인 로비 스타일 --- */
-        #lobbyView {
+        #mainLobby {
+            width: 100%;
+            max-width: 1200px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            height: 85vh;
+            padding: 40px 20px;
+            flex: 1;
         }
-        #lobbyView h1 { margin-bottom: 40px; color: var(--text-gold); font-size: 2rem; }
-        .menu-container { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
-        .menu-card {
-            background: var(--panel-bg);
-            border: 2px solid var(--box-border);
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            width: 280px;
-            cursor: pointer;
-            transition: 0.3s;
-            color: white;
-        }
-        .menu-card:hover { border-color: var(--text-gold); transform: translateY(-5px); background: #2563eb22; }
-        .menu-card h2 { margin-top: 0; color: var(--text-gold); margin-bottom: 12px; }
-        .menu-card p { color: #94a3b8; font-size: 0.95rem; line-height: 1.4; }
 
-        /* 페이지 컨테이너 공통 */
-        .page-wrap { display: none; width: 100%; max-width: 1600px; flex-direction: column; align-items: center; }
+        .lobby-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--text-gold);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .lobby-subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .portal-card {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--box-border);
+            border-radius: 16px;
+            padding: 35px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--text-gold);
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.15);
+        }
+
+        .portal-icon { font-size: 3.5rem; }
+        .portal-name { font-size: 1.5rem; font-weight: bold; color: var(--text-light); }
+        .portal-desc { font-size: 0.95rem; color: #94a3b8; line-height: 1.4; }
+
+        #appContainer {
+            width: 100%;
+            max-width: 1600px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .top-nav-bar {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--panel-bg);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--box-border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-lobby {
+            background-color: #475569;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-lobby:hover { background-color: #64748b; }
 
         .header-bar {
             width: 100%;
+            max-width: 1600px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -141,10 +257,13 @@
         .btn-col { background-color: #8b5cf6; }
         .btn-pw { background-color: #6366f1; }
         .btn-tab { background-color: #0ea5e9; }
-        .btn-lobby { background-color: #334155; }
+        .btn-apply { background-color: #d97706; }
+        .btn-member-login { background-color: #059669; }
+        .btn-member-logout { background-color: #475569; }
 
         .tab-bar {
             width: 100%;
+            max-width: 1600px;
             display: flex;
             gap: 6px;
             margin-bottom: 16px;
@@ -198,12 +317,55 @@
 
         .board-container {
             width: 100%;
+            max-width: 1600px;
             background-color: var(--panel-bg);
             border: 1px solid var(--box-border);
             border-radius: 0 8px 8px 8px;
             padding: 15px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* 커뮤니티 게시판 스타일 */
+        .comm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .comm-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .comm-table th, .comm-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--box-border);
+            font-size: 0.95rem;
+        }
+        .comm-table th {
+            color: var(--text-gold);
+            background: var(--box-bg);
+        }
+        .comm-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+        .post-detail-box {
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .comment-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--box-border);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
         }
 
         table {
@@ -250,7 +412,6 @@
             gap: 2px;
             margin-top: 2px;
         }
-
         .editable .col-btn-group { display: flex; }
 
         .btn-col-mv, .btn-col-del {
@@ -264,10 +425,7 @@
         .btn-col-mv { background: #334155; }
         .btn-col-del { background: var(--danger); }
 
-        td {
-            padding: 0;
-            vertical-align: middle;
-        }
+        td { padding: 0; vertical-align: middle; }
 
         .td-box {
             background-color: var(--box-bg);
@@ -293,52 +451,29 @@
             outline: none;
         }
 
-        /* 직업 색상 설정 */
         .job-select {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            text-align: center;
-            text-align-last: center;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
+            width: 100%; height: 100%; background: transparent; border: none; outline: none;
+            text-align: center; text-align-last: center; font-weight: bold; font-size: 1rem; cursor: pointer;
         }
         .job-select option { background-color: #1e293b; color: #f8fafc; }
 
         .job-tag { border-radius: 6px; font-weight: bold; }
         .job-knight { background-color: rgba(30, 58, 138, 0.4) !important; border-color: #3b82f6 !important; }
         .job-knight .job-select { color: #93c5fd !important; }
-        
         .job-wizard { background-color: rgba(88, 28, 135, 0.4) !important; border-color: #a855f7 !important; }
         .job-wizard .job-select { color: #d8b4fe !important; }
-        
         .job-warrior { background-color: rgba(127, 29, 29, 0.4) !important; border-color: #ef4444 !important; }
         .job-warrior .job-select { color: #fca5a5 !important; }
-        
         .job-assassin { background-color: rgba(124, 45, 18, 0.4) !important; border-color: #f97316 !important; }
         .job-assassin .job-select { color: #fdba74 !important; }
-        
         .job-hunter { background-color: rgba(6, 78, 59, 0.4) !important; border-color: #10b981 !important; }
         .job-hunter .job-select { color: #6ee7b7 !important; }
-        
         .job-default { background-color: rgba(51, 65, 85, 0.3) !important; border-color: #64748b !important; }
         .job-default .job-select { color: #cbd5e1 !important; }
 
-        /* 무기 강화 스타일 */
         .enchant-select {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            text-align: center;
-            text-align-last: center;
-            font-weight: bold;
-            font-size: 1.05rem;
-            cursor: pointer;
+            width: 100%; height: 100%; background: transparent; border: none; outline: none;
+            text-align: center; text-align-last: center; font-weight: bold; font-size: 1.05rem; cursor: pointer;
         }
         .enchant-select option { background-color: #1e293b; color: #f8fafc; }
 
@@ -360,17 +495,9 @@
         .enchant-12 .enchant-select { color: #facc15 !important; }
 
         .profile-wrap {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #1e293b;
-            border: 2px dashed var(--box-border);
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            cursor: pointer;
+            width: 40px; height: 40px; border-radius: 50%; background: #1e293b;
+            border: 2px dashed var(--box-border); margin: 0 auto; display: flex;
+            align-items: center; justify-content: center; overflow: hidden; cursor: pointer;
         }
         .profile-wrap img { width: 100%; height: 100%; object-fit: cover; }
         .profile-wrap span { font-size: 0.65rem; color: #94a3b8; font-weight: bold; }
@@ -403,67 +530,30 @@
             gap: 10px;
         }
         .img-card-preview {
-            width: 100%;
-            height: 160px;
-            background: #0f172a;
-            border: 1px dashed var(--box-border);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
+            width: 100%; height: 160px; background: #0f172a; border: 1px dashed var(--box-border);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; cursor: pointer; position: relative;
         }
         .img-card-preview img { width: 100%; height: 100%; object-fit: cover; }
         .img-card-preview span { color: #94a3b8; font-size: 0.9rem; font-weight: bold; }
-        .img-card input[type="text"] {
-            width: 100%;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            color: var(--text-light);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 0.90rem;
-            outline: none;
+        .img-card input[type="text"], .img-card textarea {
+            width: 100%; background: var(--box-bg); border: 1px solid var(--box-border);
+            color: var(--text-light); padding: 8px; border-radius: 4px; font-size: 0.90rem; outline: none;
         }
-        .img-card textarea {
-            width: 100%;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            color: var(--text-light);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 0.90rem;
-            resize: vertical;
-            height: 70px;
-            outline: none;
-        }
+        .img-card textarea { resize: vertical; height: 70px; }
 
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 1000; padding: 20px;
         }
         .modal-content {
-            background: var(--panel-bg);
-            border: 1px solid var(--box-border);
-            padding: 24px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: var(--panel-bg); border: 1px solid var(--box-border); padding: 24px;
+            border-radius: 12px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         .modal-title { font-size: 1.15rem; font-weight: bold; color: var(--text-gold); margin-bottom: 16px; }
         .modal-input {
             width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--box-border);
-            background: var(--box-bg); color: white; text-align: center; font-size: 1.05rem; margin-bottom: 16px; outline: none;
+            background: var(--box-bg); color: white; text-align: center; font-size: 1.05rem; margin-bottom: 12px; outline: none;
         }
         .modal-btn-group { display: flex; gap: 8px; }
         .modal-btn { flex: 1; padding: 10px 0; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
@@ -471,40 +561,13 @@
         .modal-btn-cancel { background: #475569; color: white; }
 
         .image-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            cursor: pointer;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; z-index: 2000; cursor: pointer; padding: 20px;
         }
         .image-modal-content { max-width: 100%; max-height: 90%; position: relative; }
         .image-modal-content img {
             max-width: 100%; max-height: 85vh; border-radius: 8px; border: 2px solid var(--box-border); object-fit: contain; display: block; margin: 0 auto;
         }
-
-        /* 산해궁 테이블 및 게시판 스타일 */
-        .sanhakung-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 6px;
-            overflow: hidden;
-            text-align: center;
-        }
-        .sanhakung-table th, .sanhakung-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--box-border);
-            font-size: 0.95rem;
-        }
-        .sanhakung-table th { background-color: #1e293b; color: var(--text-gold); font-weight: bold; }
-        .badge-pending { background: #d97706; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-        .badge-approved { background: #059669; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
 
         @media (max-width: 768px) {
             body { padding: 8px; }
@@ -518,109 +581,96 @@
 </head>
 <body>
 
-    <!-- 1. 메인 로비 화면 -->
-    <div id="lobbyView">
-        <h1>🛡️ 킴성태팀 종합 포털</h1>
-        <div class="menu-container">
-            <div class="menu-card" onclick="goToPage('spec')">
-                <h2>내실 현황표</h2>
-                <p>기존 내실 스펙, 아이템, 사냥터 및 히든 정보 관리 공간입니다.</p>
+    <!-- 🌟 메인 로비 화면 -->
+    <div id="mainLobby">
+        <div class="lobby-title">킴성태팀 통합 포털</div>
+        <div class="lobby-subtitle">입장할 카테고리를 선택해주세요</div>
+        <div class="portal-grid">
+            <div class="portal-card" onclick="enterCategory('kimteam')">
+                <div class="portal-icon">⚔️</div>
+                <div class="portal-name">코창서버 내실표</div>
+                <div class="portal-desc">팀원들의 스펙, 아이템, 사냥터 및 히든 전직 정보를 실시간으로 관리하는 공간입니다.</div>
             </div>
-            <div class="menu-card" onclick="goToPage('sanhakung')">
-                <h2>클럽 산해궁</h2>
-                <p>가입 신청, 관리자 승인 및 승인된 멤버 전용 커뮤니티 공간입니다.</p>
+            <div class="portal-card" onclick="enterCategory('sanhae')">
+                <div class="portal-icon">⚽</div>
+                <div class="portal-name">클럽 산해궁</div>
+                <div class="portal-desc">클럽 공지사항, 스쿼드 및 전술, 축구장 콘셉트의 전용 커뮤니티 공간입니다.</div>
             </div>
         </div>
     </div>
 
-    <!-- 2. 내실 현황표 영역 -->
-    <div id="specPage" class="page-wrap">
+    <!-- 🚀 실제 컨텐츠 앱 영역 -->
+    <div id="appContainer">
+        <div class="top-nav-bar">
+            <button class="btn-lobby" onclick="returnToLobby()">🏠 메인 로비로 돌아가기</button>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span id="userPermissionBadge" style="font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #334155; color: #94a3b8;">비회원 (읽기 전용)</span>
+                <span id="categoryIndicator" style="font-weight: bold; color: var(--text-gold);"></span>
+            </div>
+        </div>
+
         <div class="header-bar">
-            <div class="title-area">
-                <button class="btn btn-lobby" onclick="goToPage('lobby')">&lt; 로비</button>
-                🛡️ 킴성태팀 종합 내실 현황표
+            <div class="title-area" id="appHeaderTitle">
+                🛡️ 킴성태팀 종합 현황판
                 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
             </div>
             <div class="btn-group">
-                <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한</button>
+                <!-- 산해궁 카테고리 전용 인증 및 가입 버튼 -->
+                <button id="applyBtn" class="btn btn-apply" style="display:none;" onclick="openApplyModal()">📝 가입요청</button>
+                <button id="memberLoginBtn" class="btn btn-member-login" style="display:none;" onclick="openMemberLoginModal()">👤 회원 로그인</button>
+                <button id="memberLogoutBtn" class="btn btn-member-logout" style="display:none;" onclick="memberLogout()">🚪 로그아웃</button>
+                
+                <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 관리자 권한</button>
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
-                <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
             </div>
         </div>
 
+        <!-- 산해궁 전용 관리자 인증 센터 -->
+        <div id="sanhaeAuthSection" class="section-box" style="display: none; width: 100%; border: 2px solid var(--text-gold); background: #172033;">
+            <h3 style="color: var(--text-gold); margin-bottom: 8px;">🛡️ 클럽 산해궁 관리자 인증 센터</h3>
+            <div id="sanhaeAuthStatus" style="font-size: 0.95rem; color: #94a3b8; margin-bottom: 12px;">상태 확인 중...</div>
+            
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--box-border); padding-bottom: 8px;">
+                <button id="adminTabPending" class="btn" style="background: var(--primary); font-size: 0.85rem;" onclick="switchAdminTab('pending')">📋 승인 대기 목록</button>
+                <button id="adminTabApproved" class="btn" style="background: #475569; font-size: 0.85rem;" onclick="switchAdminTab('approved')">✅ 승인된 회원 관리</button>
+            </div>
+
+            <div id="adminPendingView" style="display: block;">
+                <h4 style="color: var(--text-gold); margin-bottom: 8px; font-size: 1rem;">📋 관리자 승인 대기 목록</h4>
+                <div id="pendingUsersContainer" style="font-size: 0.95rem; color: #cbd5e1;">대기 중인 신청자가 없습니다.</div>
+            </div>
+
+            <div id="adminApprovedView" style="display: none;">
+                <h4 style="color: var(--success); margin-bottom: 8px; font-size: 1rem;">✅ 승인된 클럽 회원 관리 목록</h4>
+                <div id="adminApprovedUsersContainer" style="font-size: 0.95rem; color: #cbd5e1;">승인된 회원이 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- 탭 바 -->
         <div id="tabBar" class="tab-bar"></div>
+
         <div class="board-container" id="boardContainer"></div>
     </div>
 
-    <!-- 3. 클럽 산해궁 영역 (가입 승인 & 멤버 게시판) -->
-    <div id="sanhakungPage" class="page-wrap">
-        <div class="header-bar">
-            <div class="title-area">
-                <button class="btn btn-lobby" onclick="goToPage('lobby')">&lt; 로비</button>
-                🏟️ 클럽 산해궁
-                <span id="sanhakungModeBadge" class="badge badge-view">🔒 읽기 전용</span>
-            </div>
-            <div class="btn-group">
-                <button id="sanhakungAuthBtn" class="btn btn-lock" onclick="toggleSanhakungAuth()">🔓 관리자 로그인</button>
-            </div>
-        </div>
-
-        <div class="board-container" style="background: var(--panel-bg); border-radius: 8px; padding: 20px;">
-            
-            <!-- 가입 신청 관리 섹션 -->
-            <div class="section-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                    <h3 style="color:var(--text-gold); font-size: 1.1rem;">🏟️ 가입 신청자 관리</h3>
-                    <div id="applyControlArea">
-                        <input type="text" id="applicantName" placeholder="신청자명 입력" style="background:var(--box-bg); border:1px solid var(--box-border); color:white; padding:6px 10px; border-radius:4px; width:150px; display:inline-block; font-size:0.9rem;">
-                        <input type="text" id="applicantClass" placeholder="직업" style="background:var(--box-bg); border:1px solid var(--box-border); color:white; padding:6px 10px; border-radius:4px; width:100px; display:inline-block; font-size:0.9rem;">
-                        <button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="applyMembership()">가입 신청</button>
-                    </div>
-                </div>
-                <table class="sanhakung-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%;">신청자명</th>
-                            <th style="width: 20%;">직업</th>
-                            <th style="width: 25%;">신청일시</th>
-                            <th style="width: 15%;">상태</th>
-                            <th style="width: 15%;">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sanhakungTableBody"></tbody>
-                </table>
-            </div>
-
-            <!-- 승인된 멤버 전용 게시판 섹션 -->
-            <div class="section-box" style="margin-top: 20px;">
-                <h3 style="color:var(--text-gold); font-size: 1.1rem; margin-bottom: 12px;">💬 산해궁 멤버 전용 게시판</h3>
-                
-                <div id="writeBox" style="display:none; background: var(--box-bg); border:1px solid var(--box-border); padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                    <h4 style="color:var(--text-light); margin-bottom:8px; font-size:0.95rem;">✏️ 글 작성하기</h4>
-                    <input type="text" id="postTitle" placeholder="제목을 입력하세요" style="background:var(--panel-bg); border:1px solid var(--box-border); color:white; padding:8px; border-radius:4px; width:100%; margin-bottom:8px; outline:none;">
-                    <textarea id="postContent" placeholder="내용을 입력하세요" style="background:var(--panel-bg); border:1px solid var(--box-border); color:white; padding:8px; border-radius:4px; width:100%; height:80px; resize:vertical; margin-bottom:8px; outline:none;"></textarea>
-                    <button class="btn btn-add" onclick="writePost()">등록</button>
-                </div>
-                <div id="noAccessMsg" style="color: #ef4444; font-size:0.9rem; margin-bottom: 15px; font-weight: bold;">
-                    ※ 관리자에게 가입 승인을 받은 멤버만 게시물을 작성할 수 있습니다.
-                </div>
-                
-                <div id="postListContainer"></div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- 공용 모달창 -->
+    <!-- 통합 모달 창 -->
     <div id="pwModal" class="modal-overlay">
         <div class="modal-content">
-            <div id="modalTitle" class="modal-title">🔑 비밀번호 입력</div>
+            <div id="modalTitle" class="modal-title">🔑 인증 정보 입력</div>
+            
             <input type="password" id="pwInput" class="modal-input" placeholder="비밀번호 입력" onkeyup="handleModalKey(event)">
             <input type="password" id="pwNewInput" class="modal-input" placeholder="새 비밀번호 입력" style="display:none;" onkeyup="handleModalKey(event)">
             <input type="text" id="customTabInput" class="modal-input" placeholder="추가할 탭 이름" style="display:none;" onkeyup="handleModalKey(event)">
+            
+            <input type="text" id="applyForestModal" class="modal-input" placeholder="숲 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
+            <input type="text" id="applyFcModal" class="modal-input" placeholder="FC온라인 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
+            <input type="password" id="applyPinModal" class="modal-input" placeholder="원하는 식별번호 (비밀번호)" style="display:none;" onkeyup="handleModalKey(event)">
+
+            <input type="text" id="memberLoginForest" class="modal-input" placeholder="숲 닉네임" style="display:none;" onkeyup="handleModalKey(event)">
+            <input type="password" id="memberLoginPin" class="modal-input" placeholder="식별번호 (비밀번호)" style="display:none;" onkeyup="handleModalKey(event)">
+
             <div class="modal-btn-group">
                 <button class="modal-btn modal-btn-submit" onclick="submitModal()">확인</button>
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
@@ -628,7 +678,28 @@
         </div>
     </div>
 
-    <!-- 이미지 확대 모달창 -->
+    <!-- 커뮤니티 글쓰기 모달 -->
+    <div id="postModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; text-align: left;">
+            <div class="modal-title" style="text-align: center;">✍️ 새 게시글 작성</div>
+            <label style="font-size:0.85rem; color:#94a3b8;">제목</label>
+            <input type="text" id="postTitleInput" class="modal-input" placeholder="제목을 입력하세요" style="margin-top:4px; text-align:left;">
+            <label style="font-size:0.85rem; color:#94a3b8;">내용</label>
+            <textarea id="postContentInput" class="modal-input" placeholder="내용을 입력하세요" style="height:100px; resize:vertical; text-align:left;"></textarea>
+            
+            <label style="font-size:0.85rem; color:#94a3b8;">동영상 링크 (유튜브 URL 등, 선택)</label>
+            <input type="text" id="postVideoInput" class="modal-input" placeholder="https://youtu.be/... 또는 클립 링크" style="margin-top:4px; text-align:left;">
+
+            <label style="font-size:0.85rem; color:#94a3b8;">이미지 첨부 (선택)</label>
+            <input type="file" id="postImageInput" accept="image/*" style="margin-top:4px; margin-bottom:12px; width:100%; color:white;">
+            
+            <div class="modal-btn-group">
+                <button class="modal-btn modal-btn-submit" onclick="submitPost()">등록</button>
+                <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('postModal').style.display='none'">취소</button>
+            </div>
+        </div>
+    </div>
+
     <div id="imageModal" class="image-modal-overlay" onclick="closeImageModal()">
         <div class="image-modal-content">
             <img id="modalZoomedImg" src="" alt="확대된 이미지">
@@ -636,19 +707,21 @@
     </div>
 
     <script>
-        // 전역 상태 변수
+        let currentCategory = 'kimteam'; 
         let isEdit = false;
-        let isSanhakungAdmin = false;
-        let isUserApproved = false;
         let activeTab = 'spec';
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
 
+        let myAuthStatus = localStorage.getItem('myAuthStatus') || 'guest';
+        let myForestNick = localStorage.getItem('myForestNick') || '';
+        let pendingApplicants = JSON.parse(localStorage.getItem('pendingApplicants')) || [];
+        let approvedMembers = JSON.parse(localStorage.getItem('approvedMembers')) || [];
+
         const soopIdMap = {
-            "킴성태": "rrvv17", "오아": "legendhyuk", "도현": "dobby1031",
-            "김진솔": "kissday621", "중력": "vkzm14", "수피": "lovely5959",
-            "김진아": "ase7129", "표우": "pyowoo", "견자희": "gyeonjahee",
-            "라무": "5959700", "킴나니": "sksgml16", "망구": "nmangoquince"
+            "킴성태": "rrvv17", "오아": "legendhyuk", "도현": "dobby1031", "김진솔": "kissday621",
+            "중력": "vkzm14", "수피": "lovely5959", "김진아": "ase7129", "표우": "pyowoo",
+            "견자희": "gyeonjahee", "라무": "5959700", "킴나니": "sksgml16", "망구": "nmangoquince"
         };
 
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
@@ -658,7 +731,8 @@
             { id: "c1", title: "팀원명", width: "100px" }, { id: "c2", title: "직업", width: "100px" },
             { id: "c3", title: "무기강화", width: "90px" }, { id: "c4", title: "방어구강화", width: "85px" },
             { id: "c5", title: "체력", width: "75px" }, { id: "c6", title: "내공", width: "75px" },
-            { id: "c7", title: "회피", width: "75px" }, { id: "c8", title: "운", width: "75px" }, { id: "c9", title: "비고", width: "180px" }
+            { id: "c7", title: "회피", width: "75px" }, { id: "c8", title: "운", width: "75px" },
+            { id: "c9", title: "비고", width: "180px" }
         ];
 
         let itemColumns = [
@@ -674,55 +748,25 @@
             { id: "h_drop", title: "주요 득템 현황", width: "150px" }, { id: "h_memo", title: "파밍 비고", width: "180px" }
         ];
 
-        // 코창 멤버 실데이터 복원
-        let membersData = [
-            { c1: "킴성태", c2: "나이트", c3: "9", c4: "7", c5: "1500", c6: "800", c7: "120", c8: "50", c9: "팀장", i1: "2", i2: "3", i3: "1", i4: "500", i5: "상급 결정", i6: "희귀 망토", i7: "풀내실 목표", h_spot: "절벽 동굴", h_gold: "15만", h_drop: "영웅서판", h_memo: "메인 사냥터", img: "" },
-            { c1: "오아", c2: "위자드", c3: "8", c4: "6", c5: "1200", c6: "1400", c7: "90", c8: "40", c9: "법사 에이스", i1: "1", i2: "2", i3: "2", i4: "400", i5: "마력 결정", i6: "지팡이", i7: "특수 강화중", h_spot: "마법사의 탑", h_gold: "18만", h_drop: "마나룬", h_memo: "광역 사냥", img: "" },
-            { c1: "도현", c2: "어쌔신", c3: "9", c4: "6", c5: "1100", c6: "700", c7: "180", c8: "90", c9: "딜러", i1: "3", i2: "1", i3: "1", i4: "600", i5: "맹독 가루", i6: "단검", i7: "치명타 세팅", h_spot: "그림자 숲", h_gold: "16만", h_drop: "은신 주문서", h_memo: "솔격 가능", img: "" },
-            { c1: "김진솔", c2: "헌터", c3: "7", c4: "5", c5: "1000", c6: "600", c7: "140", c8: "60", c9: "원딜", i1: "1", i2: "1", i3: "1", i4: "300", i5: "야수 가죽", i7: "안정형", h_spot: "바람의 평원", h_gold: "14만", h_drop: "명궁의 화살", h_memo: "안정적 파밍", img: "" },
-            { c1: "중력", c2: "워리어", c3: "8", c4: "8", c5: "1600", c6: "500", c7: "80", c8: "30", c9: "탱커", i1: "1", i2: "4", i3: "1", i4: "500", i5: "강철 덩어리", i7: "방어 중시", h_spot: "철광산", h_gold: "13만", h_drop: "단단한 갑옷", h_memo: "단단함", img: "" },
-            { c1: "수피", c2: "위자드", c3: "7", c4: "6", c5: "1150", c6: "1300", c7: "100", c8: "45", c9: "서포트", i1: "2", i2: "2", i3: "2", i4: "450", i5: "정령의 가루", i7: "지원템 보유", h_spot: "정령의 호수", h_gold: "15만", h_drop: "물방울", h_memo: "유지력 좋음", img: "" },
-            { c1: "김진아", c2: "헌터", c3: "8", c4: "6", c5: "1050", c6: "650", c7: "150", c8: "70", c9: "서브딜", i1: "1", i2: "2", i3: "1", i4: "350", i5: "깃털", i7: "빠른 공속", h_spot: "바람의 평원", h_gold: "14만", h_drop: "바람의 정수", h_memo: "득템 기원", img: "" },
-            { c1: "표우", c2: "어쌔신", c3: "8", c4: "7", c5: "1120", c6: "720", c7: "170", c8: "85", c9: "암살", i1: "2", i2: "1", i3: "2", i4: "550", i5: "독니", i7: "치피 세팅", h_spot: "그림자 숲", h_gold: "16만", h_drop: "그림자 망토", h_memo: "사냥 속도 상", img: "" },
-            { c1: "견자희", c2: "위자드", c3: "7", c4: "5", c5: "1000", c6: "1250", c7: "95", c8: "40", c9: "마법", i1: "1", i2: "1", i3: "1", i4: "400", i5: "지혜의 서", i7: "안정권", h_spot: "마법사의 탑", h_gold: "17만", h_drop: "마력석", h_memo: "지속 사냥", img: "" },
-            { c1: "라무", c2: "나이트", c3: "8", c4: "7", c5: "1400", c6: "750", c7: "110", c8: "45", c9: "부탱", i1: "1", i2: "3", i3: "1", i4: "450", i5: "방패 조각", i7: "든든", h_spot: "절벽 동굴", h_gold: "14만", h_drop: "철갑", h_memo: "안전", img: "" },
-            { c1: "킴나니", c2: "워리어", c3: "7", c4: "6", c5: "1350", c6: "450", c7: "85", c8: "35", c9: "근딜", i1: "2", i2: "2", i3: "1", i4: "400", i5: "전사의 혼", i7: "공격 지향", h_spot: "철광산", h_gold: "13만", h_drop: "도끼", h_memo: "무난", img: "" },
-            { c1: "망구", c2: "헌터", c3: "7", c4: "5", c5: "980", c6: "600", c7: "135", c8: "55", c9: "막내", i1: "1", i2: "1", i3: "1", i4: "300", i5: "화살촉", i7: "열심히 육성중", h_spot: "바람의 평원", h_gold: "13만", h_drop: "가죽", h_memo: "성장중", img: "" }
-        ];
-
+        let membersData = [];
         let mapImages = [];
         let hiddenJobsData = [
             { id: "h1", name: "히든직업 1", items: [] }, { id: "h2", name: "히든직업 2", items: [] },
-            { id: "h3", name: "히든직업 3", items: [] }, { id: "h4", name: "히든직업 4", items: [] }, { id: "h5", name: "히든직업 5", items: [] }
+            { id: "h3", name: "히든직업 3", items: [] }, { id: "h4", name: "히든직업 4", items: [] },
+            { id: "h5", name: "히든직업 5", items: [] }
         ];
-        
-        let sanhakungRequests = [
-            { id: 1, name: "테스트유저1", classType: "나이트", requestDate: "2026-06-05", status: "pending" },
-            { id: 2, name: "테스트유저2", classType: "위자드", requestDate: "2026-06-05", status: "approved" }
-        ];
-
-        let sanhakungPosts = [
-            { title: "산해궁 커뮤니티 오픈!", author: "관리자", content: "가입 승인된 멤버들만 소통할 수 있는 공간입니다." }
-        ];
-
         let customTabs = [];
 
-        // 페이지 이동 제어
-        function goToPage(pageName) {
-            document.getElementById('lobbyView').style.display = 'none';
-            document.getElementById('specPage').style.display = 'none';
-            document.getElementById('sanhakungPage').style.display = 'none';
-
-            if (pageName === 'lobby') {
-                document.getElementById('lobbyView').style.display = 'flex';
-            } else if (pageName === 'spec') {
-                document.getElementById('specPage').style.display = 'flex';
-                renderAll();
-            } else if (pageName === 'sanhakung') {
-                document.getElementById('sanhakungPage').style.display = 'flex';
-                renderSanhakung();
-            }
-        }
+        let sanhaeNoticeContent = "⚽ 산해궁 클럽 공식 공지사항입니다. (관리자만 작성/수정 가능합니다)";
+        let commPosts = {
+            squad: [
+                { id: 1, title: "클럽 기본 포메이션 및 전술 안내", author: "관리자", date: "2026-09-04", content: "4-3-3 포메이션 기반 빌드업 전술입니다.", image: "", video: "", comments: [], likes: 5, dislikes: 0, voters: [] }
+            ],
+            seen: [],
+            custom: {}
+        };
+        let currentViewingPostId = null;
+        let sanhaeCustomTabs = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             const dbRefInstance = window.dbRef(window.db, 'kimteam_board');
@@ -732,17 +776,340 @@
                     if (serverData.specColumns) specColumns = serverData.specColumns;
                     if (serverData.itemColumns) itemColumns = serverData.itemColumns;
                     if (serverData.huntColumns) huntColumns = serverData.huntColumns;
-                    if (serverData.membersData && serverData.membersData.length > 0) membersData = serverData.membersData;
+                    if (serverData.membersData) membersData = serverData.membersData;
                     if (serverData.mapImages) mapImages = serverData.mapImages;
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
-                    if (serverData.sanhakungRequests) sanhakungRequests = serverData.sanhakungRequests;
-                    if (serverData.sanhakungPosts) sanhakungPosts = serverData.sanhakungPosts;
                     if (serverData.customTabs) customTabs = serverData.customTabs;
+                    if (serverData.pendingApplicants) pendingApplicants = serverData.pendingApplicants;
+                    if (serverData.approvedMembers) approvedMembers = serverData.approvedMembers;
+
+                    if (serverData.sanhaeData) {
+                        if (serverData.sanhaeData.noticeContent) sanhaeNoticeContent = serverData.sanhaeData.noticeContent;
+                        if (serverData.sanhaeData.commPosts) commPosts = serverData.sanhaeData.commPosts;
+                        if (serverData.sanhaeData.customTabs) sanhaeCustomTabs = serverData.sanhaeData.customTabs;
+                    }
                 }
-                renderAll();
-                renderSanhakung();
+                checkAndUpdateMyAuth();
+                updateSanhaeAuthUI();
+                if (document.getElementById('appContainer').style.display === 'flex') {
+                    renderAll();
+                }
             });
+            checkAndUpdateMyAuth();
+            updateSanhaeAuthUI();
         });
+
+        function syncSaveToFirebase() {
+            syncInputsToData();
+            const dataToSave = {
+                specColumns,
+                itemColumns,
+                huntColumns,
+                membersData,
+                mapImages,
+                hiddenJobsData,
+                customTabs,
+                pendingApplicants,
+                approvedMembers,
+                sanhaeData: {
+                    noticeContent: sanhaeNoticeContent,
+                    commPosts,
+                    customTabs: sanhaeCustomTabs
+                }
+            };
+            window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave);
+        }
+
+        function checkAndUpdateMyAuth() {
+            if (myAuthStatus !== 'admin' && myForestNick) {
+                const isApproved = approvedMembers.some(m => m.forest === myForestNick);
+                if (isApproved) {
+                    myAuthStatus = 'approved';
+                    localStorage.setItem('myAuthStatus', 'approved');
+                }
+            }
+        }
+
+        function updateSanhaeAuthUI() {
+            checkAndUpdateMyAuth();
+            const statusDiv = document.getElementById('sanhaeAuthStatus');
+            if (!statusDiv) return;
+
+            if (myAuthStatus === 'admin') {
+                statusDiv.innerHTML = "👑 <span style='color: var(--text-gold); font-weight:bold;'>관리자 계정으로 접속 중입니다. (모든 수정 및 회원 관리 권한 활성화)</span>";
+                renderAdminPendingList();
+                renderAdminApprovedList();
+            } else if (myAuthStatus === 'approved') {
+                statusDiv.innerHTML = `✅ <span style='color: var(--success); font-weight:bold;'>${myForestNick}님은 승인된 클럽 회원입니다. (커뮤니티 글/댓글 작성 가능)</span>`;
+            } else {
+                const found = pendingApplicants.find(p => p.forest === myForestNick);
+                if (found) {
+                    statusDiv.innerHTML = `⏳ <span style='color: #38bdf8; font-weight:bold;'>(${myForestNick}) 가입 심사 대기 중입니다. 관리자 승인을 기다려주세요.</span>`;
+                } else {
+                    statusDiv.innerHTML = "🔒 클럽 회원 전용 커뮤니티 기능을 이용하려면 우측 상단의 '회원 로그인' 또는 '가입요청'을 진행해주세요.";
+                }
+            }
+        }
+
+        function switchAdminTab(tabType) {
+            const pendingView = document.getElementById('adminPendingView');
+            const approvedView = document.getElementById('adminApprovedView');
+            const tabPendingBtn = document.getElementById('adminTabPending');
+            const tabApprovedBtn = document.getElementById('adminTabApproved');
+
+            if (tabType === 'pending') {
+                pendingView.style.display = 'block';
+                approvedView.style.display = 'none';
+                tabPendingBtn.style.background = 'var(--primary)';
+                tabApprovedBtn.style.background = '#475569';
+            } else {
+                pendingView.style.display = 'none';
+                approvedView.style.display = 'block';
+                tabPendingBtn.style.background = '#475569';
+                tabApprovedBtn.style.background = 'var(--success)';
+            }
+        }
+
+        function openMemberLoginModal() {
+            modalMode = 'memberLogin';
+            document.getElementById('modalTitle').innerText = "👤 승인 회원 로그인";
+            document.getElementById('pwInput').style.display = "none";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('customTabInput').style.display = "none";
+            document.getElementById('applyForestModal').style.display = "none";
+            document.getElementById('applyFcModal').style.display = "none";
+            document.getElementById('applyPinModal').style.display = "none";
+            
+            const forestInput = document.getElementById('memberLoginForest');
+            const pinInput = document.getElementById('memberLoginPin');
+            forestInput.style.display = "block";
+            pinInput.style.display = "block";
+            forestInput.value = myForestNick || "";
+            pinInput.value = "";
+            
+            document.getElementById('pwModal').style.display = "flex";
+            forestInput.focus();
+        }
+
+        function memberLogout() {
+            if (confirm("회원 로그아웃 하시겠습니까?")) {
+                myAuthStatus = 'guest';
+                myForestNick = '';
+                localStorage.setItem('myAuthStatus', 'guest');
+                localStorage.removeItem('myForestNick');
+                alert("로그아웃되었습니다.");
+                updateUI();
+            }
+        }
+
+        function openApplyModal() {
+            const found = pendingApplicants.find(p => p.forest === myForestNick);
+            if (myAuthStatus === 'approved') {
+                alert("이미 승인된 클럽 회원입니다.");
+                return;
+            }
+            if (found) {
+                alert("이미 가입 심사 대기 중입니다.");
+                return;
+            }
+
+            modalMode = 'apply';
+            document.getElementById('modalTitle').innerText = "📝 클럽 가입 신청";
+            document.getElementById('pwInput').style.display = "none";
+            document.getElementById('pwNewInput').style.display = "none";
+            document.getElementById('customTabInput').style.display = "none";
+            document.getElementById('memberLoginForest').style.display = "none";
+            document.getElementById('memberLoginPin').style.display = "none";
+            
+            const forestModal = document.getElementById('applyForestModal');
+            const fcModal = document.getElementById('applyFcModal');
+            const pinModal = document.getElementById('applyPinModal');
+            forestModal.style.display = "block";
+            fcModal.style.display = "block";
+            pinModal.style.display = "block";
+            
+            forestModal.value = myForestNick || "";
+            fcModal.value = "";
+            pinModal.value = "";
+            
+            document.getElementById('pwModal').style.display = "flex";
+            forestModal.focus();
+        }
+
+        function applyMembership() {
+            const forest = document.getElementById('applyForestModal').value.trim();
+            const fc = document.getElementById('applyFcModal').value.trim();
+            const pin = document.getElementById('applyPinModal').value.trim();
+
+            if (!forest || !fc || !pin) {
+                alert("숲 닉네임, FC온라인 닉네임, 식별번호를 모두 입력해주세요.");
+                return;
+            }
+
+            if (pendingApplicants.some(p => p.forest === forest) || approvedMembers.some(m => m.forest === forest)) {
+                alert("이미 신청되었거나 등록된 숲 닉네임입니다.");
+                return;
+            }
+
+            pendingApplicants.push({ forest, fc, pin, date: new Date().toLocaleDateString() });
+            myForestNick = forest;
+            localStorage.setItem('myForestNick', myForestNick);
+            localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+            
+            syncSaveToFirebase();
+            closeModal();
+            alert("가입 신청이 완료되었습니다! 관리자 승인을 기다려주세요.");
+            updateSanhaeAuthUI();
+        }
+
+        function approveUser(index) {
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 승인할 수 있습니다.");
+                return;
+            }
+            const target = pendingApplicants.splice(index, 1)[0];
+            if (target) {
+                approvedMembers.push(target);
+                localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+                localStorage.setItem('approvedMembers', JSON.stringify(approvedMembers));
+                syncSaveToFirebase();
+                renderAdminPendingList();
+                renderAdminApprovedList();
+                updateSanhaeAuthUI();
+                alert(`[${target.forest}] 회원 가입이 승인되었습니다.`);
+            }
+        }
+
+        function rejectUser(index) {
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 거절할 수 있습니다.");
+                return;
+            }
+            const target = pendingApplicants[index];
+            if (confirm(`[${target.forest}] 님의 가입 신청을 거절(삭제)하시겠습니까?`)) {
+                pendingApplicants.splice(index, 1);
+                localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+                syncSaveToFirebase();
+                renderAdminPendingList();
+                updateSanhaeAuthUI();
+                alert(`[${target.forest}] 님의 가입 신청이 거절되었습니다.`);
+            }
+        }
+
+        function renderAdminApprovedList() {
+            const container = document.getElementById('adminApprovedUsersContainer');
+            if (!container) return;
+
+            if (approvedMembers.length === 0) {
+                container.innerHTML = "승인된 회원이 없습니다.";
+                return;
+            }
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            approvedMembers.forEach((item, idx) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--box-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--box-border);">
+                        <div>숲: <b style="color:var(--text-gold);">${item.forest}</b> / FC: <b style="color:#38bdf8;">${item.fc}</b> <span style="font-size:0.8rem; color:#94a3b8;">(${item.date})</span></div>
+                        <button class="btn btn-del" style="padding: 4px 10px; font-size: 0.85rem;" onclick="revokeUser(${idx})">승인 취소</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function revokeUser(index) {
+            if (myAuthStatus !== 'admin') return;
+            const target = approvedMembers.splice(index, 1)[0];
+            if (target) {
+                pendingApplicants.push(target);
+                localStorage.setItem('pendingApplicants', JSON.stringify(pendingApplicants));
+                localStorage.setItem('approvedMembers', JSON.stringify(approvedMembers));
+                syncSaveToFirebase();
+                renderAdminPendingList();
+                renderAdminApprovedList();
+                updateSanhaeAuthUI();
+                alert(`[${target.forest}] 님의 승인이 취소되었습니다.`);
+            }
+        }
+
+        function renderAdminPendingList() {
+            const container = document.getElementById('pendingUsersContainer');
+            if (!container) return;
+
+            if (pendingApplicants.length === 0) {
+                container.innerHTML = "대기 중인 신청자가 없습니다.";
+                return;
+            }
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            pendingApplicants.forEach((item, idx) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--box-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--box-border);">
+                        <div>숲: <b style="color:var(--text-gold);">${item.forest}</b> / FC: <b style="color:#38bdf8;">${item.fc}</b> <span style="font-size:0.8rem; color:#94a3b8;">(${item.date})</span></div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-add" style="padding: 4px 10px; font-size: 0.85rem;" onclick="approveUser(${idx})">승인</button>
+                            <button class="btn btn-del" style="padding: 4px 10px; font-size: 0.85rem;" onclick="rejectUser(${idx})">거절</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function enterCategory(category) {
+            currentCategory = category;
+            isEdit = false;
+            document.getElementById('mainLobby').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+
+            const permBadge = document.getElementById('userPermissionBadge');
+            const sanhaeAuthSec = document.getElementById('sanhaeAuthSection');
+            const applyBtn = document.getElementById('applyBtn');
+
+            if (category === 'sanhae') {
+                sanhaeAuthSec.style.display = (myAuthStatus === 'admin') ? 'block' : 'none';
+                applyBtn.style.display = 'inline-block';
+                updateSanhaeAuthUI();
+            } else {
+                sanhaeAuthSec.style.display = 'none';
+                applyBtn.style.display = 'none';
+            }
+
+            if (myAuthStatus === 'admin') {
+                permBadge.innerText = "👑 관리자 권한";
+                permBadge.style.background = "#065f46";
+                permBadge.style.color = "#34d399";
+            } else if (myAuthStatus === 'approved') {
+                permBadge.innerText = `✅ 승인 회원 (${myForestNick}) 권한 활성화`;
+                permBadge.style.background = "#065f46";
+                permBadge.style.color = "#34d399";
+            } else {
+                permBadge.innerText = "🔒 비회원 (읽기 전용)";
+                permBadge.style.background = "#334155";
+                permBadge.style.color = "#94a3b8";
+            }
+
+            if (category === 'kimteam') {
+                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 코창서버 내실표";
+                document.getElementById('appHeaderTitle').innerHTML = `🛡️ 킴성태팀 종합 현황판 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
+                activeTab = 'spec';
+            } else {
+                document.getElementById('categoryIndicator').innerText = "📂 현재 카테고리: 클럽 산해궁";
+                document.getElementById('appHeaderTitle').innerHTML = `⚽ 클럽 산해궁 전용관 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>`;
+                activeTab = 'notice';
+                currentViewingPostId = null;
+            }
+            updateUI();
+        }
+
+        function returnToLobby() {
+            syncSaveToFirebase();
+            isEdit = false;
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('mainLobby').style.display = 'flex';
+        }
 
         function getCurrentColumns() {
             if (activeTab === 'spec') return specColumns;
@@ -756,20 +1123,25 @@
         }
 
         function switchTab(tab) {
-            syncInputsToData();
+            syncSaveToFirebase();
             activeTab = tab;
+            currentViewingPostId = null;
             renderAll();
         }
 
-        // 모달창 제어
         function openLoginModal() {
             modalMode = 'login';
-            document.getElementById('modalTitle').innerText = "🔑 내실표 수정 권한 비밀번호";
+            document.getElementById('modalTitle').innerText = "🔑 관리자 비밀번호 입력";
             document.getElementById('pwInput').style.display = "block";
             document.getElementById('pwInput').value = "";
-            document.getElementById('pwInput').placeholder = "비밀번호 입력";
+            document.getElementById('pwInput').placeholder = "관리자 비밀번호 입력";
             document.getElementById('pwNewInput').style.display = "none";
             document.getElementById('customTabInput').style.display = "none";
+            document.getElementById('applyForestModal').style.display = "none";
+            document.getElementById('applyFcModal').style.display = "none";
+            document.getElementById('applyPinModal').style.display = "none";
+            document.getElementById('memberLoginForest').style.display = "none";
+            document.getElementById('memberLoginPin').style.display = "none";
             document.getElementById('pwModal').style.display = "flex";
             document.getElementById('pwInput').focus();
         }
@@ -783,84 +1155,138 @@
             document.getElementById('pwNewInput').style.display = "block";
             document.getElementById('pwNewInput').value = "";
             document.getElementById('customTabInput').style.display = "none";
+            document.getElementById('applyForestModal').style.display = "none";
+            document.getElementById('applyFcModal').style.display = "none";
+            document.getElementById('applyPinModal').style.display = "none";
+            document.getElementById('memberLoginForest').style.display = "none";
+            document.getElementById('memberLoginPin').style.display = "none";
             document.getElementById('pwModal').style.display = "flex";
             document.getElementById('pwInput').focus();
         }
 
         function openAddTabModal() {
+            if (myAuthStatus !== 'admin') {
+                alert("탭 추가 권한은 관리자에게만 있습니다.");
+                return;
+            }
+
             modalMode = 'addTab';
-            document.getElementById('modalTitle').innerText = "➕ 새 탭 추가";
+            document.getElementById('modalTitle').innerText = "➕ 새 탭 추가 (관리자 전용)";
             document.getElementById('pwInput').style.display = "none";
             document.getElementById('pwNewInput').style.display = "none";
             document.getElementById('customTabInput').style.display = "block";
+            document.getElementById('applyForestModal').style.display = "none";
+            document.getElementById('applyFcModal').style.display = "none";
+            document.getElementById('applyPinModal').style.display = "none";
+            document.getElementById('memberLoginForest').style.display = "none";
+            document.getElementById('memberLoginPin').style.display = "none";
             document.getElementById('customTabInput').value = "";
             document.getElementById('pwModal').style.display = "flex";
             document.getElementById('customTabInput').focus();
         }
 
-        function closeModal() { document.getElementById('pwModal').style.display = "none"; }
-        function openImageModal(imgSrc) { if (!imgSrc) return; document.getElementById('modalZoomedImg').src = imgSrc; document.getElementById('imageModal').style.display = "flex"; }
-        function closeImageModal() { document.getElementById('imageModal').style.display = "none"; }
+        function closeModal() {
+            document.getElementById('pwModal').style.display = "none";
+        }
+
+        function openImageModal(imgSrc) {
+            if (!imgSrc) return;
+            document.getElementById('modalZoomedImg').src = imgSrc;
+            document.getElementById('imageModal').style.display = "flex";
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
 
         function handleModalKey(e) {
             if (e.key === 'Enter') submitModal();
-            if (e.key === 'Escape') { closeModal(); closeImageModal(); }
+            if (e.key === 'Escape') {
+                closeModal();
+                closeImageModal();
+            }
         }
 
         function submitModal() {
             if (modalMode === 'login') {
-                if (document.getElementById('pwInput').value === getPw()) {
+                const inputPw = document.getElementById('pwInput').value;
+                if (inputPw === getPw()) {
                     isEdit = true;
+                    myAuthStatus = 'admin';
+                    localStorage.setItem('myAuthStatus', myAuthStatus);
                     closeModal();
                     updateUI();
-                } else { alert("비밀번호가 틀렸습니다."); }
+                } else {
+                    alert("비밀번호가 틀렸습니다.");
+                }
             } else if (modalMode === 'change') {
-                if (document.getElementById('pwInput').value === getPw()) {
-                    const newPw = document.getElementById('pwNewInput').value;
+                const inputPw = document.getElementById('pwInput').value;
+                const newPw = document.getElementById('pwNewInput').value;
+                if (inputPw === getPw()) {
                     if (newPw && newPw.trim()) {
                         localStorage.setItem('board_pw', newPw.trim());
-                        alert("비밀번호가 변경되었습니다!");
+                        alert("비밀번호가 성공적으로 변경되었습니다!");
                         closeModal();
-                    } else { alert("새 비밀번호를 입력해주세요."); }
-                } else { alert("현재 비밀번호가 틀렸습니다."); }
+                    } else {
+                        alert("새 비밀번호를 입력해주세요.");
+                    }
+                } else {
+                    alert("현재 비밀번호가 틀렸습니다.");
+                }
             } else if (modalMode === 'addTab') {
+                if (myAuthStatus !== 'admin') {
+                    alert("관리자만 탭을 추가할 수 있습니다.");
+                    closeModal();
+                    return;
+                }
                 const tabName = document.getElementById('customTabInput').value;
                 if (tabName && tabName.trim()) {
                     const newId = 'custom_' + Date.now();
-                    customTabs.push({ id: newId, name: tabName.trim(), content: "내용을 입력하세요." });
+                    if (currentCategory === 'kimteam') {
+                        customTabs.push({ id: newId, name: tabName.trim(), content: "새로 만든 탭의 내용을 입력하세요." });
+                    } else {
+                        sanhaeCustomTabs.push({ id: newId, name: tabName.trim() });
+                        commPosts[newId] = [];
+                    }
                     activeTab = newId;
+                    syncSaveToFirebase();
                     closeModal();
                     renderAll();
-                } else { alert("탭 이름을 입력해주세요."); }
+                } else {
+                    alert("탭 이름을 입력해주세요.");
+                }
+            } else if (modalMode === 'apply') {
+                applyMembership();
+            } else if (modalMode === 'memberLogin') {
+                const inputForest = document.getElementById('memberLoginForest').value.trim();
+                const inputPin = document.getElementById('memberLoginPin').value.trim();
+                
+                if (!inputForest || !inputPin) {
+                    alert("숲 닉네임과 식별번호를 모두 입력해주세요.");
+                    return;
+                }
+
+                const matchedUser = approvedMembers.find(m => m.forest === inputForest && m.pin === inputPin);
+                if (matchedUser) {
+                    myAuthStatus = 'approved';
+                    myForestNick = inputForest;
+                    localStorage.setItem('myAuthStatus', 'approved');
+                    localStorage.setItem('myForestNick', myForestNick);
+                    closeModal();
+                    alert(`환영합니다, ${myForestNick}님! 클럽 회원 권한이 활성화되었습니다.`);
+                    updateUI();
+                } else {
+                    alert("등록되지 않은 숲 닉네임이거나 식별번호가 일치하지 않습니다. 승인 여부 및 입력 정보를 확인해주세요.");
+                }
             }
         }
 
         function toggleAuth() {
-            if (isEdit) { isEdit = false; updateUI(); } else { openLoginModal(); }
-        }
-
-        // 산해궁 관리자 로그인
-        function toggleSanhakungAuth() {
-            if (isSanhakungAdmin) {
-                isSanhakungAdmin = false;
-                document.getElementById('sanhakungModeBadge').innerText = "🔒 읽기 전용";
-                document.getElementById('sanhakungModeBadge').className = "badge badge-view";
-                document.getElementById('sanhakungAuthBtn').innerText = "🔓 관리자 로그인";
-                document.getElementById('sanhakungAuthBtn').className = "btn btn-lock";
-                renderSanhakung();
+            if (isEdit) {
+                isEdit = false;
+                updateUI();
             } else {
-                const pw = prompt("클럽 산해궁 관리자 비밀번호를 입력하세요 (기본: 1234):");
-                if (pw === getPw()) {
-                    isSanhakungAdmin = true;
-                    document.getElementById('sanhakungModeBadge').innerText = "✏️ 관리자 모드";
-                    document.getElementById('sanhakungModeBadge').className = "badge badge-edit";
-                    document.getElementById('sanhakungAuthBtn').innerText = "🔒 로그아웃";
-                    document.getElementById('sanhakungAuthBtn').className = "btn btn-danger";
-                    alert("산해궁 관리자로 로그인되었습니다.");
-                    renderSanhakung();
-                } else if (pw !== null) {
-                    alert("비밀번호가 틀렸습니다.");
-                }
+                openLoginModal();
             }
         }
 
@@ -870,83 +1296,178 @@
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
             const addTabBtn = document.getElementById('addTabBtn');
-            const saveBtn = document.getElementById('saveBtn');
             const pwChangeBtn = document.getElementById('pwChangeBtn');
+            const applyBtn = document.getElementById('applyBtn');
+            const memberLoginBtn = document.getElementById('memberLoginBtn');
+            const memberLogoutBtn = document.getElementById('memberLogoutBtn');
+            const sanhaeAuthSec = document.getElementById('sanhaeAuthSection');
+
+            if (currentCategory === 'sanhae') {
+                updateSanhaeAuthUI();
+                applyBtn.style.display = "inline-block";
+                sanhaeAuthSec.style.display = (myAuthStatus === 'admin') ? 'block' : 'none';
+
+                if (myAuthStatus === 'approved') {
+                    memberLoginBtn.style.display = "none";
+                    memberLogoutBtn.style.display = "inline-block";
+                } else if (myAuthStatus === 'admin') {
+                    memberLoginBtn.style.display = "none";
+                    memberLogoutBtn.style.display = "none";
+                } else {
+                    memberLoginBtn.style.display = "inline-block";
+                    memberLogoutBtn.style.display = "none";
+                }
+            } else {
+                applyBtn.style.display = "none";
+                memberLoginBtn.style.display = "none";
+                memberLogoutBtn.style.display = "none";
+                sanhaeAuthSec.style.display = "none";
+            }
 
             if (isEdit) {
-                badge.innerText = "✏️ 수정 모드"; badge.className = "badge badge-edit";
-                authBtn.innerText = "🔒 잠그기"; saveBtn.style.display = "inline-block";
-                pwChangeBtn.style.display = "inline-block"; addTabBtn.style.display = "inline-block";
-                if (['spec', 'item', 'hunt'].includes(activeTab)) { addBtn.style.display = "inline-block"; addColBtn.style.display = "inline-block"; }
+                badge.innerText = "✏️ 관리자 수정 모드";
+                badge.className = "badge badge-edit";
+                authBtn.innerText = "🔒 잠그기";
+                pwChangeBtn.style.display = "inline-block";
+                addTabBtn.style.display = "inline-block";
+
+                if (currentCategory === 'kimteam' && (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt')) {
+                    addBtn.style.display = "inline-block";
+                    addColBtn.style.display = "inline-block";
+                } else {
+                    addBtn.style.display = "none";
+                    addColBtn.style.display = "none";
+                }
             } else {
-                badge.innerText = "🔒 읽기 전용"; badge.className = "badge badge-view";
-                authBtn.innerText = "🔓 수정 권한"; addBtn.style.display = "none";
-                addColBtn.style.display = "none"; addTabBtn.style.display = "none";
-                saveBtn.style.display = "none"; pwChangeBtn.style.display = "none";
+                badge.innerText = "🔒 읽기 전용 (비회원은 조회만 가능)";
+                badge.className = "badge badge-view";
+                authBtn.innerText = "🔓 관리자 권한";
+                addBtn.style.display = "none";
+                addColBtn.style.display = "none";
+                pwChangeBtn.style.display = "none";
+                
+                if (myAuthStatus === 'admin') {
+                    addTabBtn.style.display = "inline-block";
+                } else {
+                    addTabBtn.style.display = "none";
+                }
             }
+
             renderTabBar();
             renderAll();
         }
 
         function syncInputsToData() {
-            if (['spec', 'item', 'hunt'].includes(activeTab)) {
-                const cols = getCurrentColumns();
-                document.querySelectorAll('#headerRow input').forEach(inp => {
-                    const colObj = cols.find(c => c.id === inp.dataset.colid);
-                    if (colObj) colObj.title = inp.value;
-                });
-                document.querySelectorAll('#tableBody tr').forEach((r, idx) => {
-                    if (!membersData[idx]) return;
-                    r.querySelectorAll('input[type="text"], select').forEach(inp => {
-                        if (inp.dataset.colid) membersData[idx][inp.dataset.colid] = inp.value;
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') return;
+
+            if (currentCategory === 'kimteam') {
+                if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
+                    const cols = getCurrentColumns();
+                    const headerInputs = document.querySelectorAll('#headerRow input');
+                    headerInputs.forEach(inp => {
+                        const colId = inp.dataset.colid;
+                        const colObj = cols.find(c => c.id === colId);
+                        if (colObj) colObj.title = inp.value;
                     });
-                });
-            } else if (activeTab === 'map') {
-                mapImages.forEach((item, idx) => {
-                    const t = document.getElementById(`map_title_${idx}`);
-                    const m = document.getElementById(`map_memo_${idx}`);
-                    if (t) item.title = t.value;
-                    if (m) item.memo = m.value;
-                });
-            } else if (activeTab === 'hidden') {
-                hiddenJobsData.forEach((job, jIdx) => {
-                    const n = document.getElementById(`hidden_name_${jIdx}`);
-                    if (n) job.name = n.value;
-                    if (job.items) {
-                        job.items.forEach((item, iIdx) => {
-                            const m = document.getElementById(`hidden_memo_${jIdx}_${iIdx}`);
-                            if (m) item.memo = m.value;
+
+                    const rows = document.querySelectorAll('#tableBody tr');
+                    rows.forEach((r, idx) => {
+                        if (!membersData[idx]) return;
+                        r.querySelectorAll('input[type="text"], select').forEach(inp => {
+                            const colId = inp.dataset.colid;
+                            if (colId) membersData[idx][colId] = inp.value;
                         });
+                    });
+                } else if (activeTab === 'map') {
+                    mapImages.forEach((item, idx) => {
+                        const titleElem = document.getElementById(`map_title_${idx}`);
+                        const memoElem = document.getElementById(`map_memo_${idx}`);
+                        if (titleElem) item.title = titleElem.value;
+                        if (memoElem) item.memo = memoElem.value;
+                    });
+                } else if (activeTab === 'hidden') {
+                    hiddenJobsData.forEach((job, jobIndex) => {
+                        const nameElem = document.getElementById(`hidden_name_${jobIndex}`);
+                        if (nameElem) job.name = nameElem.value;
+                        if (job.items) {
+                            job.items.forEach((item, itemIndex) => {
+                                const memoElem = document.getElementById(`hidden_memo_${jobIndex}_${itemIndex}`);
+                                if (memoElem) item.memo = memoElem.value;
+                            });
+                        }
+                    });
+                } else {
+                    const txtArea = document.getElementById('customTextArea');
+                    if (txtArea) {
+                        const found = customTabs.find(t => t.id === activeTab);
+                        if (found) found.content = txtArea.value;
                     }
-                });
+                }
+            } else {
+                if (activeTab === 'notice' && myAuthStatus === 'admin') {
+                    const elem = document.getElementById('sanhaeNoticeArea');
+                    if (elem) sanhaeNoticeContent = elem.value;
+                }
             }
         }
 
         function renderTabBar() {
             const tabBar = document.getElementById('tabBar');
-            let html = `
-                <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙</button></div>
-                <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템</button></div>
-                <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'hunt' ? 'active' : ''}" onclick="switchTab('hunt')">💰 사냥</button></div>
-                <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵</button></div>
-                <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든</button></div>
-            `;
-            customTabs.forEach(t => {
+            let html = '';
+
+            const canDeleteTab = (myAuthStatus === 'admin');
+
+            if (currentCategory === 'kimteam') {
                 html += `
-                    <div class="tab-btn-wrap ${isEdit ? 'editable-tabs' : ''}">
-                        <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
-                        <button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')">✕</button>
-                    </div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'hunt' ? 'active' : ''}" onclick="switchTab('hunt')">💰 사냥</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든</button></div>
                 `;
-            });
+                customTabs.forEach(t => {
+                    html += `
+                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
+                            <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
+                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += `
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'notice' ? 'active' : ''}" onclick="switchTab('notice')">📢 공지사항</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'squad' ? 'active' : ''}" onclick="switchTab('squad')">📋 스쿼드 및 전술</button></div>
+                    <div class="tab-btn-wrap"><button class="tab-btn ${activeTab === 'seen' ? 'active' : ''}" onclick="switchTab('seen')">👀 산이봤?</button></div>
+                `;
+                sanhaeCustomTabs.forEach(t => {
+                    html += `
+                        <div class="tab-btn-wrap ${canDeleteTab ? 'editable-tabs' : ''}">
+                            <button class="tab-btn ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.name}</button>
+                            ${canDeleteTab ? `<button class="tab-del-btn" onclick="deleteCustomTab('${t.id}')" title="탭 삭제">✕</button>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
             tabBar.innerHTML = html;
         }
 
         function deleteCustomTab(tabId) {
-            if (!isEdit) return;
-            if (confirm("탭을 삭제하시겠습니까?")) {
-                customTabs = customTabs.filter(t => t.id !== tabId);
-                if (activeTab === tabId) activeTab = 'spec';
+            if (myAuthStatus !== 'admin') {
+                alert("관리자만 탭을 삭제할 수 있습니다.");
+                return;
+            }
+            if (confirm("이 탭을 삭제하시겠습니까?")) {
+                if (currentCategory === 'kimteam') {
+                    customTabs = customTabs.filter(t => t.id !== tabId);
+                    if (activeTab === tabId) activeTab = 'spec';
+                } else {
+                    sanhaeCustomTabs = sanhaeCustomTabs.filter(t => t.id !== tabId);
+                    delete commPosts[tabId];
+                    if (activeTab === tabId) activeTab = 'notice';
+                }
+                syncSaveToFirebase();
+                renderTabBar();
                 renderAll();
             }
         }
@@ -957,215 +1478,624 @@
             const addBtn = document.getElementById('addBtn');
             const addColBtn = document.getElementById('addColBtn');
 
-            if (['spec', 'item', 'hunt'].includes(activeTab)) {
-                addBtn.style.display = isEdit ? "inline-block" : "none";
-                addColBtn.style.display = isEdit ? "inline-block" : "none";
-                if (isEdit) container.classList.add('editable'); else container.classList.remove('editable');
+            if (currentCategory === 'kimteam') {
+                if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
+                    if (isEdit) {
+                        addBtn.style.display = "inline-block";
+                        addColBtn.style.display = "inline-block";
+                        container.classList.add('editable');
+                    } else {
+                        addBtn.style.display = "none";
+                        addColBtn.style.display = "none";
+                        container.classList.remove('editable');
+                    }
 
-                container.innerHTML = `
-                    <table>
-                        <thead><tr id="headerRow"></tr></thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                `;
-                renderHeader();
-                renderBody();
-            } else if (activeTab === 'map') {
-                addBtn.style.display = "none"; addColBtn.style.display = "none"; container.classList.remove('editable');
-                renderMapTab(container);
-            } else if (activeTab === 'hidden') {
-                addBtn.style.display = "none"; addColBtn.style.display = "none"; container.classList.remove('editable');
-                renderHiddenTab(container);
+                    container.innerHTML = `
+                        <table id="mainTable">
+                            <thead><tr id="headerRow"></tr></thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    `;
+                    renderHeader();
+                    renderBody();
+                } else if (activeTab === 'map') {
+                    addBtn.style.display = "none"; addColBtn.style.display = "none";
+                    container.classList.remove('editable');
+                    renderMapTab(container);
+                } else if (activeTab === 'hidden') {
+                    addBtn.style.display = "none"; addColBtn.style.display = "none";
+                    container.classList.remove('editable');
+                    renderHiddenTab(container);
+                } else {
+                    addBtn.style.display = "none"; addColBtn.style.display = "none";
+                    container.classList.remove('editable');
+                    renderCustomTab(container);
+                }
             } else {
-                addBtn.style.display = "none"; addColBtn.style.display = "none"; container.classList.remove('editable');
-                renderCustomTab(container);
+                addBtn.style.display = "none"; addColBtn.style.display = "none";
+                container.classList.remove('editable');
+
+                if (activeTab === 'notice') {
+                    const canEditNotice = (myAuthStatus === 'admin');
+                    container.innerHTML = `
+                        <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                                <h3 style="color:#34d399; font-size: 1.2rem;">⚽ 산해궁 클럽 공지사항 (댓글 작성 불가)</h3>
+                                ${canEditNotice ? '<span style="font-size:0.85rem; color:#34d399;">관리자 수정 모드 활성화됨</span>' : '<span style="font-size:0.85rem; color:#94a3b8;">관리자만 수정할 수 있습니다</span>'}
+                            </div>
+                            <textarea id="sanhaeNoticeArea" oninput="syncSaveToFirebase()" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!canEditNotice ? 'readonly' : ''}>${sanhaeNoticeContent}</textarea>
+                        </div>
+                    `;
+                } else {
+                    renderCommunityBoard(container, activeTab);
+                }
             }
         }
 
-        // 산해궁 화면 렌더링 및 로직
-        function renderSanhakung() {
-            const tableBody = document.getElementById('sanhakungTableBody');
-            let rowsHtml = '';
-            
-            if (sanhakungRequests.length === 0) {
-                rowsHtml = `<tr><td colspan="5" style="padding: 20px; color: #94a3b8;">가입 신청 내역이 없습니다.</td></tr>`;
+        function renderCommunityBoard(container, tabKey) {
+            if (!commPosts[tabKey]) commPosts[tabKey] = [];
+            const posts = commPosts[tabKey];
+
+            let tabTitle = "커뮤니티 게시판";
+            if (tabKey === 'squad') tabTitle = "📋 클럽 스쿼드 및 전술 게시판";
+            else if (tabKey === 'seen') tabTitle = "👀 산이봤? 게시판";
+            else {
+                const found = sanhaeCustomTabs.find(t => t.id === tabKey);
+                if (found) tabTitle = `📌 ${found.name}`;
+            }
+
+            if (currentViewingPostId !== null) {
+                renderPostDetail(container, tabKey, currentViewingPostId);
+                return;
+            }
+
+            const canWrite = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
+
+            let html = `
+                <div class="section-box" style="background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%); border: 2px solid #059669;">
+                    <div class="comm-header">
+                        <h3 style="color:#34d399; font-size: 1.2rem;">${tabTitle}</h3>
+                        ${canWrite ? `<button class="btn btn-add" onclick="openWritePostModal('${tabKey}')">✍️ 글쓰기</button>` : `<span style="font-size:0.85rem; color:#94a3b8;">로그인 후 글작성 및 댓글 참여가 가능합니다.</span>`}
+                    </div>
+                    <table class="comm-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px; text-align:center;">번호</th>
+                                <th>제목</th>
+                                <th style="width: 120px; text-align:center;">작성자</th>
+                                <th style="width: 100px; text-align:center;">날짜</th>
+                                <th style="width: 70px; text-align:center;">추천</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (posts.length === 0) {
+                html += `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:30px;">등록된 게시글이 없습니다. 첫 글을 작성해보세요!</td></tr>`;
             } else {
-                sanhakungRequests.forEach((req, idx) => {
-                    const statusBadge = req.status === 'approved' ? `<span class="badge-approved">승인됨</span>` : `<span class="badge-pending">대기중</span>`;
-                    let actionBtns = '-';
-                    if (isSanhakungAdmin) {
-                        if (req.status === 'pending') {
-                            actionBtns = `<button class="btn btn-add" style="padding:4px 8px; font-size:0.8rem;" onclick="approveSanhakungUser(${idx})">승인</button> <button class="btn btn-del" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteSanhakungRequest(${idx})">거절</button>`;
-                        } else {
-                            actionBtns = `<button class="btn btn-del" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteSanhakungRequest(${idx})">삭제</button>`;
-                        }
-                    }
-                    rowsHtml += `
-                        <tr>
-                            <td>${req.name}</td>
-                            <td>${req.classType}</td>
-                            <td>${req.requestDate}</td>
-                            <td>${statusBadge}</td>
-                            <td>${actionBtns}</td>
+                posts.slice().reverse().forEach((p, index) => {
+                    const realIdx = posts.length - index;
+                    const mediaBadge = (p.image ? '🖼️ ' : '') + (p.video ? '🎬' : '');
+                    html += `
+                        <tr onclick="viewPostDetail('${tabKey}', ${p.id})">
+                            <td style="text-align:center; color:#94a3b8;">${realIdx}</td>
+                            <td><b>${p.title}</b> <span style="font-size:0.8rem; color:#38bdf8;">[${p.comments ? p.comments.length : 0}]</span> ${mediaBadge}</td>
+                            <td style="text-align:center; color:var(--text-gold);">${p.author}</td>
+                            <td style="text-align:center; font-size:0.85rem; color:#94a3b8;">${p.date}</td>
+                            <td style="text-align:center; color:#34d399;">${p.likes || 0}</td>
                         </tr>
                     `;
                 });
             }
-            tableBody.innerHTML = rowsHtml;
 
-            // 게시판 권한 제어
-            if (isSanhakungAdmin || isUserApproved) {
-                document.getElementById('writeBox').style.display = 'block';
-                document.getElementById('noAccessMsg').style.display = 'none';
-            } else {
-                document.getElementById('writeBox').style.display = 'none';
-                document.getElementById('noAccessMsg').style.display = 'block';
-            }
-
-            // 게시글 목록 렌더링
-            const postContainer = document.getElementById('postListContainer');
-            let postsHtml = '';
-            if (sanhakungPosts.length === 0) {
-                postsHtml = `<p style="color:#94a3b8; font-size:0.9rem;">등록된 게시글이 없습니다.</p>`;
-            } else {
-                sanhakungPosts.forEach((p, pIdx) => {
-                    postsHtml += `
-                        <div style="background:var(--box-bg); border:1px solid var(--box-border); padding:12px; border-radius:6px; margin-bottom:10px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <strong style="color:var(--text-gold); font-size:1rem;">${p.title}</strong>
-                                <span style="font-size:0.8rem; color:#94a3b8;">작성자: ${p.author}</span>
-                            </div>
-                            <p style="font-size:0.95rem; color:var(--text-light); line-height:1.4;">${p.content}</p>
-                            ${isSanhakungAdmin ? `<button class="btn btn-del" style="padding:2px 6px; font-size:0.75rem; margin-top:8px;" onclick="deleteSanhakungPost(${pIdx})">글 삭제</button>` : ''}
-                        </div>
-                    `;
-                });
-            }
-            postContainer.innerHTML = postsHtml;
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
         }
 
-        function applyMembership() {
-            const nameInp = document.getElementById('applicantName');
-            const classInp = document.getElementById('applicantClass');
-            const name = nameInp.value.trim();
-            const classType = classInp.value.trim() || "미정";
-
-            if (!name) {
-                alert("신청자명을 입력해주세요.");
+        function openWritePostModal(tabKey) {
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("로그인한 승인 회원만 글을 작성할 수 있습니다.");
                 return;
             }
-
-            sanhakungRequests.push({
-                id: Date.now(),
-                name: name,
-                classType: classType,
-                requestDate: new Date().toISOString().slice(0, 10),
-                status: "pending"
-            });
-
-            nameInp.value = "";
-            classInp.value = "";
-            saveToFirebaseSilently();
-            renderSanhakung();
-            alert(`"${name}"님 가입 신청이 완료되었습니다! 관리자 승인을 기다려주세요.`);
+            document.getElementById('postTitleInput').value = "";
+            document.getElementById('postContentInput').value = "";
+            document.getElementById('postVideoInput').value = "";
+            document.getElementById('postImageInput').value = "";
+            window.activePostTabKey = tabKey;
+            document.getElementById('postModal').style.display = "flex";
         }
 
-        function approveSanhakungUser(idx) {
-            if (!isSanhakungAdmin) return;
-            sanhakungRequests[idx].status = 'approved';
-            isUserApproved = true;
-            saveToFirebaseSilently();
-            renderSanhakung();
-        }
+        function submitPost() {
+            const title = document.getElementById('postTitleInput').value.trim();
+            const content = document.getElementById('postContentInput').value.trim();
+            const videoUrl = document.getElementById('postVideoInput').value.trim();
+            const fileInput = document.getElementById('postImageInput');
+            const tabKey = window.activePostTabKey;
 
-        function deleteSanhakungRequest(idx) {
-            if (!isSanhakungAdmin) return;
-            if (confirm("신청 내역을 삭제하시겠습니까?")) {
-                sanhakungRequests.splice(idx, 1);
-                saveToFirebaseSilently();
-                renderSanhakung();
-            }
-        }
-
-        function writePost() {
-            const title = document.getElementById('postTitle').value.trim();
-            const content = document.getElementById('postContent').value.trim();
             if (!title || !content) {
                 alert("제목과 내용을 모두 입력해주세요.");
                 return;
             }
 
-            sanhakungPosts.unshift({
-                title: title,
-                author: isSanhakungAdmin ? "관리자" : "승인된 멤버",
-                content: content
-            });
+            const saveNewPost = (imgBase64) => {
+                if (!commPosts[tabKey]) commPosts[tabKey] = [];
+                const newPost = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    video: videoUrl,
+                    author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                    date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    image: imgBase64 || "",
+                    comments: [],
+                    likes: 0,
+                    dislikes: 0,
+                    voters: []
+                };
+                commPosts[tabKey].push(newPost);
+                syncSaveToFirebase();
+                document.getElementById('postModal').style.display = "none";
+                renderAll();
+            };
 
-            document.getElementById('postTitle').value = "";
-            document.getElementById('postContent').value = "";
-            saveToFirebaseSilently();
-            renderSanhakung();
-        }
-
-        function deleteSanhakungPost(pIdx) {
-            if (!isSanhakungAdmin) return;
-            if (confirm("이 게시글을 삭제하시겠습니까?")) {
-                sanhakungPosts.splice(pIdx, 1);
-                saveToFirebaseSilently();
-                renderSanhakung();
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveNewPost(e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveNewPost("");
             }
         }
 
-        // 내실표 세부 렌더 함수들
-        function renderMapTab(container) {
-            let cardsHtml = '';
-            mapImages.forEach((item, idx) => {
-                cardsHtml += `
-                    <div class="img-card">
-                        <input type="text" id="map_title_${idx}" value="${item.title}" ${!isEdit ? 'readonly' : ''} placeholder="맵 이름">
-                        <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerMapFile(${idx})` : '')}">
-                            ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
-                        </div>
-                        <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
-                        ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">사진 변경</button>` : ''}
-                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="메모">${item.memo}</textarea>
-                        ${isEdit ? `<button class="btn btn-del" style="padding:6px; font-size:0.85rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
+        function viewPostDetail(tabKey, postId) {
+            currentViewingPostId = Number(postId);
+            renderAll();
+        }
+
+        function closePostDetail() {
+            currentViewingPostId = null;
+            renderAll();
+        }
+
+        function getEmbedVideoHtml(url) {
+            if (!url) return '';
+            let embedUrl = '';
+            // 유튜브 URL 변환 처리
+            if (url.includes('youtu.be/')) {
+                const id = url.split('youtu.be/')[1].split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${id}`;
+            } else if (url.includes('youtube.com/watch')) {
+                const urlParams = new URLSearchParams(new URL(url).search);
+                const id = urlParams.get('v');
+                if (id) embedUrl = `https://www.youtube.com/embed/${id}`;
+            }
+
+            if (embedUrl) {
+                return `
+                    <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-bottom: 20px; background:#000; border-radius:8px; overflow:hidden;">
+                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen></iframe>
                     </div>
                 `;
-            });
-            container.innerHTML = `
-                <div class="section-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3 style="color:var(--text-gold);">🗺️ 사냥터 정보 관리</h3>
-                        ${isEdit ? `<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
+            } else {
+                return `
+                    <div style="margin-bottom: 20px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--box-border);">
+                        🎬 동영상/클립 링크: <a href="${url}" target="_blank" style="color: #38bdf8; word-break: break-all;">${url}</a>
                     </div>
-                    <div class="img-upload-grid">${cardsHtml}</div>
-                </div>
+                `;
+            }
+        }
+
+        function renderPostDetail(container, tabKey, postId) {
+            if (!commPosts[tabKey]) commPosts[tabKey] = [];
+            const posts = commPosts[tabKey];
+            const post = posts.find(p => Number(p.id) === Number(postId));
+            
+            if (!post) {
+                currentViewingPostId = null;
+                renderAll();
+                return;
+            }
+
+            const canInteract = (myAuthStatus === 'admin' || myAuthStatus === 'approved');
+            const isMyPost = (post.author === myForestNick || myAuthStatus === 'admin');
+
+            let html = `
+                <div class="post-detail-box">
+                    <button class="btn btn-lobby" style="margin-bottom:15px;" onclick="closePostDetail()">← 목록으로 돌아가기</button>
+                    <h2 style="color:var(--text-gold); margin-bottom:8px;">${post.title}</h2>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#94a3b8; border-bottom:1px solid var(--box-border); padding-bottom:8px; margin-bottom:15px;">
+                        <div>작성자: <b style="color:var(--text-light);">${post.author}</b></div>
+                        <div>작성일: ${post.date}</div>
+                    </div>
+                    <div style="font-size:1.05rem; line-height:1.6; margin-bottom:20px; white-space:pre-wrap;">${post.content}</div>
+                    
+                    ${post.video ? getEmbedVideoHtml(post.video) : ''}
+                    ${post.image ? `<div style="margin-bottom:20px;"><img src="${post.image}" style="max-width:100%; max-height:400px; border-radius:8px; cursor:pointer;" onclick="openImageModal('${post.image}')" title="클릭해서 확대"></div>` : ''}
+                    
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:25px;">
+                        <button class="btn" style="background:#0284c7;" onclick="votePost('${tabKey}', ${postId}, 'like')">👍 추천 (${post.likes || 0})</button>
+                        <button class="btn" style="background:#475569;" onclick="votePost('${tabKey}', ${postId}, 'dislike')">👎 비추천 (${post.dislikes || 0})</button>
+                        ${isMyPost ? `<button class="btn btn-del" style="margin-left:auto;" onclick="deletePost('${tabKey}', ${postId})">게시글 삭제</button>` : ''}
+                    </div>
+
+                    <h4 style="color:#34d399; margin-bottom:10px;">💬 댓글 (${post.comments ? post.comments.length : 0})</h4>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;" id="commentListContainer">
             `;
+
+            if (!post.comments || post.comments.length === 0) {
+                html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>`;
+            } else {
+                post.comments.forEach((c, cIdx) => {
+                    const isMyComment = (c.author === myForestNick || myAuthStatus === 'admin');
+                    html += `
+                        <div class="comment-item">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-gold); margin-bottom:4px;">
+                                <div><b>${c.author}</b> <span style="color:#94a3b8; font-size:0.75rem;">(${c.date})</span></div>
+                                ${isMyComment ? `<button style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem;" onclick="deleteComment('${tabKey}', ${postId}, ${cIdx})">삭제</button>` : ''}
+                            </div>
+                            <div style="font-size:0.95rem; color:var(--text-light); white-space:pre-wrap;">${c.content}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+
+            if (canInteract) {
+                html += `
+                    <div style="display:flex; gap:8px; margin-top:15px;">
+                        <input type="text" id="commentInput_${postId}" class="modal-input" placeholder="댓글을 입력하세요" style="margin-bottom:0; text-align:left;" onkeyup="if(event.key==='Enter') addComment('${tabKey}', ${postId})">
+                        <button class="btn btn-add" style="white-space:nowrap;" onclick="addComment('${tabKey}', ${postId})">댓글 등록</button>
+                    </div>
+                `;
+            } else {
+                html += `<div style="color:#94a3b8; font-size:0.9rem; margin-top:10px;">로그인 후 댓글을 작성할 수 있습니다.</div>`;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function votePost(tabKey, postId, type) {
+            if (myAuthStatus !== 'admin' && myAuthStatus !== 'approved') {
+                alert("로그인한 승인 회원만 추천할 수 있습니다.");
+                return;
+            }
+            const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
+            if (!post) return;
+
+            if (!post.voters) post.voters = [];
+            if (post.voters.includes(myForestNick)) {
+                alert("이미 평가한 게시글입니다.");
+                return;
+            }
+
+            post.voters.push(myForestNick);
+            if (type === 'like') post.likes = (post.likes || 0) + 1;
+            else post.dislikes = (post.dislikes || 0) + 1;
+
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function deletePost(tabKey, postId) {
+            if (confirm("정말 게시글을 삭제하시겠습니까?")) {
+                commPosts[tabKey] = commPosts[tabKey].filter(p => Number(p.id) !== Number(postId));
+                currentViewingPostId = null;
+                syncSaveToFirebase();
+                renderAll();
+            }
+        }
+
+        function addComment(tabKey, postId) {
+            const input = document.getElementById(`commentInput_${postId}`);
+            if (!input || !input.value.trim()) return;
+
+            const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
+            if (!post) return;
+
+            if (!post.comments) post.comments = [];
+            post.comments.push({
+                author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
+                content: input.value.trim(),
+                date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function deleteComment(tabKey, postId, commentIdx) {
+            if (confirm("댓글을 삭제하시겠습니까?")) {
+                const post = commPosts[tabKey].find(p => Number(p.id) === Number(postId));
+                if (post && post.comments) {
+                    post.comments.splice(commentIdx, 1);
+                    syncSaveToFirebase();
+                    renderAll();
+                }
+            }
+        }
+
+        // --- 코창서버 내실표 테이블 관련 렌더링 함수들 ---
+        function renderHeader() {
+            const headerRow = document.getElementById('headerRow');
+            const cols = getCurrentColumns();
+            let html = '';
+
+            cols.forEach((col, index) => {
+                html += `
+                    <th style="width: ${col.width || 'auto'}">
+                        <div class="th-box">
+                            <input type="text" value="${col.title}" data-colid="${col.id}" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
+                            <div class="col-btn-group">
+                                <button class="btn-col-mv" onclick="moveColumn(${index}, -1)">◀</button>
+                                <button class="btn-col-del" onclick="delColumn(${index})">✕</button>
+                                <button class="btn-col-mv" onclick="moveColumn(${index}, 1)">▶</button>
+                            </div>
+                        </div>
+                    </th>
+                `;
+            });
+
+            if (isEdit) {
+                html += `<th style="width: 80px;"><div class="th-box" style="color:#94a3b8; font-size:0.8rem;">관리</div></th>`;
+            }
+            headerRow.innerHTML = html;
+        }
+
+        function renderBody() {
+            const tableBody = document.getElementById('tableBody');
+            const cols = getCurrentColumns();
+            let html = '';
+
+            membersData.forEach((row, rIndex) => {
+                html += `<tr>`;
+                cols.forEach(col => {
+                    const val = row[col.id] || '';
+                    if (col.id === 'c2') {
+                        let jobClass = 'job-default';
+                        if (val === '나이트') jobClass = 'job-knight';
+                        else if (val === '위자드') jobClass = 'job-wizard';
+                        else if (val === '워리어') jobClass = 'job-warrior';
+                        else if (val === '어쌔신') jobClass = 'job-assassin';
+                        else if (val === '헌터') jobClass = 'job-hunter';
+
+                        html += `
+                            <td>
+                                <div class="td-box job-tag ${jobClass}">
+                                    <select class="job-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                        <option value="">직업선택</option>
+                                        ${JOB_LIST.map(j => `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </td>
+                        `;
+                    } else if (col.id === 'c3' || col.id === 'c4') {
+                        let enClass = 'enchant-default';
+                        if (val === 'safe') enClass = 'enchant-safe';
+                        else if (['7', '8', '9', '10', '11', '12'].includes(val)) enClass = `enchant-${val}`;
+
+                        html += `
+                            <td>
+                                <div class="td-box ${enClass}">
+                                    <select class="enchant-select" data-colid="${col.id}" onchange="syncSaveToFirebase(); renderAll();">
+                                        <option value="">강화</option>
+                                        <option value="safe" ${val === 'safe' ? 'selected' : ''}>안전강화</option>
+                                        ${ENCHANT_LIST.map(e => `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </td>
+                        `;
+                    } else if (col.id === 'c1') {
+                        const profileImg = row.profileImg || '';
+                        const soopId = soopIdMap[val];
+                        const soopLink = soopId ? `https://ch.sooplive.co.kr/${soopId}` : '#';
+                        const hasSoop = !!soopId;
+
+                        html += `
+                            <td>
+                                <div class="td-box" style="gap:2px;">
+                                    <div class="profile-wrap" onclick="handleProfileClick(${rIndex})" title="프로필 이미지 변경">
+                                        ${profileImg ? `<img src="${profileImg}">` : `<span>사진</span>`}
+                                    </div>
+                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()" placeholder="이름" style="font-weight:bold; font-size:0.9rem;">
+                                    ${hasSoop ? `<a href="${soopLink}" target="_blank" style="font-size:0.65rem; color:#38bdf8; text-decoration:none;">🔴 숲방송</a>` : ''}
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `
+                            <td>
+                                <div class="td-box">
+                                    <input type="text" value="${val}" data-colid="${col.id}" oninput="syncSaveToFirebase()">
+                                </div>
+                            </td>
+                        `;
+                    }
+                });
+
+                if (isEdit) {
+                    html += `
+                        <td>
+                            <div class="btn-action-group">
+                                <button class="btn-move" onclick="moveRow(${rIndex}, -1)">▲</button>
+                                <button class="btn-del" onclick="delRow(${rIndex})">✕</button>
+                                <button class="btn-move" onclick="moveRow(${rIndex}, 1)">▼</button>
+                            </div>
+                        </td>
+                    `;
+                }
+                html += `</tr>`;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function addColumn() {
+            if (!isEdit) return;
+            const cols = getCurrentColumns();
+            const newId = 'col_' + Date.now();
+            cols.push({ id: newId, title: "새열", width: "100px" });
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function moveColumn(index, direction) {
+            const cols = getCurrentColumns();
+            const target = index + direction;
+            if (target >= 0 && target < cols.length) {
+                const temp = cols[index];
+                cols[index] = cols[target];
+                cols[target] = temp;
+                syncSaveToFirebase();
+                renderAll();
+            }
+        }
+
+        function delColumn(index) {
+            const cols = getCurrentColumns();
+            if (cols.length <= 1) {
+                alert("최소 1개 이상의 열이 있어야 합니다.");
+                return;
+            }
+            cols.splice(index, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function addRow() {
+            if (!isEdit) return;
+            const cols = getCurrentColumns();
+            let newRow = {};
+            cols.forEach(c => newRow[c.id] = "");
+            membersData.push(newRow);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function moveRow(index, direction) {
+            const target = index + direction;
+            if (target >= 0 && target < membersData.length) {
+                const temp = membersData[index];
+                membersData[index] = membersData[target];
+                membersData[target] = temp;
+                syncSaveToFirebase();
+                renderAll();
+            }
+        }
+
+        function delRow(index) {
+            membersData.splice(index, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function handleProfileClick(rIndex) {
+            if (!isEdit) return;
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        membersData[rIndex].profileImg = event.target.result;
+                        syncSaveToFirebase();
+                        renderAll();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        function renderMapTab(container) {
+            let html = `
+                <div class="section-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 코창서버 맵 및 사냥터 정보</h3>
+                        ${isEdit ? '<button class="btn btn-add" onclick="addMapCard()">+ 맵 카드 추가</button>' : ''}
+                    </div>
+                    <div class="img-upload-grid">
+            `;
+
+            if (mapImages.length === 0) {
+                html += `<div style="color:#94a3b8; grid-column:1/-1; text-align:center; padding:30px;">등록된 맵 카드가 없습니다.</div>`;
+            } else {
+                mapImages.forEach((item, idx) => {
+                    html += `
+                        <div class="img-card">
+                            <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
+                                ${item.img ? `<img src="${item.img}">` : `<span>이미지 업로드</span>`}
+                            </div>
+                            ${isEdit ? `<input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(${idx})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerMapFile(${idx})">📁 사진 변경</button>` : ''}
+                            <input type="text" id="map_title_${idx}" value="${item.title || ''}" placeholder="맵 이름 입력" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>
+                            <textarea id="map_memo_${idx}" placeholder="몬스터, 드랍 아이템, 특징 설명" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                            ${isEdit ? `<button class="btn btn-del" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function addMapCard() {
+            mapImages.push({ title: "새 맵", memo: "", img: "" });
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function delMapCard(idx) {
+            mapImages.splice(idx, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function triggerMapFile(idx) {
+            document.getElementById(`map_file_${idx}`).click();
+        }
+
+        function uploadMapImg(idx) {
+            const file = document.getElementById(`map_file_${idx}`).files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    mapImages[idx].img = e.target.result;
+                    syncSaveToFirebase();
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function renderHiddenTab(container) {
             let html = '';
-            hiddenJobsData.forEach((job, jIdx) => {
+            hiddenJobsData.forEach((job, jobIndex) => {
                 html += `
                     <div class="section-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <input type="text" id="hidden_name_${jIdx}" value="${job.name}" style="background:transparent; border:none; color:var(--text-gold); font-size:1.1rem; font-weight:bold; width:200px;" ${!isEdit ? 'readonly' : ''}>
-                            ${isEdit ? `<button class="btn btn-add" onclick="addHiddenItem(${jIdx})">+ 단서 추가</button>` : ''}
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" oninput="syncSaveToFirebase()" style="background:transparent; border:none; color:var(--text-gold); font-size:1.15rem; font-weight:bold; outline:none;" ${!isEdit ? 'readonly' : ''}>
+                            ${isEdit ? `<button class="btn btn-add" style="padding:4px 10px; font-size:0.85rem;" onclick="addHiddenItem(${jobIndex})">+ 항목 추가</button>` : ''}
                         </div>
                         <div class="img-upload-grid">
                 `;
-                if (job.items) {
-                    job.items.forEach((item, iIdx) => {
+
+                if (!job.items || job.items.length === 0) {
+                    html += `<div style="color:#94a3b8; font-size:0.9rem;">등록된 히든 정보가 없습니다.</div>`;
+                } else {
+                    job.items.forEach((item, itemIndex) => {
                         html += `
                             <div class="img-card">
-                                <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerHiddenFile(${jIdx}, ${iIdx})` : '')}">
-                                    ${item.img ? `<img src="${item.img}">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
+                                <div class="img-card-preview" onclick="openImageModal('${item.img || ''}')">
+                                    ${item.img ? `<img src="${item.img}">` : `<span>이미지</span>`}
                                 </div>
-                                <input type="file" id="hidden_file_${jIdx}_${iIdx}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jIdx}, ${iIdx})">
-                                ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem;" onclick="triggerHiddenFile(${jIdx}, ${iIdx})">사진 변경</button>` : ''}
-                                <textarea id="hidden_memo_${jIdx}_${iIdx}" placeholder="단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
-                                ${isEdit ? `<button class="btn btn-del" style="padding:6px; font-size:0.9rem;" onclick="delHiddenItem(${jIdx}, ${iIdx})">단서 삭제</button>` : ''}
+                                ${isEdit ? `<input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(${jobIndex}, ${itemIndex})"><button class="btn" style="padding:4px; font-size:0.8rem;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">📁 사진 변경</button>` : ''}
+                                <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 스킬 설명 등" oninput="syncSaveToFirebase()" ${!isEdit ? 'readonly' : ''}>${item.memo || ''}</textarea>
+                                ${isEdit ? `<button class="btn btn-del" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">삭제</button>` : ''}
                             </div>
                         `;
                     });
@@ -1175,200 +2105,46 @@
             container.innerHTML = html;
         }
 
-        function renderCustomTab(container) {
-            const found = customTabs.find(t => t.id === activeTab);
-            container.innerHTML = `
-                <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">📌 ${found ? found.name : ''}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px;" ${!isEdit ? 'readonly' : ''}>${found ? found.content : ''}</textarea>
-                </div>
-            `;
-        }
-
-        function triggerMapFile(idx) { document.getElementById(`map_file_${idx}`).click(); }
-        function uploadMapImg(e, idx) {
-            const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader(); r.onload = evt => { mapImages[idx].img = evt.target.result; renderAll(); }; r.readAsDataURL(f);
-        }
-        function addMapCard() { syncInputsToData(); mapImages.push({ id: "m_" + Date.now(), title: "새로운 맵", img: "", memo: "" }); renderAll(); }
-        function delMapCard(idx) { syncInputsToData(); mapImages.splice(idx, 1); renderAll(); }
-        function addHiddenItem(jIdx) { syncInputsToData(); if (!hiddenJobsData[jIdx].items) hiddenJobsData[jIdx].items = []; hiddenJobsData[jIdx].items.push({ img: "", memo: "" }); renderAll(); }
-        function delHiddenItem(jIdx, iIdx) { syncInputsToData(); hiddenJobsData[jIdx].items.splice(iIdx, 1); renderAll(); }
-        function triggerHiddenFile(jIdx, iIdx) { document.getElementById(`hidden_file_${jIdx}_${iIdx}`).click(); }
-        function uploadHiddenImg(e, jIdx, iIdx) {
-            const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader(); r.onload = evt => { syncInputsToData(); hiddenJobsData[jIdx].items[iIdx].img = evt.target.result; renderAll(); }; r.readAsDataURL(f);
-        }
-
-        function renderHeader() {
-            const tr = document.getElementById('headerRow'); if (!tr) return;
-            tr.innerHTML = `<th style="width: 70px;"><div class="th-box">프로필</div></th>`;
-            const cols = getCurrentColumns();
-            cols.forEach((col, idx) => {
-                const th = document.createElement('th');
-                th.style.width = col.width || "100px";
-                th.innerHTML = `
-                    <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
-                        ${isEdit ? `
-                        <div class="col-btn-group">
-                            <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
-                            <button class="col-btn-mv" onclick="moveColumn(${idx}, 1)">▶</button>
-                            <button class="btn-col-del" onclick="delColumn('${col.id}')">✕</button>
-                        </div>` : ''}
-                    </div>
-                `;
-                tr.appendChild(th);
-            });
-            if (isEdit) tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
-        }
-
-        function renderBody() {
-            const tbody = document.getElementById('tableBody'); if (!tbody) return;
-            tbody.innerHTML = '';
-            const cols = getCurrentColumns();
-
-            membersData.forEach((m, idx) => {
-                const tr = document.createElement('tr');
-                const sId = soopIdMap[m.c1];
-                let html = `
-                    <td>
-                        <div class="td-box">
-                            <div class="profile-wrap" onclick="handleProfileClick(${idx}, '${m.c1}')">
-                                ${m.img ? `<img src="${m.img}">` : `<span>사진</span>`}
-                            </div>
-                            <div style="font-size: 0.7rem; margin-top: 2px;">
-                                ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">-</span>`)}
-                            </div>
-                            <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
-                        </div>
-                    </td>
-                `;
-
-                cols.forEach(col => {
-                    const val = m[col.id] || "0";
-                    const isJob = (col.id === 'c2');
-                    const isWeaponEnchant = (activeTab === 'spec' && col.title === '무기강화');
-
-                    if (isJob) {
-                        let opts = '';
-                        JOB_LIST.forEach(j => { opts += `<option value="${j}" ${val === j ? 'selected' : ''}>${j}</option>`; });
-                        html += `<td><div class="td-box job-tag ${getJobClass(val)}"><select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">${opts}</select></div></td>`;
-                    } else if (isWeaponEnchant) {
-                        let opts = '';
-                        ENCHANT_LIST.forEach(e => { opts += `<option value="${e}" ${val === e ? 'selected' : ''}>+${e}강</option>`; });
-                        html += `<td><div class="td-box ${getEnchantClass(val)}"><select class="enchant-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleEnchantChange(this)">${opts}</select></div></td>`;
-                    } else {
-                        html += `<td><div class="td-box"><input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} ${col.id === 'c1' ? 'style="font-weight:bold;"' : ''}></div></td>`;
-                    }
-                });
-
-                if (isEdit) {
-                    html += `<td><div class="td-box" style="padding:2px; border:none; background:transparent;"><div class="btn-action-group"><button class="btn-move" onclick="moveRow(${idx}, -1)">▲</button><button class="btn-move" onclick="moveRow(${idx}, 1)">▼</button><button class="btn-del" onclick="delRow(${idx})">삭제</button></div></div></td>`;
-                }
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleProfileClick(idx, name) {
-            const sId = soopIdMap[name];
-            if (sId) window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
-            else if (isEdit) document.getElementById(`f-${idx}`).click();
-        }
-
-        function triggerFile(idx) { document.getElementById(`f-${idx}`).click(); }
-        function uploadImg(e, idx) {
-            const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader(); r.onload = evt => { membersData[idx].img = evt.target.result; renderBody(); }; r.readAsDataURL(f);
-        }
-
-        function addRow() {
-            if (!isEdit) return; syncInputsToData();
-            membersData.push({ img: "", c1: "새팀원", c2: "미정", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" });
-            renderBody();
-        }
-
-        function delRow(idx) {
-            if (!isEdit) return;
-            if (confirm("삭제하시겠습니까?")) { syncInputsToData(); membersData.splice(idx, 1); renderBody(); }
-        }
-
-        function addColumn() {
-            if (!isEdit || ['map', 'hidden'].includes(activeTab)) return;
-            syncInputsToData();
-            const t = prompt("새 항목 이름:"); if (!t) return;
-            const cols = getCurrentColumns();
-            const newId = 'col_' + Date.now();
-            cols.push({ id: newId, title: t.trim(), width: "100px" });
-            membersData.forEach(m => { m[newId] = "0"; });
+        function addHiddenItem(jobIndex) {
+            if (!hiddenJobsData[jobIndex].items) hiddenJobsData[jobIndex].items = [];
+            hiddenJobsData[jobIndex].items.push({ memo: "", img: "" });
+            syncSaveToFirebase();
             renderAll();
         }
 
-        function delColumn(colId) {
-            if (!isEdit || ['c1', 'c2'].includes(colId)) return;
-            if (confirm("열을 삭제하시겠습니까?")) {
-                syncInputsToData();
-                if (activeTab === 'spec') specColumns = specColumns.filter(c => c.id !== colId);
-                else if (activeTab === 'item') itemColumns = itemColumns.filter(c => c.id !== colId);
-                else if (activeTab === 'hunt') huntColumns = huntColumns.filter(c => c.id !== colId);
-                renderAll();
+        function delHiddenItem(jobIndex, itemIndex) {
+            hiddenJobsData[jobIndex].items.splice(itemIndex, 1);
+            syncSaveToFirebase();
+            renderAll();
+        }
+
+        function triggerHiddenFile(jobIndex, itemIndex) {
+            document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).click();
+        }
+
+        function uploadHiddenImg(jobIndex, itemIndex) {
+            const file = document.getElementById(`hidden_file_${jobIndex}_${itemIndex}`).files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    hiddenJobsData[jobIndex].items[itemIndex].img = e.target.result;
+                    syncSaveToFirebase();
+                    renderAll();
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function moveColumn(idx, dir) {
-            syncInputsToData(); const cols = getCurrentColumns(); const target = idx + dir;
-            if (target < 0 || target >= cols.length) return;
-            const temp = cols[idx]; cols[idx] = cols[target]; cols[target] = temp;
-            renderAll();
-        }
+        function renderCustomTab(container) {
+            const found = customTabs.find(t => t.id === activeTab);
+            if (!found) return;
 
-        function moveRow(idx, dir) {
-            syncInputsToData(); const target = idx + dir;
-            if (target < 0 || target >= membersData.length) return;
-            const temp = membersData[idx]; membersData[idx] = membersData[target]; membersData[target] = temp;
-            renderBody();
-        }
-
-        function getJobClass(val) {
-            if (!val) return 'job-default';
-            if (val.includes('나이트')) return 'job-knight';
-            if (val.includes('위자드')) return 'job-wizard';
-            if (val.includes('워리어')) return 'job-warrior';
-            if (val.includes('어쌔신')) return 'job-assassin';
-            if (val.includes('헌터')) return 'job-hunter';
-            return 'job-default';
-        }
-
-        function getEnchantClass(val) {
-            const num = parseInt(val);
-            if (isNaN(num)) return 'enchant-default';
-            if (num <= 6) return 'enchant-safe';
-            if (num === 7) return 'enchant-7';
-            if (num === 8) return 'enchant-8';
-            if (num === 9) return 'enchant-9';
-            if (num === 10) return 'enchant-10';
-            if (num === 11) return 'enchant-11';
-            if (num >= 12) return 'enchant-12';
-            return 'enchant-default';
-        }
-
-        function handleEnchantChange(sel) { sel.closest('.td-box').className = 'td-box ' + getEnchantClass(sel.value); }
-        function handleJobChange(sel) { sel.closest('.td-box').className = 'td-box job-tag ' + getJobClass(sel.value); }
-
-        function saveData() {
-            syncInputsToData();
-            saveToFirebaseSilently(true);
-        }
-
-        function saveToFirebaseSilently(showAlert = false) {
-            const dataToSave = {
-                specColumns, itemColumns, huntColumns, membersData,
-                mapImages, hiddenJobsData, sanhakungRequests, sanhakungPosts, customTabs
-            };
-            window.dbSet(window.dbRef(window.db, 'kimteam_board'), dataToSave)
-                .then(() => { if (showAlert) alert("성공적으로 저장되었습니다!"); })
-                .catch(err => { if (showAlert) alert("저장 실패: " + err.message); });
+            container.innerHTML = `
+                <div class="section-box">
+                    <h3 style="color:var(--text-gold); margin-bottom:10px;">📌 ${found.name}</h3>
+                    <textarea id="customTextArea" oninput="syncSaveToFirebase()" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${(!isEdit && myAuthStatus !== 'approved') ? 'readonly' : ''}>${found.content || ''}</textarea>
+                </div>
+            `;
         }
     </script>
 </body>
