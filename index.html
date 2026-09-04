@@ -617,7 +617,6 @@
                 <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
             </div>
             <div class="btn-group">
-                <!-- 산해궁 카테고리 전용 인증 및 가입 버튼 -->
                 <button id="applyBtn" class="btn btn-apply" style="display:none;" onclick="openApplyModal()">📝 가입요청</button>
                 <button id="memberLoginBtn" class="btn btn-member-login" style="display:none;" onclick="openMemberLoginModal()">👤 회원 로그인</button>
                 <button id="memberLogoutBtn" class="btn btn-member-logout" style="display:none;" onclick="memberLogout()">🚪 로그아웃</button>
@@ -625,6 +624,7 @@
                 <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 관리자 권한</button>
                 <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
                 <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
+                <!-- 탭추가 버튼: 관리자 권한일 때만 노출 -->
                 <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
                 <button id="saveKimteamBtn" class="btn btn-save" style="display:none;" onclick="manualSaveKimteam()">💾 저장하기</button>
                 <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
@@ -803,7 +803,6 @@
             updateSanhaeAuthUI();
         });
 
-        // 코창서버 내실표 수동 저장 함수
         function manualSaveKimteam() {
             syncInputsToData();
             const dataToSave = {
@@ -1197,8 +1196,8 @@
             document.getElementById('pwInput').focus();
         }
 
+        // 탭 추가 모달 열기 (관리자 권한 엄격 검증)
         function openAddTabModal() {
-            // [수정] 탭 추가 버튼은 관리자 권한(admin)일 때만 엄격하게 허용
             if (myAuthStatus !== 'admin') {
                 alert("탭 추가 권한은 관리자에게만 있습니다.");
                 return;
@@ -1268,7 +1267,6 @@
                     alert("현재 비밀번호가 틀렸습니다.");
                 }
             } else if (modalMode === 'addTab') {
-                // [수정] 모달 제출 시에도 관리자 권한 재검증
                 if (myAuthStatus !== 'admin') {
                     alert("관리자만 탭을 추가할 수 있습니다.");
                     closeModal();
@@ -1362,18 +1360,18 @@
                 sanhaeAuthSec.style.display = "none";
             }
 
+            // 오직 관리자(admin) 계정일 때만 탭추가 버튼을 노출
+            if (myAuthStatus === 'admin') {
+                addTabBtn.style.display = "inline-block";
+            } else {
+                addTabBtn.style.display = "none";
+            }
+
             if (isEdit) {
                 badge.innerText = "✏️ 관리자 수정 모드";
                 badge.className = "badge badge-edit";
                 authBtn.innerText = "🔒 잠그기";
                 pwChangeBtn.style.display = "inline-block";
-                
-                // [수정] 오직 관리자(admin) 권한일 때만 탭 추가 버튼 노출
-                if (myAuthStatus === 'admin') {
-                    addTabBtn.style.display = "inline-block";
-                } else {
-                    addTabBtn.style.display = "none";
-                }
 
                 if (currentCategory === 'kimteam') {
                     saveKimteamBtn.style.display = "inline-block";
@@ -1397,13 +1395,6 @@
                 addColBtn.style.display = "none";
                 pwChangeBtn.style.display = "none";
                 saveKimteamBtn.style.display = "none";
-                
-                // [수정] 읽기 전용 모드여도 관리자(admin) 권한이면 탭 추가 버튼 노출 허용 (비회원/승인회원은 숨김)
-                if (myAuthStatus === 'admin') {
-                    addTabBtn.style.display = "inline-block";
-                } else {
-                    addTabBtn.style.display = "none";
-                }
             }
 
             renderTabBar();
