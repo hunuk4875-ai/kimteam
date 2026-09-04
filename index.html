@@ -685,14 +685,9 @@
             <label style="font-size:0.85rem; color:#94a3b8;">제목</label>
             <input type="text" id="postTitleInput" class="modal-input" placeholder="제목을 입력하세요" style="margin-top:4px; text-align:left;">
             <label style="font-size:0.85rem; color:#94a3b8;">내용</label>
-            <textarea id="postContentInput" class="modal-input" placeholder="내용을 입력하세요" style="height:100px; resize:vertical; text-align:left;"></textarea>
-            
-            <label style="font-size:0.85rem; color:#94a3b8;">동영상 링크 (유튜브 URL 등, 선택)</label>
-            <input type="text" id="postVideoInput" class="modal-input" placeholder="https://youtu.be/... 또는 클립 링크" style="margin-top:4px; text-align:left;">
-
+            <textarea id="postContentInput" class="modal-input" placeholder="내용을 입력하세요 (사진 또는 동영상 링크 첨부 가능)" style="height:120px; resize:vertical; text-align:left;"></textarea>
             <label style="font-size:0.85rem; color:#94a3b8;">이미지 첨부 (선택)</label>
             <input type="file" id="postImageInput" accept="image/*" style="margin-top:4px; margin-bottom:12px; width:100%; color:white;">
-            
             <div class="modal-btn-group">
                 <button class="modal-btn modal-btn-submit" onclick="submitPost()">등록</button>
                 <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('postModal').style.display='none'">취소</button>
@@ -760,7 +755,7 @@
         let sanhaeNoticeContent = "⚽ 산해궁 클럽 공식 공지사항입니다. (관리자만 작성/수정 가능합니다)";
         let commPosts = {
             squad: [
-                { id: 1, title: "클럽 기본 포메이션 및 전술 안내", author: "관리자", date: "2026-09-04", content: "4-3-3 포메이션 기반 빌드업 전술입니다.", image: "", video: "", comments: [], likes: 5, dislikes: 0, voters: [] }
+                { id: 1, title: "클럽 기본 포메이션 및 전술 안내", author: "관리자", date: "2026-09-04", content: "4-3-3 포메이션 기반 빌드업 전술입니다.", image: "", comments: [], likes: 5, dislikes: 0, voters: [] }
             ],
             seen: [],
             custom: {}
@@ -1575,11 +1570,10 @@
             } else {
                 posts.slice().reverse().forEach((p, index) => {
                     const realIdx = posts.length - index;
-                    const mediaBadge = (p.image ? '🖼️ ' : '') + (p.video ? '🎬' : '');
                     html += `
                         <tr onclick="viewPostDetail('${tabKey}', ${p.id})">
                             <td style="text-align:center; color:#94a3b8;">${realIdx}</td>
-                            <td><b>${p.title}</b> <span style="font-size:0.8rem; color:#38bdf8;">[${p.comments ? p.comments.length : 0}]</span> ${mediaBadge}</td>
+                            <td><b>${p.title}</b> <span style="font-size:0.8rem; color:#38bdf8;">[${p.comments ? p.comments.length : 0}]</span> ${p.image ? '🖼️' : ''}</td>
                             <td style="text-align:center; color:var(--text-gold);">${p.author}</td>
                             <td style="text-align:center; font-size:0.85rem; color:#94a3b8;">${p.date}</td>
                             <td style="text-align:center; color:#34d399;">${p.likes || 0}</td>
@@ -1599,7 +1593,6 @@
             }
             document.getElementById('postTitleInput').value = "";
             document.getElementById('postContentInput').value = "";
-            document.getElementById('postVideoInput').value = "";
             document.getElementById('postImageInput').value = "";
             window.activePostTabKey = tabKey;
             document.getElementById('postModal').style.display = "flex";
@@ -1608,7 +1601,6 @@
         function submitPost() {
             const title = document.getElementById('postTitleInput').value.trim();
             const content = document.getElementById('postContentInput').value.trim();
-            const videoUrl = document.getElementById('postVideoInput').value.trim();
             const fileInput = document.getElementById('postImageInput');
             const tabKey = window.activePostTabKey;
 
@@ -1623,7 +1615,6 @@
                     id: Date.now(),
                     title,
                     content,
-                    video: videoUrl,
                     author: myForestNick || (myAuthStatus === 'admin' ? '관리자' : '회원'),
                     date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                     image: imgBase64 || "",
@@ -1659,33 +1650,6 @@
             renderAll();
         }
 
-        function getEmbedVideoHtml(url) {
-            if (!url) return '';
-            let embedUrl = '';
-            if (url.includes('youtu.be/')) {
-                const id = url.split('youtu.be/')[1].split('?')[0];
-                embedUrl = `https://www.youtube.com/embed/${id}`;
-            } else if (url.includes('youtube.com/watch')) {
-                const urlParams = new URLSearchParams(new URL(url).search);
-                const id = urlParams.get('v');
-                if (id) embedUrl = `https://www.youtube.com/embed/${id}`;
-            }
-
-            if (embedUrl) {
-                return `
-                    <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-bottom: 20px; background:#000; border-radius:8px; overflow:hidden;">
-                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen></iframe>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div style="margin-bottom: 20px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--box-border);">
-                        🎬 동영상/클립 링크: <a href="${url}" target="_blank" style="color: #38bdf8; word-break: break-all;">${url}</a>
-                    </div>
-                `;
-            }
-        }
-
         function renderPostDetail(container, tabKey, postId) {
             if (!commPosts[tabKey]) commPosts[tabKey] = [];
             const posts = commPosts[tabKey];
@@ -1710,7 +1674,6 @@
                     </div>
                     <div style="font-size:1.05rem; line-height:1.6; margin-bottom:20px; white-space:pre-wrap;">${post.content}</div>
                     
-                    ${post.video ? getEmbedVideoHtml(post.video) : ''}
                     ${post.image ? `<div style="margin-bottom:20px;"><img src="${post.image}" style="max-width:100%; max-height:400px; border-radius:8px; cursor:pointer;" onclick="openImageModal('${post.image}')" title="클릭해서 확대"></div>` : ''}
                     
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:25px;">
@@ -1817,6 +1780,7 @@
             }
         }
 
+        // --- 코창서버 내실표 테이블 관련 렌더링 함수들 ---
         function renderHeader() {
             const headerRow = document.getElementById('headerRow');
             const cols = getCurrentColumns();
