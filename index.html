@@ -1067,13 +1067,13 @@
             membersData.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 
-                // 프로필 사진 및 하단 [방송국 바로가기] 링크 생성
+                // 프로필 사진 클릭 시 업로드 창 실행, 하단 '방송국 바로가기' 클릭 시 방송국 이동
                 const sId = soopIdMap[m.c1];
                 let profileCellHtml = `
                     <td>
                         <div class="td-box">
-                            <div class="profile-wrap" onclick="handleProfileClick(${idx}, '${m.c1}')">
-                                ${m.img ? `<img src="${m.img}" title="${m.c1} SOOP 방송국으로 이동">` : `<span>사진</span>`}
+                            <div class="profile-wrap" onclick="triggerFile(${idx})" title="클릭하여 프로필 사진 업로드">
+                                ${m.img ? `<img src="${m.img}" title="프로필 사진">` : `<span>사진 업로드</span>`}
                             </div>
                             <div style="font-size: 0.75rem; margin-top: 2px;">
                                 ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국 바로가기</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">정보없음</span>`)}
@@ -1163,18 +1163,14 @@
             });
         }
 
-        // 프로필 클릭 시 방송국 이동 또는 업로드 처리 함수
-        function handleProfileClick(idx, streamerName) {
-            const member = membersData[idx];
-            const sId = soopIdMap[streamerName];
-            if (sId) {
-                window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
-            } else if (isEdit) {
-                triggerFile(idx);
+        function triggerFile(idx) { 
+            if (!isEdit) {
+                alert("수정 모드에서만 사진을 업로드할 수 있습니다. 상단의 '수정 권한 얻기' 버튼을 눌러주세요.");
+                return;
             }
+            document.getElementById(`f-${idx}`).click(); 
         }
 
-        function triggerFile(idx) { document.getElementById(`f-${idx}`).click(); }
         function uploadImg(e, idx) {
             const file = e.target.files[0];
             if (!file) return;
