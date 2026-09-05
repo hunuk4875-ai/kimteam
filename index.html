@@ -510,7 +510,7 @@
         let isEdit = false;
         let activeTab = 'spec';
         let modalMode = 'login';
-        const DEFAULT_PW = "1234";
+        const DEFAULT_PW = "6827"; // 초기 관리자 코드 6827로 설정
 
         // SOOP 아이디 매칭 딕셔너리
         const soopIdMap = {
@@ -600,6 +600,7 @@
                 if (serverData) {
                     if (serverData.specColumns) specColumns = serverData.specColumns;
                     if (serverData.itemColumns) itemColumns = serverData.itemColumns;
+                    if (serverData.huntColumns) huntColumns = serverData.huntColumns;
                     if (serverData.membersData) membersData = serverData.membersData;
                     if (serverData.mapImages) mapImages = serverData.mapImages;
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
@@ -750,7 +751,7 @@
                 addTabBtn.style.display = "inline-block";
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
+                    addColBtn.style.display = "inline-block"; // 사냥효율 탭 포함 모든 데이터 테이블 열 추가 활성화[cite: 5]
                 } else {
                     addBtn.style.display = "none";
                     addColBtn.style.display = "none";
@@ -773,14 +774,12 @@
         function syncInputsToData() {
             if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 const cols = getCurrentColumns();
-                if (activeTab !== 'hunt') {
-                    const headerInputs = document.querySelectorAll('#headerRow input');
-                    headerInputs.forEach(inp => {
-                        const colId = inp.dataset.colid;
-                        const colObj = cols.find(c => c.id === colId);
-                        if (colObj) colObj.title = inp.value;
-                    });
-                }
+                const headerInputs = document.querySelectorAll('#headerRow input');
+                headerInputs.forEach(inp => {
+                    const colId = inp.dataset.colid;
+                    const colObj = cols.find(c => c.id === colId);
+                    if (colObj) colObj.title = inp.value;
+                });
 
                 const rows = document.querySelectorAll('#tableBody tr');
                 rows.forEach((r, idx) => {
@@ -859,7 +858,7 @@
             if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 if (isEdit) {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
+                    addColBtn.style.display = "inline-block"; // 사냥효율 탭 포함 항상 열 추가 버튼 노출[cite: 5]
                     container.classList.add('editable');
                 } else {
                     addBtn.style.display = "none";
@@ -1037,12 +1036,11 @@
             cols.forEach((col, idx) => {
                 const th = document.createElement('th');
                 th.style.width = col.width || "100px";
-                const isFixedHuntCol = (activeTab === 'hunt' && (col.id === 'c1' || col.id === 'c2'));
                 
                 th.innerHTML = `
                     <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${(!isEdit || activeTab === 'hunt') ? 'readonly' : ''}>
-                        ${(isEdit && activeTab !== 'hunt') ? `
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                        ${isEdit ? `
                         <div class="col-btn-group">
                             <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
                             <button class="col-btn-mv" onclick="moveColumn(${idx}, 1)">▶</button>
@@ -1067,7 +1065,6 @@
             membersData.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 
-                // 프로필 사진 클릭 시 업로드 창 실행, 하단 '방송국 바로가기' 클릭 시 방송국 이동
                 const sId = soopIdMap[m.c1];
                 let profileCellHtml = `
                     <td>
@@ -1137,7 +1134,7 @@
                         html += `
                             <td>
                                 <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${(!isEdit || (activeTab === 'hunt' && isName)) ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
                                 </div>
                             </td>
                         `;
@@ -1200,14 +1197,15 @@
         }
 
         function addColumn() {
-            if (!isEdit || activeTab === 'hunt' || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
+            if (!isEdit || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
             syncInputsToData();
             const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
             if (!title) return;
 
             const cols = getCurrentColumns();
-            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
-            cols.push({ id: newId, title: title.trim(), width: "100px" });
+            const prefix = activeTab === 'spec' ? 'c_' : (activeTab === 'item' ? 'i_' : 'h_');
+            const newId = prefix + Date.now();
+            cols.push({ id: newId, title: title.trim(), width: "130px" });
 
             membersData.forEach(m => {
                 if (m[newId] === undefined) m[newId] = "0";
@@ -1217,20 +1215,22 @@
         }
 
         function delColumn(colId) {
-            if (!isEdit || activeTab === 'hunt') return;
+            if (!isEdit) return;
             if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
                 syncInputsToData();
                 if (activeTab === 'spec') {
                     specColumns = specColumns.filter(c => c.id !== colId);
                 } else if (activeTab === 'item') {
                     itemColumns = itemColumns.filter(c => c.id !== colId);
+                } else if (activeTab === 'hunt') {
+                    huntColumns = huntColumns.filter(c => c.id !== colId);
                 }
                 renderAll();
             }
         }
 
         function moveColumn(colIdx, dir) {
-            if (!isEdit || activeTab === 'hunt') return;
+            if (!isEdit) return;
             syncInputsToData();
             const cols = getCurrentColumns();
             const targetIdx = colIdx + dir;
@@ -1296,6 +1296,7 @@
             const dataToSave = {
                 specColumns: specColumns,
                 itemColumns: itemColumns,
+                huntColumns: huntColumns,
                 membersData: membersData,
                 mapImages: mapImages,
                 hiddenJobsData: hiddenJobsData,
