@@ -51,7 +51,7 @@
         body {
             background-color: var(--bg-dark);
             color: var(--text-light);
-            padding: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -64,24 +64,22 @@
             justify-content: space-between;
             align-items: center;
             background-color: var(--panel-bg);
-            padding: 14px 20px;
+            padding: 16px 24px;
             border-radius: 8px;
             margin-bottom: 12px;
             border: 1px solid var(--box-border);
-            flex-wrap: wrap;
-            gap: 12px;
         }
 
         .title-area {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: bold;
         }
 
         .badge {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             padding: 4px 10px;
             border-radius: 12px;
             font-weight: normal;
@@ -92,7 +90,7 @@
 
         .btn-group {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -100,9 +98,9 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
         }
@@ -117,27 +115,25 @@
             width: 100%;
             max-width: 1600px;
             display: flex;
-            gap: 6px;
+            gap: 8px;
             margin-bottom: 16px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            white-space: nowrap;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .tab-btn-wrap {
             position: relative;
             display: inline-flex;
             align-items: center;
-            flex-shrink: 0;
         }
 
         .tab-btn {
             background-color: #334155;
             color: #94a3b8;
             border: 1px solid var(--box-border);
-            padding: 10px 16px;
+            padding: 10px 20px;
             border-radius: 8px 8px 0 0;
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -173,9 +169,8 @@
             background-color: var(--panel-bg);
             border: 1px solid var(--box-border);
             border-radius: 0 8px 8px 8px;
-            padding: 15px;
+            padding: 20px;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
         table {
@@ -183,21 +178,21 @@
             border-collapse: separate;
             border-spacing: 6px 10px;
             text-align: center;
-            min-width: 800px;
         }
 
         th {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 1rem;
             color: var(--text-gold);
             padding: 0;
+            min-width: 100px;
         }
 
         th .th-box {
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 55px;
+            height: 60px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -214,7 +209,7 @@
             background: transparent;
             border: none;
             outline: none;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
         }
 
         .col-btn-group {
@@ -245,7 +240,7 @@
             background-color: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 6px;
-            height: 90px;
+            height: 95px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -261,7 +256,7 @@
             border: none;
             color: var(--text-light);
             text-align: center;
-            font-size: 1rem;
+            font-size: 1.05rem;
             outline: none;
         }
 
@@ -275,7 +270,7 @@
             text-align: center;
             text-align-last: center;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.05rem;
             cursor: pointer;
         }
         .job-select option { background-color: #1e293b; color: #f8fafc; }
@@ -309,7 +304,7 @@
             text-align: center;
             text-align-last: center;
             font-weight: bold;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             cursor: pointer;
         }
         .enchant-select option { background-color: #1e293b; color: #f8fafc; }
@@ -318,22 +313,22 @@
         .enchant-default .enchant-select { color: #94a3b8; }
         .enchant-safe { background-color: rgba(15, 23, 42, 0.6) !important; border-color: #475569 !important; }
         .enchant-safe .enchant-select { color: #e2e8f0 !important; }
-        .enchant-7 { background-color: rgba(13, 148, 136, 0.3) !important; border-color: #0d9488 !important; }
+        .enchant-7 { background-color: rgba(13, 148, 136, 0.3) !important; border-color: #0d9488 !important; box-shadow: inset 0 0 10px rgba(13, 148, 136, 0.3); }
         .enchant-7 .enchant-select { color: #2dd4bf !important; }
-        .enchant-8 { background-color: rgba(37, 99, 235, 0.35) !important; border-color: #2563eb !important; }
+        .enchant-8 { background-color: rgba(37, 99, 235, 0.35) !important; border-color: #2563eb !important; box-shadow: inset 0 0 12px rgba(37, 99, 235, 0.4); }
         .enchant-8 .enchant-select { color: #60a5fa !important; }
-        .enchant-9 { background-color: rgba(147, 51, 234, 0.45) !important; border-color: #a855f7 !important; }
-        .enchant-9 .enchant-select { color: #e879f9 !important; }
-        .enchant-10 { background-color: rgba(234, 88, 12, 0.5) !important; border-color: #f97316 !important; }
-        .enchant-10 .enchant-select { color: #fdba74 !important; }
-        .enchant-11 { background-color: rgba(220, 38, 38, 0.55) !important; border-color: #ef4444 !important; }
-        .enchant-11 .enchant-select { color: #fca5a5 !important; }
-        .enchant-12 { background-color: rgba(202, 138, 4, 0.5) !important; border-color: #eab308 !important; }
-        .enchant-12 .enchant-select { color: #facc15 !important; }
+        .enchant-9 { background-color: rgba(147, 51, 234, 0.45) !important; border-color: #a855f7 !important; box-shadow: 0 0 16px rgba(168, 85, 247, 0.7), inset 0 0 12px rgba(168, 85, 247, 0.4); }
+        .enchant-9 .enchant-select { color: #e879f9 !important; text-shadow: 0 0 8px rgba(232, 121, 249, 0.6); }
+        .enchant-10 { background-color: rgba(234, 88, 12, 0.5) !important; border-color: #f97316 !important; box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), inset 0 0 15px rgba(249, 115, 22, 0.5); }
+        .enchant-10 .enchant-select { color: #fdba74 !important; text-shadow: 0 0 10px rgba(253, 186, 116, 0.8); }
+        .enchant-11 { background-color: rgba(220, 38, 38, 0.55) !important; border-color: #ef4444 !important; box-shadow: 0 0 24px rgba(239, 68, 68, 0.9), inset 0 0 18px rgba(239, 68, 68, 0.6); }
+        .enchant-11 .enchant-select { color: #fca5a5 !important; text-shadow: 0 0 12px rgba(252, 165, 165, 0.9); }
+        .enchant-12 { background-color: rgba(202, 138, 4, 0.5) !important; border-color: #eab308 !important; box-shadow: 0 0 28px rgba(234, 179, 8, 0.9), inset 0 0 20px rgba(234, 179, 8, 0.6); }
+        .enchant-12 .enchant-select { color: #facc15 !important; text-shadow: 0 0 14px rgba(250, 204, 21, 0.9); }
 
         .profile-wrap {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: #1e293b;
             border: 2px dashed var(--box-border);
@@ -343,26 +338,28 @@
             justify-content: center;
             overflow: hidden;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .profile-wrap:hover { border-color: var(--text-gold); }
         .profile-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-wrap span { font-size: 0.65rem; color: #94a3b8; font-weight: bold; }
+        .profile-wrap span { font-size: 0.7rem; color: #94a3b8; font-weight: bold; }
         .file-input { display: none; }
 
         .btn-action-group { display: flex; gap: 2px; width: 100%; height: 100%; align-items: center; justify-content: center; }
-        .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 6px 8px; }
-        .btn-del { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; padding: 6px 8px; }
+        .btn-move { background: #334155; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; padding: 6px 10px; }
+        .btn-del { background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; padding: 6px 10px; }
 
         .section-box {
             background: var(--box-bg);
             border: 1px solid var(--box-border);
             border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
         }
         .img-upload-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
             margin-top: 12px;
         }
         .img-card {
@@ -376,7 +373,7 @@
         }
         .img-card-preview {
             width: 100%;
-            height: 160px;
+            height: 180px;
             background: #0f172a;
             border: 1px dashed var(--box-border);
             border-radius: 6px;
@@ -388,7 +385,7 @@
             position: relative;
         }
         .img-card-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .img-card-preview span { color: #94a3b8; font-size: 0.9rem; font-weight: bold; }
+        .img-card-preview span { color: #94a3b8; font-size: 0.95rem; font-weight: bold; }
         .img-card input[type="text"] {
             width: 100%;
             background: var(--box-bg);
@@ -396,7 +393,7 @@
             color: var(--text-light);
             padding: 8px;
             border-radius: 4px;
-            font-size: 0.90rem;
+            font-size: 0.95rem;
             outline: none;
         }
         .img-card textarea {
@@ -406,7 +403,7 @@
             color: var(--text-light);
             padding: 8px;
             border-radius: 4px;
-            font-size: 0.90rem;
+            font-size: 0.95rem;
             resize: vertical;
             height: 70px;
             outline: none;
@@ -420,22 +417,20 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 20px;
         }
         .modal-content {
             background: var(--panel-bg);
             border: 1px solid var(--box-border);
             padding: 24px;
             border-radius: 12px;
-            width: 100%;
-            max-width: 320px;
+            width: 320px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-        .modal-title { font-size: 1.15rem; font-weight: bold; color: var(--text-gold); margin-bottom: 16px; }
+        .modal-title { font-size: 1.2rem; font-weight: bold; color: var(--text-gold); margin-bottom: 16px; }
         .modal-input {
             width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--box-border);
-            background: var(--box-bg); color: white; text-align: center; font-size: 1.05rem; margin-bottom: 16px; outline: none;
+            background: var(--box-bg); color: white; text-align: center; font-size: 1.1rem; margin-bottom: 16px; outline: none;
         }
         .modal-btn-group { display: flex; gap: 8px; }
         .modal-btn { flex: 1; padding: 10px 0; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
@@ -451,14 +446,15 @@
             align-items: center;
             z-index: 2000;
             cursor: pointer;
-            padding: 20px;
         }
         .image-modal-content {
-            max-width: 100%;
+            max-width: 90%;
             max-height: 90%;
             position: relative;
         }
         .image-modal-content img {
+            width: auto;
+            height: auto;
             max-width: 100%;
             max-height: 85vh;
             border-radius: 8px;
@@ -466,16 +462,6 @@
             object-fit: contain;
             display: block;
             margin: 0 auto;
-        }
-
-        /* 모바일 최적화 미디어 쿼리 */
-        @media (max-width: 768px) {
-            body { padding: 8px; }
-            .header-bar { padding: 10px 14px; flex-direction: column; align-items: stretch; }
-            .title-area { font-size: 1.1rem; justify-content: center; }
-            .btn-group { justify-content: center; width: 100%; }
-            .btn { flex: 1; padding: 8px 10px; font-size: 0.85rem; text-align: center; }
-            .tab-btn { padding: 8px 12px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -487,12 +473,12 @@
             <span id="modeBadge" class="badge badge-view">🔒 읽기 전용</span>
         </div>
         <div class="btn-group">
-            <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한</button>
-            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열추가</button>
-            <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원추가</button>
-            <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭추가</button>
-            <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장</button>
-            <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번</button>
+            <button id="authBtn" class="btn btn-lock" onclick="toggleAuth()">🔓 수정 권한 얻기</button>
+            <button id="addColBtn" class="btn btn-col" style="display:none;" onclick="addColumn()">+ 열 추가</button>
+            <button id="addBtn" class="btn btn-add" style="display:none;" onclick="addRow()">+ 팀원 추가</button>
+            <button id="addTabBtn" class="btn btn-tab" style="display:none;" onclick="openAddTabModal()">+ 탭 추가</button>
+            <button id="saveBtn" class="btn" style="display:none;" onclick="saveData()">💾 저장하기</button>
+            <button id="pwChangeBtn" class="btn btn-pw" style="display:none;" onclick="openPwChangeModal()">🔑 비번 변경</button>
         </div>
     </div>
 
@@ -526,6 +512,7 @@
         let modalMode = 'login';
         const DEFAULT_PW = "1234";
 
+        // SOOP 아이디 매칭 딕셔너리
         const soopIdMap = {
             "킴성태": "rrvv17",
             "오아": "legendhyuk",
@@ -544,48 +531,66 @@
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
         const ENCHANT_LIST = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
-        // 빈 구조체 정의 (서버에 데이터가 없을 때만 보여질 기본 뼈대)
         let specColumns = [
-            { id: "c1", title: "팀원명", width: "100px" },
-            { id: "c2", title: "직업", width: "100px" },
-            { id: "c3", title: "무기강화", width: "90px" },
+            { id: "c1", title: "팀원명", width: "110px" },
+            { id: "c2", title: "직업", width: "110px" },
+            { id: "c3", title: "무기강화", width: "95px" },
             { id: "c4", title: "방어구강화", width: "85px" },
-            { id: "c5", title: "체력", width: "75px" },
-            { id: "c6", title: "내공", width: "75px" },
-            { id: "c7", title: "회피", width: "75px" },
-            { id: "c8", title: "운", width: "75px" },
-            { id: "c9", title: "비고", width: "180px" }
+            { id: "c5", title: "체력", width: "80px" },
+            { id: "c6", title: "내공", width: "80px" },
+            { id: "c7", title: "회피", width: "80px" },
+            { id: "c8", title: "운", width: "80px" },
+            { id: "c9", title: "비고", width: "190px" }
         ];
 
         let itemColumns = [
-            { id: "c1", title: "팀원명", width: "100px" },
+            { id: "c1", title: "팀원명", width: "110px" },
             { id: "i1", title: "무기 주문서", width: "100px" },
             { id: "i2", title: "방어구 주문서", width: "100px" },
             { id: "i3", title: "장신구 주문서", width: "100px" },
             { id: "i4", title: "고급 물약", width: "90px" },
-            { id: "i5", title: "핵심 결정/재료", width: "120px" },
-            { id: "i6", title: "특수 아이템", width: "120px" },
-            { id: "i7", title: "아이템 비고", width: "180px" }
+            { id: "i5", title: "핵심 결정/재료", width: "130px" },
+            { id: "i6", title: "특수 아이템", width: "130px" },
+            { id: "i7", title: "아이템 비고", width: "190px" }
         ];
 
         let huntColumns = [
-            { id: "c1", title: "팀원명", width: "100px" },
-            { id: "c2", title: "직업", width: "100px" },
-            { id: "h_spot", title: "현재 사냥터", width: "140px" },
-            { id: "h_gold", title: "시간당 기대 수익", width: "150px" },
-            { id: "h_drop", title: "주요 득템 현황", width: "150px" },
-            { id: "h_memo", title: "파밍 비고", width: "180px" }
+            { id: "c1", title: "팀원명", width: "110px" },
+            { id: "c2", title: "직업", width: "110px" },
+            { id: "h_spot", title: "현재 사냥터", width: "150px" },
+            { id: "h_gold", title: "시간당 기대 수익(골드/재화)", width: "160px" },
+            { id: "h_drop", title: "주요 득템 현황", width: "160px" },
+            { id: "h_memo", title: "파밍 비고", width: "200px" }
         ];
 
-        let membersData = [];
-        let mapImages = [];
-        let hiddenJobsData = [
-            { id: "h1", name: "히든직업 1", items: [] },
-            { id: "h2", name: "히든직업 2", items: [] },
-            { id: "h3", name: "히든직업 3", items: [] },
-            { id: "h4", name: "히든직업 4", items: [] },
-            { id: "h5", name: "히든직업 5", items: [] }
+        let membersData = [
+            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
+            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" }
         ];
+
+        let mapImages = [
+            { id: "m1", title: "메인 사냥터 1", img: "", memo: "위치 및 주요 드랍 아이템 메모" },
+            { id: "m2", title: "보스 레이드 지역", img: "", memo: "출현 시간 및 패턴 정리" }
+        ];
+
+        let hiddenJobsData = [
+            { id: "h1", name: "히든직업 1", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h2", name: "히든직업 2", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h3", name: "히든직업 3", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h4", name: "히든직업 4", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
+            { id: "h5", name: "히든직업 5", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] }
+        ];
+
         let customTabs = [];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -595,14 +600,14 @@
                 if (serverData) {
                     if (serverData.specColumns) specColumns = serverData.specColumns;
                     if (serverData.itemColumns) itemColumns = serverData.itemColumns;
-                    if (serverData.huntColumns) huntColumns = serverData.huntColumns;
                     if (serverData.membersData) membersData = serverData.membersData;
                     if (serverData.mapImages) mapImages = serverData.mapImages;
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
                     if (serverData.customTabs) customTabs = serverData.customTabs;
+                    renderAll();
                 }
-                renderAll();
             });
+            renderAll();
         });
 
         function getCurrentColumns() {
@@ -739,13 +744,13 @@
             if (isEdit) {
                 badge.innerText = "✏️ 수정 모드";
                 badge.className = "badge badge-edit";
-                authBtn.innerText = "🔒 잠그기";
+                authBtn.innerText = "🔒 수정 잠그기";
                 saveBtn.style.display = "inline-block";
                 pwChangeBtn.style.display = "inline-block";
                 addTabBtn.style.display = "inline-block";
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block";
+                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
                 } else {
                     addBtn.style.display = "none";
                     addColBtn.style.display = "none";
@@ -753,7 +758,7 @@
             } else {
                 badge.innerText = "🔒 읽기 전용";
                 badge.className = "badge badge-view";
-                authBtn.innerText = "🔓 수정 권한";
+                authBtn.innerText = "🔓 수정 권한 얻기";
                 addBtn.style.display = "none";
                 addColBtn.style.display = "none";
                 addTabBtn.style.display = "none";
@@ -768,12 +773,14 @@
         function syncInputsToData() {
             if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 const cols = getCurrentColumns();
-                const headerInputs = document.querySelectorAll('#headerRow input');
-                headerInputs.forEach(inp => {
-                    const colId = inp.dataset.colid;
-                    const colObj = cols.find(c => c.id === colId);
-                    if (colObj) colObj.title = inp.value;
-                });
+                if (activeTab !== 'hunt') {
+                    const headerInputs = document.querySelectorAll('#headerRow input');
+                    headerInputs.forEach(inp => {
+                        const colId = inp.dataset.colid;
+                        const colObj = cols.find(c => c.id === colId);
+                        if (colObj) colObj.title = inp.value;
+                    });
+                }
 
                 const rows = document.querySelectorAll('#tableBody tr');
                 rows.forEach((r, idx) => {
@@ -814,11 +821,11 @@
         function renderTabBar() {
             const tabBar = document.getElementById('tabBar');
             let html = `
-                <div class="tab-btn-wrap"><button id="tabSpec" class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙</button></div>
-                <div class="tab-btn-wrap"><button id="tabItem" class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템</button></div>
-                <div class="tab-btn-wrap"><button id="tabHunt" class="tab-btn ${activeTab === 'hunt' ? 'active' : ''}" onclick="switchTab('hunt')">💰 사냥</button></div>
-                <div class="tab-btn-wrap"><button id="tabMap" class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵</button></div>
-                <div class="tab-btn-wrap"><button id="tabHidden" class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든</button></div>
+                <div class="tab-btn-wrap"><button id="tabSpec" class="tab-btn ${activeTab === 'spec' ? 'active' : ''}" onclick="switchTab('spec')">⚔️ 스펙 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabItem" class="tab-btn ${activeTab === 'item' ? 'active' : ''}" onclick="switchTab('item')">📦 아이템 현황</button></div>
+                <div class="tab-btn-wrap"><button id="tabHunt" class="tab-btn ${activeTab === 'hunt' ? 'active' : ''}" onclick="switchTab('hunt')">💰 사냥효율</button></div>
+                <div class="tab-btn-wrap"><button id="tabMap" class="tab-btn ${activeTab === 'map' ? 'active' : ''}" onclick="switchTab('map')">🗺️ 맵 탭</button></div>
+                <div class="tab-btn-wrap"><button id="tabHidden" class="tab-btn ${activeTab === 'hidden' ? 'active' : ''}" onclick="switchTab('hidden')">🕵️ 히든추리 탭</button></div>
             `;
 
             customTabs.forEach(t => {
@@ -852,7 +859,7 @@
             if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 if (isEdit) {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block";
+                    addColBtn.style.display = (activeTab === 'hunt') ? "none" : "inline-block";
                     container.classList.add('editable');
                 } else {
                     addBtn.style.display = "none";
@@ -893,11 +900,11 @@
                     <div class="img-card">
                         <input type="text" id="map_title_${idx}" value="${item.title}" ${!isEdit ? 'readonly' : ''} placeholder="맵/지역 이름">
                         <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerMapFile(${idx})` : '')}">
-                            ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
+                            ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 스크린샷/사진 업로드' : '사진 없음'}</span>`}
                         </div>
                         <input type="file" id="map_file_${idx}" class="file-input" accept="image/*" onchange="uploadMapImg(event, ${idx})">
                         ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem; margin-top:2px;" onclick="triggerMapFile(${idx})">사진 변경/업로드</button>` : ''}
-                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보 및 메모">${item.memo}</textarea>
+                        <textarea id="map_memo_${idx}" ${!isEdit ? 'readonly' : ''} placeholder="사냥터 정보, 주요 드랍 및 메모">${item.memo}</textarea>
                         ${isEdit ? `<button class="btn btn-del" style="padding:6px; font-size:0.85rem;" onclick="delMapCard(${idx})">카드 삭제</button>` : ''}
                     </div>
                 `;
@@ -905,8 +912,8 @@
 
             container.innerHTML = `
                 <div class="section-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                        <h3 style="color:var(--text-gold); font-size: 1.1rem;">🗺️ 사냥터 재화 정보 관리</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="color:var(--text-gold);">🗺️ 사냥터 재화 정보 및 득템 명당 관리</h3>
                         ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addMapCard()">+ 맵 카드 추가</button>` : ''}
                     </div>
                     <div class="img-upload-grid">${cardsHtml}</div>
@@ -919,11 +926,11 @@
             hiddenJobsData.forEach((job, jobIndex) => {
                 html += `
                     <div class="section-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <input type="text" id="hidden_name_${jobIndex}" value="${job.name}" 
-                                style="background:transparent; border:none; color:var(--text-gold); font-size:1.1rem; font-weight:bold; outline:none; width: 200px;" 
+                                style="background:transparent; border:none; color:var(--text-gold); font-size:1.25rem; font-weight:bold; outline:none; width: 250px;" 
                                 ${!isEdit ? 'readonly' : ''}>
-                            ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addHiddenItem(${jobIndex})">+ 단서 추가</button>` : ''}
+                            ${isEdit ? `<button class="btn btn-add" style="padding:6px 12px; font-size:0.9rem;" onclick="addHiddenItem(${jobIndex})">+ 단서 카드 추가</button>` : ''}
                         </div>
                         <div class="img-upload-grid">
                 `;
@@ -933,11 +940,11 @@
                         html += `
                                 <div class="img-card">
                                     <div class="img-card-preview" onclick="${item.img ? `openImageModal('${item.img}')` : (isEdit ? `triggerHiddenFile(${jobIndex}, ${itemIndex})` : '')}">
-                                        ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 사진 업로드' : '사진 없음'}</span>`}
+                                        ${item.img ? `<img src="${item.img}" title="클릭하여 확대 보기">` : `<span>${isEdit ? '+ 단서 사진 업로드' : '사진 없음'}</span>`}
                                     </div>
                                     <input type="file" id="hidden_file_${jobIndex}_${itemIndex}" class="file-input" accept="image/*" onchange="uploadHiddenImg(event, ${jobIndex}, ${itemIndex})">
-                                    ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem; margin-top:2px;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">사진 변경</button>` : ''}
-                                    <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건 및 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
+                                    ${isEdit ? `<button class="btn btn-col" style="padding:6px; font-size:0.8rem; margin-top:2px;" onclick="triggerHiddenFile(${jobIndex}, ${itemIndex})">사진 변경/업로드</button>` : ''}
+                                    <textarea id="hidden_memo_${jobIndex}_${itemIndex}" placeholder="전직 조건, 추리 내용, 단서 기록" ${!isEdit ? 'readonly' : ''}>${item.memo}</textarea>
                                     ${isEdit ? `<button class="btn btn-del" style="width:100%; padding:6px; margin-top:2px; font-size:0.9rem;" onclick="delHiddenItem(${jobIndex}, ${itemIndex})">단서 삭제</button>` : ''}
                                 </div>
                         `;
@@ -957,8 +964,8 @@
             const contentVal = found ? found.content : "";
             container.innerHTML = `
                 <div class="section-box">
-                    <h3 style="color:var(--text-gold); margin-bottom: 12px; font-size: 1.1rem;">📌 ${found ? found.name : '사용자 탭'}</h3>
-                    <textarea id="customTextArea" style="width:100%; height:400px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
+                    <h3 style="color:var(--text-gold); margin-bottom: 12px;">📌 ${found ? found.name : '사용자 탭'}</h3>
+                    <textarea id="customTextArea" style="width:100%; height:450px; background:var(--box-bg); color:var(--text-light); border:1px solid var(--box-border); border-radius:6px; padding:15px; font-size:1.05rem; resize:vertical; outline:none;" ${!isEdit ? 'readonly' : ''}>${contentVal}</textarea>
                 </div>
             `;
         }
@@ -1024,17 +1031,18 @@
         function renderHeader() {
             const tr = document.getElementById('headerRow');
             if (!tr) return;
-            tr.innerHTML = `<th style="width: 70px;"><div class="th-box">프로필</div></th>`;
+            tr.innerHTML = `<th style="width: 80px;"><div class="th-box">프로필</div></th>`;
 
             const cols = getCurrentColumns();
             cols.forEach((col, idx) => {
                 const th = document.createElement('th');
                 th.style.width = col.width || "100px";
+                const isFixedHuntCol = (activeTab === 'hunt' && (col.id === 'c1' || col.id === 'c2'));
                 
                 th.innerHTML = `
                     <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
-                        ${isEdit ? `
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${(!isEdit || activeTab === 'hunt') ? 'readonly' : ''}>
+                        ${(isEdit && activeTab !== 'hunt') ? `
                         <div class="col-btn-group">
                             <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
                             <button class="col-btn-mv" onclick="moveColumn(${idx}, 1)">▶</button>
@@ -1046,7 +1054,7 @@
             });
 
             if (isEdit) {
-                tr.innerHTML += `<th style="width: 100px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
+                tr.innerHTML += `<th style="width: 110px;"><div class="th-box" style="color:var(--text-gold);">관리</div></th>`;
             }
         }
 
@@ -1059,6 +1067,7 @@
             membersData.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 
+                // 프로필 사진 및 하단 [방송국 바로가기] 링크 생성
                 const sId = soopIdMap[m.c1];
                 let profileCellHtml = `
                     <td>
@@ -1066,8 +1075,8 @@
                             <div class="profile-wrap" onclick="handleProfileClick(${idx}, '${m.c1}')">
                                 ${m.img ? `<img src="${m.img}" title="${m.c1} SOOP 방송국으로 이동">` : `<span>사진</span>`}
                             </div>
-                            <div style="font-size: 0.7rem; margin-top: 2px;">
-                                ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">-</span>`)}
+                            <div style="font-size: 0.75rem; margin-top: 2px;">
+                                ${sId ? `<a href="https://ch.sooplive.co.kr/${sId}" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">방송국 바로가기</a>` : (isEdit ? `<span style="color: #94a3b8; cursor: pointer;" onclick="triggerFile(${idx})">업로드</span>` : `<span style="color: #64748b;">정보없음</span>`)}
                             </div>
                             <input type="file" id="f-${idx}" class="file-input" accept="image/*" onchange="uploadImg(event, ${idx})">
                         </div>
@@ -1128,7 +1137,7 @@
                         html += `
                             <td>
                                 <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${(!isEdit) ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${(!isEdit || (activeTab === 'hunt' && isName)) ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
                                 </div>
                             </td>
                         `;
@@ -1154,7 +1163,9 @@
             });
         }
 
+        // 프로필 클릭 시 방송국 이동 또는 업로드 처리 함수
         function handleProfileClick(idx, streamerName) {
+            const member = membersData[idx];
             const sId = soopIdMap[streamerName];
             if (sId) {
                 window.open(`https://ch.sooplive.co.kr/${sId}`, '_blank');
@@ -1193,14 +1204,13 @@
         }
 
         function addColumn() {
-            if (!isEdit || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
+            if (!isEdit || activeTab === 'hunt' || activeTab === 'map' || activeTab === 'hidden' || customTabs.some(t => t.id === activeTab)) return;
             syncInputsToData();
             const title = prompt("새로 추가할 항목(열)의 이름을 입력하세요:", "새 항목");
             if (!title) return;
 
             const cols = getCurrentColumns();
-            const prefix = (activeTab === 'spec' ? 'c_' : (activeTab === 'item' ? 'i_' : 'h_'));
-            const newId = prefix + Date.now();
+            const newId = (activeTab === 'spec' ? 'c_' : 'i_') + Date.now();
             cols.push({ id: newId, title: title.trim(), width: "100px" });
 
             membersData.forEach(m => {
@@ -1211,26 +1221,20 @@
         }
 
         function delColumn(colId) {
-            if (!isEdit) return;
-            if (colId === 'c1' || colId === 'c2') {
-                alert("팀원명과 직업 열은 삭제할 수 없습니다.");
-                return;
-            }
+            if (!isEdit || activeTab === 'hunt') return;
             if (confirm("이 항목(열) 전체를 삭제하시겠습니까?")) {
                 syncInputsToData();
                 if (activeTab === 'spec') {
                     specColumns = specColumns.filter(c => c.id !== colId);
                 } else if (activeTab === 'item') {
                     itemColumns = itemColumns.filter(c => c.id !== colId);
-                } else if (activeTab === 'hunt') {
-                    huntColumns = huntColumns.filter(c => c.id !== colId);
                 }
                 renderAll();
             }
         }
 
         function moveColumn(colIdx, dir) {
-            if (!isEdit) return;
+            if (!isEdit || activeTab === 'hunt') return;
             syncInputsToData();
             const cols = getCurrentColumns();
             const targetIdx = colIdx + dir;
@@ -1296,7 +1300,6 @@
             const dataToSave = {
                 specColumns: specColumns,
                 itemColumns: itemColumns,
-                huntColumns: huntColumns,
                 membersData: membersData,
                 mapImages: mapImages,
                 hiddenJobsData: hiddenJobsData,
