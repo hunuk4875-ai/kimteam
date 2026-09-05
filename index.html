@@ -544,6 +544,7 @@
         const JOB_LIST = ["나이트", "위자드", "워리어", "어쌔신", "헌터", "히든직업 1", "히든직업 2", "히든직업 3", "히든직업 4", "히든직업 5", "미정"];
         const ENCHANT_LIST = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
+        // 빈 구조체 정의 (서버에 데이터가 없을 때만 보여질 기본 뼈대)
         let specColumns = [
             { id: "c1", title: "팀원명", width: "100px" },
             { id: "c2", title: "직업", width: "100px" },
@@ -576,34 +577,15 @@
             { id: "h_memo", title: "파밍 비고", width: "180px" }
         ];
 
-        let membersData = [
-            { img: "", c1: "킴성태", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "팀장 / 메인 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "오아", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "메인 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "도현", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "김진솔", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "기동성 암살", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "중력", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범위딜", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "수피", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 범딜 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "표우", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 힐러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "김진아", c2: "어쌔신", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "근접 딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "견자희", c2: "나이트", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "서브 탱커", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "라무", c2: "워리어", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "폭딜러", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "킴나니", c2: "위자드", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "지원가", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" },
-            { img: "", c1: "망구", c2: "헌터", c3: "0", c4: "0", c5: "0", c6: "0", c7: "0", c8: "0", c9: "원거리 지원", i1: "0", i2: "0", i3: "0", i4: "0", i5: "-", i6: "-", i7: "", h_spot: "미정", h_gold: "0", h_drop: "-", h_memo: "" }
-        ];
-
-        let mapImages = [
-            { id: "m1", title: "메인 사냥터 1", img: "", memo: "위치 및 주요 드랍 아이템 메모" },
-            { id: "m2", title: "보스 레이드 지역", img: "", memo: "출현 시간 및 패턴 정리" }
-        ];
-
+        let membersData = [];
+        let mapImages = [];
         let hiddenJobsData = [
-            { id: "h1", name: "히든직업 1", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
-            { id: "h2", name: "히든직업 2", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
-            { id: "h3", name: "히든직업 3", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
-            { id: "h4", name: "히든직업 4", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] },
-            { id: "h5", name: "히든직업 5", items: [{ img: "", memo: "첫 번째 단서를 입력하세요" }] }
+            { id: "h1", name: "히든직업 1", items: [] },
+            { id: "h2", name: "히든직업 2", items: [] },
+            { id: "h3", name: "히든직업 3", items: [] },
+            { id: "h4", name: "히든직업 4", items: [] },
+            { id: "h5", name: "히든직업 5", items: [] }
         ];
-
         let customTabs = [];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -618,10 +600,9 @@
                     if (serverData.mapImages) mapImages = serverData.mapImages;
                     if (serverData.hiddenJobsData) hiddenJobsData = serverData.hiddenJobsData;
                     if (serverData.customTabs) customTabs = serverData.customTabs;
-                    renderAll();
                 }
+                renderAll();
             });
-            renderAll();
         });
 
         function getCurrentColumns() {
