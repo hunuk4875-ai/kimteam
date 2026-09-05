@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ 킴성태팀 종합 현황판 (실시간 연동)</title>
+    <title>🛡️ 킴성태팀 종합 현황판 (실시간 연동 & 항목별 잠금)</title>
     <!-- Firebase SDK (v9) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -39,6 +39,7 @@
             --primary: #3b82f6;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
         * {
@@ -248,6 +249,22 @@
             padding: 4px 6px;
             transition: all 0.2s ease;
             gap: 4px;
+            position: relative;
+        }
+
+        /* 항목별 잠금 상태 표시 클래스 */
+        .td-box.column-locked {
+            border-color: var(--warning) !important;
+            background-color: rgba(245, 158, 11, 0.08) !important;
+        }
+
+        .lock-indicator {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.65rem;
+            color: var(--warning);
+            font-weight: bold;
         }
 
         td input[type="text"] {
@@ -532,35 +549,35 @@
         const ENCHANT_LIST = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
         let specColumns = [
-            { id: "c1", title: "팀원명", width: "110px" },
-            { id: "c2", title: "직업", width: "110px" },
-            { id: "c3", title: "무기강화", width: "95px" },
-            { id: "c4", title: "방어구강화", width: "85px" },
-            { id: "c5", title: "체력", width: "80px" },
-            { id: "c6", title: "내공", width: "80px" },
-            { id: "c7", title: "회피", width: "80px" },
-            { id: "c8", title: "운", width: "80px" },
-            { id: "c9", title: "비고", width: "190px" }
+            { id: "c1", title: "팀원명", width: "110px", locked: false },
+            { id: "c2", title: "직업", width: "110px", locked: false },
+            { id: "c3", title: "무기강화", width: "95px", locked: false },
+            { id: "c4", title: "방어구강화", width: "85px", locked: false },
+            { id: "c5", title: "체력", width: "80px", locked: false },
+            { id: "c6", title: "내공", width: "80px", locked: false },
+            { id: "c7", title: "회피", width: "80px", locked: false },
+            { id: "c8", title: "운", width: "80px", locked: false },
+            { id: "c9", title: "비고", width: "190px", locked: false }
         ];
 
         let itemColumns = [
-            { id: "c1", title: "팀원명", width: "110px" },
-            { id: "i1", title: "무기 주문서", width: "100px" },
-            { id: "i2", title: "방어구 주문서", width: "100px" },
-            { id: "i3", title: "장신구 주문서", width: "100px" },
-            { id: "i4", title: "고급 물약", width: "90px" },
-            { id: "i5", title: "핵심 결정/재료", width: "130px" },
-            { id: "i6", title: "특수 아이템", width: "130px" },
-            { id: "i7", title: "아이템 비고", width: "190px" }
+            { id: "c1", title: "팀원명", width: "110px", locked: false },
+            { id: "i1", title: "무기 주문서", width: "100px", locked: false },
+            { id: "i2", title: "방어구 주문서", width: "100px", locked: false },
+            { id: "i3", title: "장신구 주문서", width: "100px", locked: false },
+            { id: "i4", title: "고급 물약", width: "90px", locked: false },
+            { id: "i5", title: "핵심 결정/재료", width: "130px", locked: false },
+            { id: "i6", title: "특수 아이템", width: "130px", locked: false },
+            { id: "i7", title: "아이템 비고", width: "190px", locked: false }
         ];
 
         let huntColumns = [
-            { id: "c1", title: "팀원명", width: "110px" },
-            { id: "c2", title: "직업", width: "110px" },
-            { id: "h_spot", title: "현재 사냥터", width: "150px" },
-            { id: "h_gold", title: "시간당 기대 수익(골드/재화)", width: "160px" },
-            { id: "h_drop", title: "주요 득템 현황", width: "160px" },
-            { id: "h_memo", title: "파밍 비고", width: "200px" }
+            { id: "c1", title: "팀원명", width: "110px", locked: false },
+            { id: "c2", title: "직업", width: "110px", locked: false },
+            { id: "h_spot", title: "현재 사냥터", width: "150px", locked: false },
+            { id: "h_gold", title: "시간당 기대 수익(골드/재화)", width: "160px", locked: false },
+            { id: "h_drop", title: "주요 득템 현황", width: "160px", locked: false },
+            { id: "h_memo", title: "파밍 비고", width: "200px", locked: false }
         ];
 
         let membersData = [
@@ -751,7 +768,7 @@
                 addTabBtn.style.display = "inline-block";
                 if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block"; // 사냥효율 탭 포함 모든 데이터 테이블 열 추가 활성화[cite: 5]
+                    addColBtn.style.display = "inline-block";
                 } else {
                     addBtn.style.display = "none";
                     addColBtn.style.display = "none";
@@ -858,7 +875,7 @@
             if (activeTab === 'spec' || activeTab === 'item' || activeTab === 'hunt') {
                 if (isEdit) {
                     addBtn.style.display = "inline-block";
-                    addColBtn.style.display = "inline-block"; // 사냥효율 탭 포함 항상 열 추가 버튼 노출[cite: 5]
+                    addColBtn.style.display = "inline-block";
                     container.classList.add('editable');
                 } else {
                     addBtn.style.display = "none";
@@ -1027,6 +1044,17 @@
             reader.readAsDataURL(file);
         }
 
+        function toggleColumnLock(colId) {
+            if (!isEdit) return;
+            syncInputsToData();
+            const cols = getCurrentColumns();
+            const colObj = cols.find(c => c.id === colId);
+            if (colObj) {
+                colObj.locked = !colObj.locked;
+                renderAll();
+            }
+        }
+
         function renderHeader() {
             const tr = document.getElementById('headerRow');
             if (!tr) return;
@@ -1036,10 +1064,14 @@
             cols.forEach((col, idx) => {
                 const th = document.createElement('th');
                 th.style.width = col.width || "100px";
+                const isLocked = col.locked === true;
                 
                 th.innerHTML = `
-                    <div class="th-box">
-                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit ? 'readonly' : ''}>
+                    <div class="th-box" style="${isLocked ? 'border-color: var(--warning);' : ''}">
+                        <input type="text" data-colid="${col.id}" value="${col.title}" ${!isEdit || isLocked ? 'readonly' : ''}>
+                        <div style="font-size:0.7rem; color:${isLocked ? 'var(--warning)' : '#94a3b8'}; cursor:pointer; margin-top:2px;" onclick="toggleColumnLock('${col.id}')">
+                            ${isLocked ? '🔒 항목 잠금' : '🔓 잠금해제'}
+                        </div>
                         ${isEdit ? `
                         <div class="col-btn-group">
                             <button class="col-btn-mv" onclick="moveColumn(${idx}, -1)">◀</button>
@@ -1087,6 +1119,11 @@
                     const isName = (col.id === 'c1');
                     const isJob = (col.id === 'c2');
                     const isWeaponEnchant = (activeTab === 'spec' && col.title === '무기강화');
+                    const isLocked = col.locked === true;
+                    const disabledAttr = (!isEdit || isLocked) ? 'disabled' : '';
+                    const readonlyAttr = (!isEdit || isLocked) ? 'readonly' : '';
+
+                    let lockBadgeHtml = isLocked ? `<div class="lock-indicator">🔒 잠김</div>` : '';
 
                     if (isJob) {
                         let optionsHtml = '';
@@ -1102,8 +1139,9 @@
 
                         html += `
                             <td>
-                                <div class="td-box job-tag ${getJobClass(val)}">
-                                    <select class="job-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleJobChange(this)">
+                                <div class="td-box job-tag ${getJobClass(val)} ${isLocked ? 'column-locked' : ''}">
+                                    ${lockBadgeHtml}
+                                    <select class="job-select" data-colid="${col.id}" ${disabledAttr} onchange="handleJobChange(this)">
                                         ${optionsHtml}
                                     </select>
                                 </div>
@@ -1123,8 +1161,9 @@
 
                         html += `
                             <td>
-                                <div class="td-box ${getEnchantClass(val)}">
-                                    <select class="enchant-select" data-colid="${col.id}" ${!isEdit ? 'disabled' : ''} onchange="handleEnchantChange(this)">
+                                <div class="td-box ${getEnchantClass(val)} ${isLocked ? 'column-locked' : ''}">
+                                    ${lockBadgeHtml}
+                                    <select class="enchant-select" data-colid="${col.id}" ${disabledAttr} onchange="handleEnchantChange(this)">
                                         ${optionsHtml}
                                     </select>
                                 </div>
@@ -1133,8 +1172,9 @@
                     } else {
                         html += `
                             <td>
-                                <div class="td-box">
-                                    <input type="text" data-colid="${col.id}" value="${val}" ${!isEdit ? 'readonly' : ''} style="${isName ? 'font-weight:bold;' : ''}">
+                                <div class="td-box ${isLocked ? 'column-locked' : ''}">
+                                    ${lockBadgeHtml}
+                                    <input type="text" data-colid="${col.id}" value="${val}" ${readonlyAttr} style="${isName ? 'font-weight:bold;' : ''}">
                                 </div>
                             </td>
                         `;
@@ -1205,7 +1245,7 @@
             const cols = getCurrentColumns();
             const prefix = activeTab === 'spec' ? 'c_' : (activeTab === 'item' ? 'i_' : 'h_');
             const newId = prefix + Date.now();
-            cols.push({ id: newId, title: title.trim(), width: "130px" });
+            cols.push({ id: newId, title: title.trim(), width: "130px", locked: false });
 
             membersData.forEach(m => {
                 if (m[newId] === undefined) m[newId] = "0";
